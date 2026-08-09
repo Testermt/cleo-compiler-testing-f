@@ -66,7 +66,7 @@ document.addEventListener('focusin', function(e) {
 </head>
 <body class="bg-ink text-gray-200 font-mono min-h-screen flex flex-col">
 
-  <input type="file" id="file-upload-input" accept=".txt,.cs" class="hidden" />
+  <input type="file" id="file-upload-input" accept=".txt,.cs,.csa,.csi" class="hidden" />
   <input type="file" id="decompile-upload-input" accept=".cs,.csa,.csi" class="hidden" />
   <input type="file" id="db-upload-input" accept=".db" class="hidden" />
 
@@ -81,7 +81,7 @@ document.addEventListener('focusin', function(e) {
           <h1 class="font-display font-semibold text-gray-100 text-base sm:text-lg tracking-tight">
             GTA SA <span class="text-amber">Online CLEO</span> Compiler
           </h1>
-          <p class="text-[11px] text-gray-500 hex-addr">0x0000 &middot; script.txt &rarr; script.cs / .csa / .csi &middot; sanny.exe / wine</p>
+          <p class="text-[11px] text-gray-500 hex-addr">0x0000 &middot; script.txt &rarr; dynamic extension &middot; sanny.exe / wine</p>
         </div>
       </div>
 
@@ -143,11 +143,11 @@ document.addEventListener('focusin', function(e) {
         </button>
         <button id="decompile-btn"
           class="btn-press text-[13px] px-3 py-2 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors flex items-center gap-1.5">
-          <span>🔓 Decompile .cs</span>
+          <span>🔓 Decompile File</span>
         </button>
         <button id="upload-btn"
           class="btn-press text-[13px] px-3 py-2 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors flex items-center gap-1.5">
-          <span>📁 Upload .txt</span>
+          <span>📁 Upload Script</span>
         </button>
         <button id="clear-btn"
           class="btn-press text-[13px] px-3 py-2 rounded-sm border border-hairline text-gray-400 hover:text-gray-100 hover:border-gray-500 transition-colors">
@@ -164,9 +164,8 @@ document.addEventListener('focusin', function(e) {
       </div>
     </div>
 
-    <!-- Advanced CLI Flags Bar (Compile & Decompile Options) -->
+    <!-- Advanced CLI Flags Bar -->
     <div class="bg-panel2/60 border border-hairline rounded-sm px-3.5 py-3 flex flex-col gap-2.5 text-[11.5px]">
-      <!-- Compile Flags -->
       <div class="flex flex-wrap items-center gap-4 text-gray-400">
         <span class="text-amber font-display font-semibold hex-addr">COMPILE FLAGS:</span>
         <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber transition-colors">
@@ -183,7 +182,6 @@ document.addEventListener('focusin', function(e) {
         </label>
       </div>
 
-      <!-- Decompile Flags (Exact Sanny Menu Bitmask Order: Code Offsets, Ignore Unknown, Var Counter, Constant Indexes, Skip SCM Header, Skip Extra Info, SB3 Compat) -->
       <div class="flex flex-wrap items-center gap-3 text-gray-400 border-t border-hairline/60 pt-2">
         <span class="text-teal font-display font-semibold hex-addr">DECOMPILE FLAGS:</span>
         <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors">
@@ -220,7 +218,6 @@ document.addEventListener('focusin', function(e) {
         </label>
       </div>
 
-      <!-- Extra Custom Flags -->
       <div class="flex items-center gap-2 w-full pt-1 border-t border-hairline/60">
         <label for="custom-flags-input" class="hex-addr text-gray-500 whitespace-nowrap">EXTRA FLAGS:</label>
         <input type="text" id="custom-flags-input" placeholder="e.g. --constant MODE=1" 
@@ -385,7 +382,7 @@ document.addEventListener('focusin', function(e) {
     fileInput.value = '';
   });
 
-  // DECOMPILE SCRIPT
+  // DECOMPILE SCRIPT (Sends dynamic filename and extension to backend)
   const decompileBtn = document.getElementById('decompile-btn');
   const decompileInput = document.getElementById('decompile-upload-input');
 
@@ -619,6 +616,7 @@ document.addEventListener('focusin', function(e) {
     }
   });
 
+  // COMPILE SCRIPT (Detects extension from editor filename or game select)
   const compileBtn = document.getElementById('compile-btn');
   const compileBtnText = document.getElementById('compile-btn-text');
   const compileSpinner = document.getElementById('compile-spinner');
@@ -633,6 +631,7 @@ document.addEventListener('focusin', function(e) {
     if (!editor) return;
     const code = editor.getValue();
     const selectedGame = document.getElementById('gameSelect').value;
+    const currentFilename = fileNameDisplay.textContent.trim();
     const caseSensitive = document.getElementById('case-sensitive-cb').checked;
     const checkConditions = document.getElementById('check-conditions-cb').checked;
     const noSplash = document.getElementById('no-splash-cb').checked;
@@ -661,6 +660,7 @@ document.addEventListener('focusin', function(e) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           code, 
+          filename: currentFilename,
           game: selectedGame, 
           caseSensitive, 
           checkConditions,
@@ -691,11 +691,9 @@ document.addEventListener('focusin', function(e) {
         logLine(`Command: <span class="text-amber">${escapeHtml(cmdHeader)}</span>`, 'warn');
       }
 
-      let ext = '.cs';
-      if (selectedGame.includes('_csi')) ext = '.csi';
-      else if (selectedGame.includes('mobile') || selectedGame.includes('_csa')) ext = '.csa';
+      // Dynamic download filename extraction from backend headers or filename
+      let filename = response.headers.get('x-download-filename') || currentFilename.replace(/\.txt$/i, '.cs');
 
-      const filename = `script${ext}`;
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');

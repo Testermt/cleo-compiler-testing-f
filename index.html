@@ -183,28 +183,40 @@ document.addEventListener('focusin', function(e) {
         </label>
       </div>
 
-      <!-- Decompile Flags (Matching Sanny Builder menu screenshot) -->
-      <div class="flex flex-wrap items-center gap-4 text-gray-400 border-t border-hairline/60 pt-2">
+      <!-- Decompile Flags (Exact Sanny Menu Bitmask Order: Code Offsets, Ignore Unknown, Var Counter, Constant Indexes, Skip SCM Header, Skip Extra Info, SB3 Compat) -->
+      <div class="flex flex-wrap items-center gap-3 text-gray-400 border-t border-hairline/60 pt-2">
         <span class="text-teal font-display font-semibold hex-addr">DECOMPILE FLAGS:</span>
-        <label class="flex items-center gap-1.5 cursor-pointer hover:text-teal transition-colors">
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors">
           <input type="checkbox" id="use-source-cb" class="accent-teal rounded-sm" checked>
           <span>--use-source</span>
         </label>
-        <label class="flex items-center gap-1.5 cursor-pointer hover:text-teal transition-colors">
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors">
+          <input type="checkbox" id="code-offsets-cb" class="accent-teal rounded-sm">
+          <span>CODE_OFFSETS</span>
+        </label>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors">
           <input type="checkbox" id="ignore-unknown-cb" class="accent-teal rounded-sm">
-          <span>--ignore-unknown</span>
+          <span>IGNORE_UNKNOWN</span>
         </label>
-        <label class="flex items-center gap-1.5 cursor-pointer hover:text-teal transition-colors">
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors">
+          <input type="checkbox" id="var-counter-cb" class="accent-teal rounded-sm">
+          <span>VAR_COUNTER</span>
+        </label>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors">
+          <input type="checkbox" id="constant-indexes-cb" class="accent-teal rounded-sm">
+          <span>CONSTANT_INDEXES</span>
+        </label>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors">
           <input type="checkbox" id="skip-scm-header-cb" class="accent-teal rounded-sm">
-          <span>--skip-scm-header</span>
+          <span>SKIP_SCM_HEADER</span>
         </label>
-        <label class="flex items-center gap-1.5 cursor-pointer hover:text-teal transition-colors">
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors">
           <input type="checkbox" id="skip-extra-info-cb" class="accent-teal rounded-sm">
-          <span>--skip-extra-info</span>
+          <span>SKIP_EXTRA_INFO</span>
         </label>
-        <label class="flex items-center gap-1.5 cursor-pointer hover:text-teal transition-colors">
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors">
           <input type="checkbox" id="sb3-compat-cb" class="accent-teal rounded-sm" checked>
-          <span>--sb3-compat</span>
+          <span>SB3_COMPAT</span>
         </label>
       </div>
 
@@ -384,10 +396,16 @@ document.addEventListener('focusin', function(e) {
 
     const selectedGame = document.getElementById('gameSelect').value;
     const useSource = document.getElementById('use-source-cb').checked;
-    const ignoreUnknown = document.getElementById('ignore-unknown-cb').checked;
-    const skipScmHeader = document.getElementById('skip-scm-header-cb').checked;
-    const skipExtraInfo = document.getElementById('skip-extra-info-cb').checked;
-    const sb3Compat = document.getElementById('sb3-compat-cb').checked;
+    
+    const codeOffsets = document.getElementById('code-offsets-cb')?.checked ? '1' : '0';
+    const ignoreUnknown = document.getElementById('ignore-unknown-cb')?.checked ? '1' : '0';
+    const varCounter = document.getElementById('var-counter-cb')?.checked ? '1' : '0';
+    const constantIndexes = document.getElementById('constant-indexes-cb')?.checked ? '1' : '0';
+    const skipScmHeader = document.getElementById('skip-scm-header-cb')?.checked ? '1' : '0';
+    const skipExtraInfo = document.getElementById('skip-extra-info-cb')?.checked ? '1' : '0';
+    const sb3Compat = document.getElementById('sb3-compat-cb')?.checked ? '1' : '0';
+    
+    const debugBits = `${codeOffsets}${ignoreUnknown}${varCounter}${constantIndexes}${skipScmHeader}${skipExtraInfo}${sb3Compat}`;
     const customFlags = document.getElementById('custom-flags-input').value;
 
     logLine(`Reading file <span class="text-amber">${escapeHtml(file.name)}</span> for decompilation…`, 'info');
@@ -406,10 +424,7 @@ document.addEventListener('focusin', function(e) {
             filename: file.name,
             game: selectedGame,
             useSource,
-            ignoreUnknown,
-            skipScmHeader,
-            skipExtraInfo,
-            sb3Compat,
+            debugBits,
             customFlags
           }),
         });

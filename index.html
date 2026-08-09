@@ -1,3 +1,4 @@
+<!---cleo-compiler-testing-repo-f-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -779,6 +780,36 @@
     div.textContent = str;
     return div.innerHTML;
   }
+</script>
+<!-- Maintenance Overlay -->
+<div id="maintenance-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0c0f14; color: white; z-index: 9999; text-align: center; padding-top: 20%; font-family: sans-serif;">
+    <h1 style="color: #e8a33d;">System Updating & Deploying</h1>
+    <p>Please wait, connecting to Render backend...</p>
+</div>
+
+<script>
+    const RENDER_BACKEND_URL = 'https://cleo-compiler-testing.onrender.com'; // Yahan apna actual Render URL daal dena
+
+    async function checkBackendStatus() {
+        try {
+            const response = await fetch(RENDER_BACKEND_URL, { method: 'GET', mode: 'cors' });
+            if (response.ok) {
+                // Backend is live! Hide maintenance overlay
+                document.getElementById('maintenance-overlay').style.display = 'none';
+            } else {
+                throw new Error('Backend not ready');
+            }
+        } catch (error) {
+            // Backend is still deploying or sleeping, keep maintenance screen ON
+            document.getElementById('maintenance-overlay').style.display = 'block';
+        }
+    }
+
+    // Page load hote hi check karo
+    checkBackendStatus();
+
+    // Har 10 seconds baad dubara check karo jab tak deploy complete na ho jaye
+    setInterval(checkBackendStatus, 10000);
 </script>
 </body>
 </html>

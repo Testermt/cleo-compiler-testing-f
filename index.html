@@ -1,21 +1,29 @@
-<!---cleo-compiler-testing-repo-f-->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag.js?id=G-4E0SE6CZQ3"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8973LHLFH8"></script>
 <script>
+
+// Mobile auto-zoom fix script
+document.addEventListener('focusin', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('.monaco-editor')) {
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
+    }
+  }
+});
+
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'G-4E0SE6CZQ3');
+  gtag('config', 'G-8973LHLFH8');
 </script>
 
-
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>GTA SA Online CLEO Compiler</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -67,6 +75,13 @@
     background-color: rgba(224, 90, 78, 0.20) !important;
     border-left: 3px solid #e05a4e !important;
   }
+
+  /* Mobile auto-zoom fix for editor */
+  @media screen and (max-width: 768px) {
+    .monaco-editor {
+      font-size: 16px !important;
+    }
+  }
 </style>
 </head>
 <body class="bg-ink text-gray-200 font-mono min-h-screen flex flex-col">
@@ -106,6 +121,13 @@
 
   <!-- ===================== MAIN ===================== -->
   <main class="flex-1 max-w-6xl w-full mx-auto px-5 py-6 flex flex-col gap-4">
+
+    <!-- Telegram Button -->
+    <div style="text-align: center; margin: 5px 0;">
+        <a href="https://t.me/TechboyMaster" target="_blank" style="background: #0088cc; color: #fff; padding: 10px 18px; border-radius: 4px; text-decoration: none; font-size: 12.5px; font-weight: bold; display: inline-block;">
+            💬 Contact on Telegram (Report Bug)
+        </a>
+    </div>
 
     <!-- Primary Toolbar -->
     <div class="flex flex-wrap items-center justify-between gap-3">
@@ -216,7 +238,7 @@
     </div>
 
     <p class="text-[11px] text-gray-600 text-center pt-1">
-      Free &middot; runs your source through Sanny Builder server-side &middot; nothing is stored after compilation[span_4](start_span)[span_4](end_span).
+      Free &middot; runs your source through Sanny Builder server-side &middot; nothing is stored after compilation.
     </p>
   </main>
 
@@ -245,49 +267,9 @@
     </div>
   </div>
 
-  <!-- ===================== ACTION MAINTENANCE MODAL ===================== -->
-  <div id="action-maintenance-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-panel border border-hairline rounded-sm max-w-md w-full p-6 text-center flex flex-col items-center">
-      <div class="w-12 h-12 rounded-full bg-amber/10 border border-amber/40 flex items-center justify-center text-amber text-xl mb-4 font-bold">
-        !
-      </div>
-      <h3 class="font-display text-base text-gray-100 mb-2">System Updating &amp; Deploying</h3>
-      <p class="text-xs text-gray-400 mb-5 leading-relaxed">
-        Please wait, the backend server is currently starting up or updating. Try again in a few seconds!
-      </p>
-      <button id="maintenance-modal-close" class="btn-press text-xs px-4 py-2 rounded-sm bg-amber text-ink font-semibold hover:bg-amber/90 transition-colors">
-        Okay, I'll wait
-      </button>
-    </div>
-  </div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs/loader.min.js"></script>
 <script>
-
-<!--jfdd-->
-  const API_BASE = window.CLEO_API_BASE || '-w';
-
-  // Maintenance Modal and Backend Verify Helper
-  const actionMaintenanceModal = document.getElementById('action-maintenance-modal');
-  document.getElementById('maintenance-modal-close').addEventListener('click', () => {
-    actionMaintenanceModal.classList.add('hidden');
-  });
-  actionMaintenanceModal.addEventListener('click', (e) => {
-    if (e.target === actionMaintenanceModal) actionMaintenanceModal.classList.add('hidden');
-  });
-
-  async function verifyBackendReady() {
-    try {
-      const response = await fetch(`${API_BASE}/health`, { method: 'GET', signal: AbortSignal.timeout(4000) });
-      if (response.ok) {
-        const data = await response.json();
-        return data.sannyPresent;
-      }
-    } catch (err) {
-      return false;
-    }
-    return false;
-  }
+  const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-testing.onrender.com';
 
   const TEMPLATES = {
     spawner: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'SPAWN'\n\n:MAIN\nwait 250\nif\n  0256: player $PLAYER_CHAR defined\njf @MAIN\n\n0247: load_model 411\n:WAIT_MODEL\nwait 0\nif\n  0248: model 411 available\njf @WAIT_MODEL\n\n04C4: store_coords_to 0@ 1@ 2@ from_actor $PLAYER_ACTOR offset 0.0 4.0 0.0\n00A5: 3@ = create_car 411 at 0@ 1@ 2@\n0249: release_model 411\n0A93: end_custom_thread`,
@@ -404,15 +386,6 @@
   decompileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // Check backend status before decompiling
-    const isReady = await verifyBackendReady();
-    if (!isReady) {
-      actionMaintenanceModal.classList.remove('hidden');
-      decompileInput.value = '';
-      logLine('Decompilation blocked: Backend is updating or offline.', 'warn');
-      return;
-    }
 
     const selectedGame = document.getElementById('gameSelect').value;
     logLine(`Reading file <span class="text-amber">${escapeHtml(file.name)}</span> for decompilation…`, 'info');
@@ -725,15 +698,6 @@
 
   compileBtn.addEventListener('click', async () => {
     if (!editor) return;
-
-    // Check backend status before compiling
-    const isReady = await verifyBackendReady();
-    if (!isReady) {
-      actionMaintenanceModal.classList.remove('hidden');
-      logLine('Compilation blocked: Backend is updating or offline.', 'warn');
-      return;
-    }
-
     const code = editor.getValue();
     const selectedGame = document.getElementById('gameSelect').value;
     const caseSensitive = document.getElementById('case-sensitive-cb').checked;

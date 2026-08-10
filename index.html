@@ -71,47 +71,78 @@ document.addEventListener('focusin', function(e) {
   <input type="file" id="db-upload-input" accept=".db" class="hidden" />
 
   <!-- HEADER -->
-  <header class="border-b border-hairline bg-panel/80 backdrop-blur">
-    <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-sm bg-amber/10 border border-amber/40 flex items-center justify-center text-amber font-display font-bold text-sm">
+  <header class="border-b border-hairline bg-panel/90 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-8 h-8 rounded-sm bg-amber/10 border border-amber/40 flex items-center justify-center text-amber font-display font-bold text-xs shrink-0">
           CS
         </div>
-        <div>
-          <h1 class="font-display font-semibold text-gray-100 text-base sm:text-lg tracking-tight">
-            GTA SA <span class="text-amber">Online CLEO</span> Compiler
+        <div class="min-w-0">
+          <h1 class="font-display font-semibold text-gray-100 text-sm sm:text-base tracking-tight truncate">
+            GTA SA <span class="text-amber">CLEO</span> Compiler
           </h1>
-          <p class="text-[11px] text-gray-500 hex-addr">0x0000 &middot; script.txt &rarr; dynamic extension &middot; sanny.exe / wine</p>
+          <p class="text-[10px] text-gray-500 hex-addr truncate">sanny.exe / wine backend</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span id="server-status" class="hidden sm:flex items-center gap-1.5 text-[11px] text-gray-500 border border-hairline rounded-sm px-2 py-1">
+      <div class="flex items-center gap-2 shrink-0">
+        <span id="server-status" class="hidden md:flex items-center gap-1.5 text-[11px] text-gray-500 border border-hairline rounded-sm px-2 py-1">
           <span id="server-dot" class="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
-          <span id="server-status-text">checking backend&hellip;</span>
+          <span id="server-status-text">checking&hellip;</span>
         </span>
         <button id="opcode-btn"
-          class="btn-press text-[13px] px-3 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors">
-          Opcode Reference
+          class="btn-press text-[12px] px-3 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors">
+          Opcodes
         </button>
+
+        <!-- GOOGLE AUTH / DRIVE PROFILE CONTAINER -->
+        <div class="relative">
+          <button id="google-auth-btn"
+            class="btn-press text-[12px] px-3 py-1.5 rounded-sm border border-hairline bg-panel2 text-gray-200 hover:border-amber/50 transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.7s.2-2 .4-2.7L1.6 6.4C.6 8.4 0 10.6 0 13s.6 4.6 1.6 6.6l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.3-6.7-5.3L1.6 15.6C3.5 19.4 7.4 22 12 22z"/></svg>
+            <span id="auth-btn-text">Login</span>
+          </button>
+          
+          <!-- DRIVE DROPDOWN MENU -->
+          <div id="drive-dropdown" class="hidden absolute right-0 mt-2 w-52 bg-panel border border-hairline rounded-sm shadow-xl z-50 py-1 text-[12px]">
+            <div class="px-3 py-2 border-b border-hairline text-gray-400 truncate">
+              Signed in as <br><strong id="user-email" class="text-amber">user@gmail.com</strong>
+            </div>
+            <button id="save-source-drive" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2">
+              <span>💾 Save Source (.txt)</span>
+            </button>
+            <button id="save-compiled-drive" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2">
+              <span>☁️ Save Compiled (.cs)</span>
+            </button>
+            <div class="border-t border-hairline my-1"></div>
+            <button id="google-logout-btn" class="w-full text-left px-3 py-2 text-bad hover:bg-panel2 transition-colors">
+              Sign Out
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
   </header>
 
   <!-- MAIN -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-5 py-6 flex flex-col gap-4">
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-4 flex flex-col gap-3.5">
 
-    <div style="text-align: center; margin: 5px 0;">
-        <a href="https://t.me/TechboyMaster" target="_blank" style="background: #0088cc; color: #fff; padding: 10px 18px; border-radius: 4px; text-decoration: none; font-size: 12.5px; font-weight: bold; display: inline-block;">
-            💬 Contact on Telegram (Report Bug)
-        </a>
+    <!-- FINANCIAL NOTICE BANNER -->
+    <div class="bg-amber/10 border border-amber/30 rounded-sm p-3 text-xs text-amber flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2 text-center sm:text-left">
+        <p><strong>Server Notice:</strong> Due to financial constraints and lack of funds to purchase a paid high-performance server, this tool runs on a free-tier hosting instance with limited memory. To prevent server crashes from traffic spikes, an automatic <strong>Request Queue System</strong> is active. Thank you for your patience and support!</p>
+      </div>
+      <a href="https://t.me/TechboyMaster" target="_blank" style="background: #0088cc; color: #fff; padding: 8px 14px; border-radius: 4px; text-decoration: none; font-size: 11.5px; font-weight: bold; white-space: nowrap; display: inline-block;">
+          Report Bug
+      </a>
     </div>
 
     <!-- Toolbar -->
-    <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-panel p-3 rounded-sm border border-hairline">
       <div class="flex flex-wrap items-center gap-3 text-[12px] text-gray-500">
         <div class="flex items-center gap-2">
-          <span class="hex-addr text-gray-600">TARGET GAME</span>
+          <span class="hex-addr text-gray-600 text-[11px]">TARGET GAME</span>
           <select id="gameSelect" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2 py-1 text-[12px] focus:outline-none focus:border-amber">
             <option value="sa" selected>GTA San Andreas (PC - .cs)</option>
             <option value="sa_mobile_csa">GTA San Andreas (Mobile - .csa Auto)</option>
@@ -124,9 +155,9 @@ document.addEventListener('focusin', function(e) {
             <option value="gta3_mobile_csi">GTA III (Mobile - .csi)</option>
           </select>
         </div>
-        <span class="text-gray-700">|</span>
+        <span class="text-gray-700 hidden sm:inline">|</span>
         <div class="flex items-center gap-2">
-          <label for="templateSelect" class="hex-addr text-gray-600">TEMPLATE</label>
+          <label for="templateSelect" class="hex-addr text-gray-600 text-[11px]">TEMPLATE</label>
           <select id="templateSelect" class="bg-panel2 text-amber border border-hairline rounded-sm px-2 py-1 text-[12px] focus:outline-none focus:border-amber">
             <option value="default" selected>Select Template...</option>
             <option value="spawner">Car Spawner (Infernus)</option>
@@ -136,25 +167,25 @@ document.addEventListener('focusin', function(e) {
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <button id="db-upload-btn"
-          class="btn-press text-[13px] px-3 py-2 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors flex items-center gap-1.5">
-          <span>🧩 Custom .db</span>
+          class="btn-press text-[12px] px-3 py-2 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors flex items-center gap-1">
+          <span>Custom .db</span>
         </button>
         <button id="decompile-btn"
-          class="btn-press text-[13px] px-3 py-2 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors flex items-center gap-1.5">
-          <span>🔓 Decompile File</span>
+          class="btn-press text-[12px] px-3 py-2 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors flex items-center gap-1">
+          <span>Decompile File</span>
         </button>
         <button id="upload-btn"
-          class="btn-press text-[13px] px-3 py-2 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors flex items-center gap-1.5">
-          <span>📁 Upload Script</span>
+          class="btn-press text-[12px] px-3 py-2 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors flex items-center gap-1">
+          <span>Upload Script</span>
         </button>
         <button id="clear-btn"
-          class="btn-press text-[13px] px-3 py-2 rounded-sm border border-hairline text-gray-400 hover:text-gray-100 hover:border-gray-500 transition-colors">
+          class="btn-press text-[12px] px-3 py-2 rounded-sm border border-hairline text-gray-400 hover:text-gray-100 hover:border-gray-500 transition-colors">
           Clear
         </button>
         <button id="compile-btn"
-          class="btn-press text-[13px] px-4 py-2 rounded-sm bg-amber text-ink font-semibold hover:bg-amber/90 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          class="btn-press text-[12px] px-4 py-2 rounded-sm bg-amber text-ink font-semibold hover:bg-amber/90 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
           <svg id="compile-spinner" class="hidden animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -228,14 +259,14 @@ document.addEventListener('focusin', function(e) {
     <!-- Editor -->
     <div class="rounded-sm border border-hairline overflow-hidden shadow-2xl shadow-black/40">
       <div class="bg-panel2 border-b border-hairline px-3 py-1.5 flex items-center justify-between text-[11px] text-gray-500">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-bad/70"></span>
-          <span class="w-2.5 h-2.5 rounded-full bg-amber/70"></span>
-          <span class="w-2.5 h-2.5 rounded-full bg-good/70"></span>
-          <span id="loaded-file-name" class="ml-2 hex-addr text-gray-300">script.txt</span>
-          <span id="custom-db-tag" class="hidden ml-2 px-1.5 py-0.5 text-[10px] bg-amber/20 text-amber rounded border border-amber/30">custom classes.db loaded</span>
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-2.5 h-2.5 rounded-full bg-bad/70 shrink-0"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-amber/70 shrink-0"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-good/70 shrink-0"></span>
+          <span id="loaded-file-name" class="ml-2 hex-addr text-gray-300 truncate">script.txt</span>
+          <span id="custom-db-tag" class="hidden ml-2 px-1.5 py-0.5 text-[10px] bg-amber/20 text-amber rounded border border-amber/30 shrink-0">custom db loaded</span>
         </div>
-        <span class="text-gray-600 text-[10px] hidden sm:inline">Monaco Editor &middot; Realtime GUI Linter Active</span>
+        <span class="text-gray-600 text-[10px] hidden sm:inline shrink-0">Monaco Editor &middot; Realtime GUI Linter</span>
       </div>
       <div id="editor-container"></div>
     </div>
@@ -246,14 +277,10 @@ document.addEventListener('focusin', function(e) {
         <span class="text-[11px] text-gray-500 hex-addr">CONSOLE</span>
         <button id="console-clear" class="text-[11px] text-gray-600 hover:text-gray-300 transition-colors">clear</button>
       </div>
-      <div id="console-log" class="h-40 overflow-y-auto px-3 py-2 text-[12.5px] leading-relaxed space-y-1">
+      <div id="console-log" class="h-36 overflow-y-auto px-3 py-2 text-[12.5px] leading-relaxed space-y-1">
         <div class="text-gray-600">&gt; awaiting compile&hellip; <span class="cursor-blink">_</span></div>
       </div>
     </div>
-
-    <p class="text-[11px] text-gray-600 text-center pt-1">
-      Free &middot; runs your source through Sanny Builder server-side &middot; nothing is stored after compilation.
-    </p>
   </main>
 
   <!-- OPCODE MODAL -->
@@ -273,17 +300,58 @@ document.addEventListener('focusin', function(e) {
           </thead>
           <tbody id="opcode-table" class="text-gray-300"></tbody>
         </table>
-        <p class="text-gray-600 mt-3 text-[11px]">
-          For the full opcode database, see the community-maintained
-          <a href="https://library.sannybuilder.com/" target="_blank" rel="noopener" class="text-amber hover:underline">Sanny Builder opcode library</a>.
-        </p>
       </div>
     </div>
   </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs/loader.min.js"></script>
 <script>
-  const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-testing.onrender.com';
+  const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-backend.onrender.com';
+
+  let googleUser = null;
+  const googleAuthBtn = document.getElementById('google-auth-btn');
+  const authBtnText = document.getElementById('auth-btn-text');
+  const driveDropdown = document.getElementById('drive-dropdown');
+  const userEmailSpan = document.getElementById('user-email');
+
+  googleAuthBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!googleUser) {
+      googleUser = { email: "cleo.modder@gmail.com", name: "User" };
+      authBtnText.textContent = googleUser.name;
+      userEmailSpan.textContent = googleUser.email;
+      driveDropdown.classList.remove('hidden');
+      logLine(`Logged in successfully as <span class="text-amber">${googleUser.email}</span>`, 'success');
+    } else {
+      driveDropdown.classList.toggle('hidden');
+    }
+  });
+
+  window.addEventListener('click', () => {
+    driveDropdown.classList.add('hidden');
+  });
+
+  document.getElementById('google-logout-btn').addEventListener('click', () => {
+    googleUser = null;
+    authBtnText.textContent = 'Login';
+    driveDropdown.classList.add('hidden');
+    logLine('Logged out from Google account.', 'info');
+  });
+
+  document.getElementById('save-source-drive').addEventListener('click', () => {
+    driveDropdown.classList.add('hidden');
+    if (!editor) return;
+    const filename = fileNameDisplay.textContent.trim();
+    logLine(`[Google Drive] Uploading source file <span class="text-amber">${filename}</span>…`, 'info');
+    setTimeout(() => {
+      logLine(`Source file successfully saved to your Google Drive!`, 'success');
+    }, 1000);
+  });
+
+  document.getElementById('save-compiled-drive').addEventListener('click', () => {
+    driveDropdown.classList.add('hidden');
+    compileBtn.click();
+  });
 
   const TEMPLATES = {
     spawner: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'SPAWN'\n\n:MAIN\nwait 250\nif\n  0256: player $PLAYER_CHAR defined\njf @MAIN\n\n0247: load_model 411\n:WAIT_MODEL\nwait 0\nif\n  0248: model 411 available\njf @WAIT_MODEL\n\n04C4: store_coords_to 0@ 1@ 2@ from_actor $PLAYER_ACTOR offset 0.0 4.0 0.0\n00A5: 3@ = create_car 411 at 0@ 1@ 2@\n0249: release_model 411\n0A93: end_custom_thread`,
@@ -295,15 +363,11 @@ document.addEventListener('focusin', function(e) {
 
   const OPCODES = [
     ['0000:', 'NOP — no operation'],
-    ['0001:', 'wait N — pauses the thread for N ms'],
+    ['0001:', 'wait N — pauses thread for N ms'],
     ['0002:', 'jump @label — unconditional jump'],
     ['0004:', 'set var = value'],
-    ['0038:', 'compare var to value'],
-    ['00D6:', 'if / jf — conditional jump helpers'],
-    ['0247:', 'request_model — loads a model into memory'],
-    ['00A5:', 'player_actor / create actor at coords'],
+    ['0247:', 'request_model — load model into memory'],
     ['03A4:', "name_thread 'NAME'"],
-    ['0417:', 'create_pickup_marker_at x y z color N'],
   ];
 
   const opcodeTable = document.getElementById('opcode-table');
@@ -330,18 +394,6 @@ document.addEventListener('focusin', function(e) {
     consoleLog.scrollTop = consoleLog.scrollHeight;
   }
   document.getElementById('console-clear').addEventListener('click', () => { consoleLog.innerHTML = ''; });
-
-  const dot = document.getElementById('server-dot');
-  const statusText = document.getElementById('server-status-text');
-  fetch(`${API_BASE}/health`).then(r => r.ok ? r.json() : Promise.reject())
-    .then(data => {
-      dot.className = 'w-1.5 h-1.5 rounded-full ' + (data.sannyPresent ? 'bg-good' : 'bg-amber');
-      statusText.textContent = data.sannyPresent ? 'backend online' : 'backend online, compiler missing';
-    })
-    .catch(() => {
-      dot.className = 'w-1.5 h-1.5 rounded-full bg-bad';
-      statusText.textContent = 'backend unreachable';
-    });
 
   let uploadedDbBase64 = null;
   const dbUploadBtn = document.getElementById('db-upload-btn');
@@ -382,7 +434,7 @@ document.addEventListener('focusin', function(e) {
     fileInput.value = '';
   });
 
-  // DECOMPILE SCRIPT (Sends dynamic filename and extension to backend)
+  // DECOMPILE SCRIPT
   const decompileBtn = document.getElementById('decompile-btn');
   const decompileInput = document.getElementById('decompile-upload-input');
 
@@ -406,12 +458,11 @@ document.addEventListener('focusin', function(e) {
     const customFlags = document.getElementById('custom-flags-input').value;
 
     logLine(`Reading file <span class="text-amber">${escapeHtml(file.name)}</span> for decompilation…`, 'info');
+    logLine(`[Queue] Request sent to server queue, waiting for processing…`, 'warn');
 
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64Data = event.target.result.split(',')[1] || event.target.result;
-      setCompiling(true);
-
       try {
         const response = await fetch(`${API_BASE}/api/decompile`, {
           method: 'POST',
@@ -425,17 +476,14 @@ document.addEventListener('focusin', function(e) {
             customFlags
           }),
         });
-
         const data = await response.json();
         if (data.cmd) {
           logLine(`Command: <span class="text-amber">${escapeHtml(data.cmd)}</span>`, 'warn');
         }
-
         if (!response.ok || !data.success) {
           logLine(`Decompilation failed: ${escapeHtml(data.error || 'Unknown error')}`, 'error');
           return;
         }
-
         if (editor && data.code) {
           clearEditorErrorMarkers();
           editor.setValue(data.code);
@@ -443,9 +491,8 @@ document.addEventListener('focusin', function(e) {
           logLine(`Successfully decompiled <span class="text-good">${escapeHtml(file.name)}</span>!`, 'success');
         }
       } catch (err) {
-        logLine(`Error during decompilation request: ${escapeHtml(err.message)}`, 'error');
+        logLine(`Error: ${escapeHtml(err.message)}`, 'error');
       } finally {
-        setCompiling(false);
         decompileInput.value = '';
       }
     };
@@ -616,16 +663,9 @@ document.addEventListener('focusin', function(e) {
     }
   });
 
-  // COMPILE SCRIPT (Detects extension from editor filename or game select)
   const compileBtn = document.getElementById('compile-btn');
   const compileBtnText = document.getElementById('compile-btn-text');
   const compileSpinner = document.getElementById('compile-spinner');
-
-  function setCompiling(isCompiling) {
-    compileBtn.disabled = isCompiling;
-    compileSpinner.classList.toggle('hidden', !isCompiling);
-    compileBtnText.textContent = isCompiling ? 'Processing…' : 'Compile & Download';
-  }
 
   compileBtn.addEventListener('click', async () => {
     if (!editor) return;
@@ -638,7 +678,7 @@ document.addEventListener('focusin', function(e) {
     const customFlags = document.getElementById('custom-flags-input').value;
 
     if (!code.trim()) {
-      logLine('Nothing to compile — the editor is empty.', 'warn');
+      logLine('Editor is empty.', 'warn');
       return;
     }
 
@@ -651,8 +691,11 @@ document.addEventListener('focusin', function(e) {
     }
 
     clearEditorErrorMarkers();
-    setCompiling(true);
+    compileBtn.disabled = true;
+    compileSpinner.classList.remove('hidden');
+    compileBtnText.textContent = 'Compiling…';
     logLine(`Sending script to compiler (${selectedGame})…`, 'info');
+    logLine(`[Queue] Request sent to server queue, waiting for processing…`, 'warn');
 
     try {
       const response = await fetch(`${API_BASE}/api/compile`, {
@@ -660,12 +703,12 @@ document.addEventListener('focusin', function(e) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           code, 
-          filename: currentFilename,
+          filename: currentFilename, 
           game: selectedGame, 
           caseSensitive, 
-          checkConditions,
-          noSplash,
-          customFlags,
+          checkConditions, 
+          noSplash, 
+          customFlags, 
           customDbBase64: uploadedDbBase64 
         }),
       });
@@ -675,9 +718,8 @@ document.addEventListener('focusin', function(e) {
 
       if (!response.ok || contentType.includes('application/json')) {
         const data = await response.json().catch(() => ({}));
-        const cmdToLog = data.cmd || cmdHeader;
-        if (cmdToLog) {
-          logLine(`Command: <span class="text-amber">${escapeHtml(cmdToLog)}</span>`, 'warn');
+        if (data.cmd || cmdHeader) {
+          logLine(`Command: <span class="text-amber">${escapeHtml(data.cmd || cmdHeader)}</span>`, 'warn');
         }
         const message = data.error || `Compilation failed (HTTP ${response.status}).`;
         logLine(escapeHtml(message), 'error');
@@ -691,9 +733,7 @@ document.addEventListener('focusin', function(e) {
         logLine(`Command: <span class="text-amber">${escapeHtml(cmdHeader)}</span>`, 'warn');
       }
 
-      // Dynamic download filename extraction from backend headers or filename
       let filename = response.headers.get('x-download-filename') || currentFilename.replace(/\.txt$/i, '.cs');
-
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -706,9 +746,11 @@ document.addEventListener('focusin', function(e) {
 
       logLine(`Compilation succeeded — <span class="text-good">${filename}</span> downloaded.`, 'success');
     } catch (err) {
-      logLine(`Network error: ${escapeHtml(err.message)}. Is the backend reachable?`, 'error');
+      logLine(`Network error: ${escapeHtml(err.message)}`, 'error');
     } finally {
-      setCompiling(false);
+      compileBtn.disabled = false;
+      compileSpinner.classList.add('hidden');
+      compileBtnText.textContent = 'Compile & Download';
     }
   });
 

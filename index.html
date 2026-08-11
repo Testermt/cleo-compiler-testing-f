@@ -539,7 +539,7 @@ document.addEventListener('focusin', function(e) {
 
       await registerUserToHub(username, token);
 
-      const res = await fetch('https://api.github.com/gists', {
+            const res = await fetch('https://api.github.com/gists', {
         method: 'POST',
         headers: {
           'Authorization': `token ${token}`,
@@ -550,10 +550,12 @@ document.addEventListener('focusin', function(e) {
           description: finalDescription,
           public: true,
           files: {
-            [filename]: { content: code }
+            [filename]: { content: code },
+            'comments.json': { content: '[]' } // <-- Yahan add karna hai!
           }
         })
       });
+
 
       if (res.ok) {
         const gistData = await res.json();

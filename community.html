@@ -130,6 +130,7 @@
   const commentSubmitBtn = document.getElementById('comment-submit-btn');
 
   let activeGistId = null;
+  let activeGistData = null;
   const gistsMap = {};
 
   refreshBtn.addEventListener('click', fetchGists);
@@ -146,11 +147,9 @@
   async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-[#949ba4] py-12 text-xs">Loading all community user scripts...</div>';
     try {
-      const publicHeaders = { 'Accept': 'application/vnd.github.v3+json' };
-
       let registeredUsers = [];
       if (REGISTRY_GIST_ID && !REGISTRY_GIST_ID.includes("YOUR_REGISTRY")) {
-        const res = await fetch(`https://api.github.com/gists/${REGISTRY_GIST_ID}?t=${Date.now()}`, { headers: publicHeaders });
+        const res = await fetch(`https://api.github.com/gists/${REGISTRY_GIST_ID}?t=${Date.now()}`);
         if (res.ok) {
           const data = await res.json();
           const file = data.files['community_users.json'];
@@ -168,7 +167,7 @@
       let allCommunityScripts = [];
       for (const username of registeredUsers) {
         for (let page = 1; page <= 10; page++) {
-          const res = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`, { headers: publicHeaders });
+          const res = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`);
           if (res.ok) {
             const userGists = await res.json();
             if (userGists.length === 0) break;
@@ -195,9 +194,10 @@
     }
 
     feedGrid.innerHTML = '';
-    communityScripts.forEach(g => {
+    communityScripts.format = communityScripts.forEach(g => {
       gistsMap[g.id] = g;
-      const filename = Object.keys(g.files)[0] || 'script.txt';
+      const filenames = Object.keys(g.files).filter(f => f !== 'comments.json');
+      const filename = filenames[0] || 'script.txt';
       const owner = g.owner ? g.owner.login : 'Anonymous Modder';
       const avatar = g.owner ? g.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
       const cleanTitle = g.description.replace(UNIQUE_APP_SIGNATURE, '').trim() || filename;
@@ -223,67 +223,63 @@
   }
 
   window.openDetails = async function(gistId) {
-    const g = gistsMap[gistId];
     activeGistId = gistId;
     detailModal.classList.remove('hidden');
-
-    const filename = g ? (Object.keys(g.files)[0] || 'script.txt') : 'script.txt';
-    const owner = g && g.owner ? g.owner.login : 'Anonymous Modder';
-    const avatar = g && g.owner ? g.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
-
-    detailTitle.textContent = `Thread: ${filename}`;
-    detailAuthorName.textContent = owner;
-    detailAuthorAvatar.src = avatar;
     detailCodePreview.textContent = 'Loading...';
     detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
 
     try {
-      const publicHeaders = { 'Accept': 'application/vnd.github.v3+json' };
-      const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers: publicHeaders });
-
+      const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`);
       if (res.ok) {
-        const data = await res.json();
-        const file = data.files[filename] || Object.values(data.files)[0];
+        activeGistData = await res.json();
+        const filenames = Object.keys(activeGistData.files).filter(f => f !== 'comments.json');
+        const filename = filenames[0] || 'script.txt';
+        const owner = activeGistData.owner ? activeGistData.owner.login : 'Anonymous Modder';
+        const avatar = activeGistData.owner ? activeGistData.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
+
+        detailTitle.textContent = `Thread: ${filename}`;
+        detailAuthorName.textContent = owner;
+        detailAuthorAvatar.src = avatar;
+
+        const file = activeGistData.files[filename];
         detailCodePreview.textContent = file ? file.content : 'No content';
         detailLoadLink.href = `index.html?load_gist=${gistId}&file=${encodeURIComponent(filename)}`;
+        
+        renderComments(activeGistData);
       } else {
         detailCodePreview.textContent = 'Failed to load script content.';
+        detailCommentsList.innerHTML = '<div class="text-red-400 text-xs">Could not load comments.</div>';
       }
     } catch (err) {
       detailCodePreview.textContent = 'Error loading content.';
+      detailCommentsList.innerHTML = '<div class="text-red-400 text-xs">Could not load comments.</div>';
     }
-
-    fetchComments(gistId);
   };
 
-        async function fetchComments(gistId) {
+  function renderComments(gistData) {
     try {
-      // Added cache-busting parameter (?t=...) to force fresh fetch from GitHub API
-      const res = await fetch(`https://api.github.com/gists/${gistId}/comments?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' } });
-      if (res.ok) {
-        const comments = await res.json();
-        if (comments.length === 0) {
-          detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">No replies in this thread yet.</div>';
-          return;
-        }
-        detailCommentsList.innerHTML = '';
-        comments.forEach(c => {
-          const user = c.user ? c.user.login : 'Modder';
-          const avatar = c.user ? c.user.avatar_url : '';
-          const div = document.createElement('div');
-          div.className = 'flex gap-2 items-start text-xs';
-          div.innerHTML = `<img src="${avatar}" class="w-5 h-5 rounded-full mt-0.5 shrink-0" /><div class="flex-1 min-w-0"><span class="font-bold text-[#5865f2]">${escapeHtml(user)}:</span> <span class="text-gray-300 break-words">${escapeHtml(c.body)}</span></div>`;
-          detailCommentsList.appendChild(div);
-        });
-        detailCommentsList.scrollTop = detailCommentsList.scrollHeight;
+      let comments = [];
+      if (gistData.files['comments.json']) {
+        comments = JSON.parse(gistData.files['comments.json'].content || '[]');
       }
-    } catch (err) {
-      detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Could not load comments.</div>';
+
+      if (comments.length === 0) {
+        detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">No replies in this thread yet. Be the first to comment!</div>';
+        return;
+      }
+
+      detailCommentsList.innerHTML = '';
+      comments.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'flex gap-2 items-start text-xs';
+        div.innerHTML = `<img src="${c.avatar || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'}" class="w-5 h-5 rounded-full mt-0.5 shrink-0" /><div class="flex-1 min-w-0"><span class="font-bold text-[#5865f2]">${escapeHtml(c.user)}:</span> <span class="text-gray-300 break-words">${escapeHtml(c.body)}</span></div>`;
+        detailCommentsList.appendChild(div);
+      });
+      detailCommentsList.scrollTop = detailCommentsList.scrollHeight;
+    } catch(e) {
+      detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">No replies in this thread yet.</div>';
     }
   }
-
-
-
 
   commentSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -297,42 +293,53 @@
     commentSubmitBtn.textContent = 'Sending...';
 
     try {
-      const res = await fetch(`https://api.github.com/gists/${activeGistId}/comments`, {
-        method: 'POST',
+      // 1. Fetch latest Gist data to get current comments.json
+      const getRes = await fetch(`https://api.github.com/gists/${activeGistId}?t=${Date.now()}`);
+      if (!getRes.ok) throw new Error('Failed to sync gist');
+      const gistJson = await getRes.json();
+
+      let comments = [];
+      if (gistJson.files['comments.json']) {
+        comments = JSON.parse(gistJson.files['comments.json'].content || '[]');
+      }
+
+      const username = localStorage.getItem('gh_username') || 'Modder';
+      const avatar = gistJson.owner ? gistJson.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
+
+      comments.push({
+        user: username,
+        avatar: avatar,
+        body: text,
+        time: Date.now()
+      });
+
+      // 2. PATCH the Gist with updated comments.json
+      const patchRes = await fetch(`https://api.github.com/gists/${activeGistId}`, {
+        method: 'PATCH',
         headers: { 
           'Authorization': `token ${token}`, 
           'Content-Type': 'application/json', 
           'Accept': 'application/vnd.github.v3+json' 
         },
-        body: JSON.stringify({ body: text })
+        body: JSON.stringify({
+          files: {
+            'comments.json': { content: JSON.stringify(comments) }
+          }
+        })
       });
-      
-      if (res.ok) { 
-        const username = localStorage.getItem('gh_username') || 'Modder';
-        const avatar = `https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png`;
-        
-        // Remove "No replies" placeholder if it exists
-        const emptyMsg = detailCommentsList.querySelector('.text-gray-500');
-        if (emptyMsg) detailCommentsList.innerHTML = '';
-        
-        // Instantly render comment on screen (Optimistic UI Update)
-        const div = document.createElement('div');
-        div.className = 'flex gap-2 items-start text-xs';
-        div.innerHTML = `<img src="${avatar}" class="w-5 h-5 rounded-full mt-0.5 shrink-0" /><div class="flex-1 min-w-0"><span class="font-bold text-[#5865f2]">${escapeHtml(username)}:</span> <span class="text-gray-300 break-words">${escapeHtml(text)}</span></div>`;
-        detailCommentsList.appendChild(div);
-        detailCommentsList.scrollTop = detailCommentsList.scrollHeight;
 
-        commentInput.value = ''; 
-
-        // Wait 2.5 seconds for GitHub DB to index, then fetch fresh comments list from server
-        setTimeout(() => fetchComments(activeGistId), 2500);
+      if (patchRes.ok) {
+        const updatedGist = await patchRes.json();
+        activeGistData = updatedGist;
+        commentInput.value = '';
+        renderComments(updatedGist);
       } else {
-        const errJson = await res.json().catch(() => ({}));
-        alert('Failed to send message: ' + (errJson.message || 'Ensure Token has "gist" scope permission enabled!'));
+        const errJson = await patchRes.json().catch(() => ({}));
+        alert('Failed to send comment: ' + (errJson.message || 'Unknown error'));
       }
     } catch (err) {
       alert('Network error while sending comment.');
-    } finally { 
+    } finally {
       commentSubmitBtn.disabled = false;
       commentSubmitBtn.textContent = 'Send';
     }

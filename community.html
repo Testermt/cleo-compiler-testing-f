@@ -223,18 +223,26 @@
     detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
 
     try {
+      // Direct Gist content fetch using the specific Gist ID
       const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
       if (res.ok) {
         const data = await res.json();
         const file = data.files[filename] || Object.values(data.files)[0];
         detailCodePreview.textContent = file ? file.content : 'No content';
         detailLoadLink.href = `index.html?load_gist=${gistId}&file=${encodeURIComponent(filename)}`;
+        
+        // Fetch comments using the direct gistId endpoint
         fetchComments(gistId);
+      } else {
+        detailCodePreview.textContent = 'Failed to load script content.';
+        detailCommentsList.innerHTML = '<div class="text-red-400 text-xs">Could not load comments.</div>';
       }
     } catch (err) {
       detailCodePreview.textContent = 'Error loading content.';
+      detailCommentsList.innerHTML = '<div class="text-red-400 text-xs">Could not load comments.</div>';
     }
   };
+
 
   async function fetchComments(gistId) {
     try {

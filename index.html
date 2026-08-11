@@ -92,7 +92,7 @@ document.addEventListener('focusin', function(e) {
   <input type="file" id="decompile-upload-input" accept=".cs,.csa,.csi" class="hidden" />
   <input type="file" id="db-upload-input" accept=".db" class="hidden" />
 
-  <!-- HEADER (Exact Layout Matched) -->
+  <!-- HEADER -->
   <header class="border-b border-hairline bg-panel/95 backdrop-blur sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-3 py-2.5 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
@@ -108,12 +108,12 @@ document.addEventListener('focusin', function(e) {
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
-        <!-- COMMUNITY ICON BUTTON -->
+        <!-- COMMUNITY BUTTON -->
         <a href="community.html" class="btn-press w-8 h-8 rounded-sm border border-teal/50 bg-teal/10 text-teal hover:bg-teal/20 transition-colors flex items-center justify-center text-sm font-bold text-decoration-none" title="Community Hub">
           🌐
         </a>
 
-        <!-- PUBLISH ICON BUTTON -->
+        <!-- PUBLISH BUTTON -->
         <button id="header-publish-btn" class="btn-press w-8 h-8 rounded-sm border border-amber/50 bg-amber/10 text-amber hover:bg-amber/20 transition-colors flex items-center justify-center text-sm" title="Publish Script">
           🚀
         </button>
@@ -705,7 +705,7 @@ document.addEventListener('focusin', function(e) {
         alert('Authorization failed! Please make sure your token has "repo" scope permissions enabled.');
         return false;
       } else {
-        const errJson = await checkRes.json();
+        const errJson = await createRes.json();
         logLine(`[GitHub Error] Status ${checkRes.status}: ${errJson.message || 'API error'}`, 'error');
         alert(`GitHub API Error: ${errJson.message || 'Unknown error'}`);
         return false;
@@ -1201,15 +1201,15 @@ document.addEventListener('focusin', function(e) {
 
       logLine(`Compilation succeeded — <span class="text-good">${filename}</span> downloaded.`, 'success');
 
-      // Check GitHub auto-save logic
+      // FIXED GITHUB AUTO-SAVE LOGIC (Respects auto-save setting and asks if off)
       const token = localStorage.getItem('gh_token');
       const repo = localStorage.getItem('gh_repo');
-      const autosave = localStorage.getItem('gh_autosave') !== 'false';
+      const autosave = localStorage.getItem('gh_autosave') === 'true'; // Strict boolean check
 
       if (token && repo) {
         let shouldSave = autosave;
         if (!autosave) {
-          shouldSave = confirm("Save output to GitHub?");
+          shouldSave = confirm("Auto-save is off. Do you want to save this compiled output to GitHub?");
         }
         if (shouldSave) {
           const reader = new FileReader();

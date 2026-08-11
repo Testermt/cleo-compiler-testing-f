@@ -475,32 +475,21 @@ document.addEventListener('focusin', function(e) {
     if (editor) editor.layout();
   });
 
-  // FIXED REGISTRY USER REGISTRATION
-  async function registerUserToHub(username, token) {
-    if (!REGISTRY_GIST_ID || REGISTRY_GIST_ID.includes("YOUR_REGISTRY")) return;
+    // SECURE BACKEND REGISTRY REGISTRATION
+  async function registerUserToHub(username) {
+    if (!username) return;
     try {
-      const res = await fetch(`https://api.github.com/gists/${REGISTRY_GIST_ID}`, {
-        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+      await fetch(`${API_BASE}/api/register-user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
       });
-      if (res.ok) {
-        const data = await res.json();
-        const file = data.files['community_users.json'];
-        if (file) {
-          let users = JSON.parse(file.content || '[]');
-          if (!users.includes(username)) {
-            users.push(username);
-            await fetch(`https://api.github.com/gists/${REGISTRY_GIST_ID}`, {
-              method: 'PATCH',
-              headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
-              body: JSON.stringify({
-                files: { 'community_users.json': { content: JSON.stringify(users) } }
-              })
-            });
-          }
-        }
-      }
-    } catch(e) { console.error('Registry update error:', e); }
+      console.log("User registered securely via backend.");
+    } catch(e) {
+      console.warn("Registry background update failed:", e);
+    }
   }
+
 
   async function publishScriptToCommunity() {
     const token = localStorage.getItem('gh_token');
@@ -537,9 +526,10 @@ document.addEventListener('focusin', function(e) {
       const username = userData.login;
       localStorage.setItem('gh_username', username);
 
-      await registerUserToHub(username, token);
+      // ✨ FIX: Yahan token hata diya, ab yeh seedha secure backend ko call karega!
+      await registerUserToHub(username);
 
-            const res = await fetch('https://api.github.com/gists', {
+      const res = await fetch('https://api.github.com/gists', {
         method: 'POST',
         headers: {
           'Authorization': `token ${token}`,
@@ -551,11 +541,10 @@ document.addEventListener('focusin', function(e) {
           public: true,
           files: {
             [filename]: { content: code },
-            'comments.json': { content: '[]' } // <-- Yahan add karna hai!
+            'comments.json': { content: '[]' }
           }
         })
       });
-
 
       if (res.ok) {
         const gistData = await res.json();
@@ -571,12 +560,6 @@ document.addEventListener('focusin', function(e) {
       alert(`Network error: ${err.message}`);
     }
   }
-
-  document.getElementById('header-publish-btn').addEventListener('click', publishScriptToCommunity);
-  document.getElementById('gh-publish-gist').addEventListener('click', () => {
-    ghDropdown.classList.add('hidden');
-    publishScriptToCommunity();
-  });
 
   const ghConfigBtn = document.getElementById('gh-config-btn');
   const ghDropdown = document.getElementById('gh-dropdown');

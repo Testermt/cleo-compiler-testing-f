@@ -102,7 +102,6 @@
   const UNIQUE_APP_SIGNATURE = "[CLEO-HUB-ID-998877]";
   const REGISTRY_GIST_ID = "42183afd8d5722544524b1fc6f68ec3a";
 
-
   const sidebar = document.getElementById('sidebar');
   const sidebarToggle = document.getElementById('sidebar-toggle');
   const sidebarClose = document.getElementById('sidebar-close');
@@ -223,7 +222,6 @@
     detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
 
     try {
-      // Direct Gist content fetch using the specific Gist ID
       const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
       if (res.ok) {
         const data = await res.json();
@@ -231,7 +229,6 @@
         detailCodePreview.textContent = file ? file.content : 'No content';
         detailLoadLink.href = `index.html?load_gist=${gistId}&file=${encodeURIComponent(filename)}`;
         
-        // Fetch comments using the direct gistId endpoint
         fetchComments(gistId);
       } else {
         detailCodePreview.textContent = 'Failed to load script content.';
@@ -243,12 +240,9 @@
     }
   };
 
-
-        async function fetchComments(gistId) {
+  async function fetchComments(gistId) {
     try {
       detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
-      
-      // Using the exact same endpoint format that worked previously in public feed
       const res = await fetch(`https://api.github.com/gists/${gistId}/comments?t=${Date.now()}`, { 
         headers: { 
           'Accept': 'application/vnd.github.v3+json', 
@@ -280,30 +274,40 @@
     }
   }
 
-
-
-
-  commentSubmitBtn.addEventListener('click', async () => {
+  commentSubmitBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
     const text = commentInput.value.trim();
     if (!text || !activeGistId) return;
+    
     const token = localStorage.getItem('gh_token');
     if (!token) { alert('Configure GitHub Token in main editor settings to reply!'); return; }
 
     commentSubmitBtn.disabled = true;
+    commentSubmitBtn.textContent = 'Sending...';
+
     try {
       const res = await fetch(`https://api.github.com/gists/${activeGistId}/comments`, {
         method: 'POST',
-        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+        headers: { 
+          'Authorization': `token ${token}`, 
+          'Content-Type': 'application/json', 
+          'Accept': 'application/vnd.github.v3+json' 
+        },
         body: JSON.stringify({ body: text })
       });
+      
       if (res.ok) { 
         commentInput.value = ''; 
-        setTimeout(() => fetchComments(activeGistId), 500);
+        await fetchComments(activeGistId);
       } else {
-        alert('Failed to send message.');
+        const errJson = await res.json().catch(() => ({}));
+        alert('Failed to send message: ' + (errJson.message || res.status));
       }
+    } catch (err) {
+      alert('Network error while sending comment.');
     } finally { 
-      commentSubmitBtn.disabled = false; 
+      commentSubmitBtn.disabled = false;
+      commentSubmitBtn.textContent = 'Send';
     }
   });
 

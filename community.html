@@ -99,7 +99,7 @@
   </div>
 
 <script>
-  const UNIQUE_APP_SIGNATURE = "[CLEO-HUB-ID-998877]"; // Must match with index.html
+  const UNIQUE_APP_SIGNATURE = "[CLEO-HUB-ID-998877]";
 
   const sidebar = document.getElementById('sidebar');
   const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -136,11 +136,10 @@
   async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-[#949ba4] py-12 text-xs">Loading community scripts...</div>';
     try {
-      const res = await fetch('https://api.github.com/gists/public', { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+      // Added cache-busting parameter (?t=...)
+      const res = await fetch(`https://api.github.com/gists/public?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
       if (res.ok) {
         const gists = await res.json();
-        
-        // AUTO-FILTER: Only keep gists containing our secret signature
         const communityScripts = gists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
 
         if (communityScripts.length === 0) {
@@ -153,8 +152,6 @@
           const filename = Object.keys(g.files)[0] || 'script.txt';
           const owner = g.owner ? g.owner.login : 'Anonymous Modder';
           const avatar = g.owner ? g.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
-          
-          // Clean title by removing the hidden signature text
           const cleanTitle = g.description.replace(UNIQUE_APP_SIGNATURE, '').trim() || filename;
 
           const messageCard = document.createElement('div');
@@ -191,7 +188,7 @@
     detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
 
     try {
-      const res = await fetch(`https://api.github.com/gists/${gistId}`);
+      const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
       if (res.ok) {
         const data = await res.json();
         const file = data.files[filename] || Object.values(data.files)[0];
@@ -206,7 +203,8 @@
 
   async function fetchComments(gistId) {
     try {
-      const res = await fetch(`https://api.github.com/gists/${gistId}/comments`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+      // Added cache-busting parameter (?t=...) to force fresh fetch from GitHub API
+      const res = await fetch(`https://api.github.com/gists/${gistId}/comments?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' } });
       if (res.ok) {
         const comments = await res.json();
         if (comments.length === 0) {
@@ -222,6 +220,7 @@
           div.innerHTML = `<img src="${avatar}" class="w-5 h-5 rounded-full mt-0.5 shrink-0" /><div class="flex-1 min-w-0"><span class="font-bold text-[#5865f2]">${escapeHtml(user)}:</span> <span class="text-gray-300 break-words">${escapeHtml(c.body)}</span></div>`;
           detailCommentsList.appendChild(div);
         });
+        detailCommentsList.scrollTop = detailCommentsList.scrollHeight;
       }
     } catch (err) {
       detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Could not load comments.</div>';
@@ -241,9 +240,16 @@
         headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
         body: JSON.stringify({ body: text })
       });
-      if (res.ok) { commentInput.value = ''; fetchComments(activeGistId); }
-      else alert('Failed to send message.');
-    } finally { commentSubmitBtn.disabled = false; }
+      if (res.ok) { 
+        commentInput.value = ''; 
+        // Small timeout to allow GitHub server to register comment, then fetch with cache-buster
+        setTimeout(() => fetchComments(activeGistId), 500);
+      } else {
+        alert('Failed to send message.');
+      }
+    } finally { 
+      commentSubmitBtn.disabled = false; 
+    }
   });
 
   function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }

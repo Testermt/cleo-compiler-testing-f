@@ -101,7 +101,7 @@ document.addEventListener('focusin', function(e) {
         </div>
         <div class="min-w-0">
           <h1 class="font-display font-semibold text-gray-100 text-xs sm:text-sm tracking-tight truncate">
-            GTA SA <span class="text-amber">CLEO</span> Co...
+            GTA SA <span class="text-amber">CLEO</span> Compiler
           </h1>
           <p class="text-[9px] text-gray-500 hex-addr truncate">sanny.exe</p>
         </div>
@@ -354,7 +354,7 @@ document.addEventListener('focusin', function(e) {
 <script>
   const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-backend.onrender.com';
   const UNIQUE_APP_SIGNATURE = "[CLEO-HUB-ID-998877]";
-  const REGISTRY_GIST_ID = "YOUR_REGISTRY_GIST_ID_HERE"; // <-- Yahan apni registry Gist ID daal dena!
+  const REGISTRY_GIST_ID = "42183afd8d5722544524b1fc6f68ec3a"; // <-- Teri registry Gist ID properly set hai!
 
   let openTabs = [
     { id: 'tab-1', name: 'script.txt', content: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'MAIN'\n\n:MAIN_START\nwait 0\nif\n  0256:   player $PLAYER_CHAR defined\njf @MAIN_START\n\n0001: wait 0\n0417: create_pickup_marker_at 0.0 0.0 0.0 color 1\n\n:MAIN_LOOP\nwait 250\njump @MAIN_LOOP\n` }
@@ -593,7 +593,7 @@ document.addEventListener('focusin', function(e) {
     const token = localStorage.getItem('gh_token') || '';
     const repo = localStorage.getItem('gh_repo') || '';
     const branch = localStorage.getItem('gh_branch') || 'main';
-    const autosave = localStorage.getItem('gh_autosave'] !== 'false';
+    const autosave = localStorage.getItem('gh_autosave') !== 'false';
     ghTokenInput.value = token;
     ghRepoInput.value = repo;
     ghBranchInput.value = branch;

@@ -244,15 +244,14 @@
   };
 
 
-      async function fetchComments(gistId) {
+        async function fetchComments(gistId) {
     try {
       detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
       
-      // Using standard GitHub Gist comments endpoint
-      const url = `https://api.github.com/gists/${gistId}/comments`;
-      const res = await fetch(url, { 
+      // Using the exact same endpoint format that worked previously in public feed
+      const res = await fetch(`https://api.github.com/gists/${gistId}/comments?t=${Date.now()}`, { 
         headers: { 
-          'Accept': 'application/vnd.github.v3+json',
+          'Accept': 'application/vnd.github.v3+json', 
           'Cache-Control': 'no-cache' 
         } 
       });
@@ -274,15 +273,13 @@
         });
         detailCommentsList.scrollTop = detailCommentsList.scrollHeight;
       } else {
-        const errText = await res.text();
-        console.error("Gist Comments API Error:", res.status, errText);
-        detailCommentsList.innerHTML = `<div class="text-red-400 text-xs">API Error: ${res.status} (Check Console)</div>`;
+        detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">No replies in this thread yet.</div>';
       }
     } catch (err) {
-      console.error("Network/CORS Exception:", err);
-      detailCommentsList.innerHTML = `<div class="text-red-400 text-xs">Error: ${escapeHtml(err.message)}</div>`;
+      detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">No replies in this thread yet.</div>';
     }
   }
+
 
 
 

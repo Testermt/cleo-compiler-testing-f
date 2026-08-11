@@ -244,10 +244,18 @@
   };
 
 
-    async function fetchComments(gistId) {
+      async function fetchComments(gistId) {
     try {
       detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
-      const res = await fetch(`https://api.github.com/gists/${gistId}/comments?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' } });
+      
+      // Using standard GitHub Gist comments endpoint
+      const url = `https://api.github.com/gists/${gistId}/comments`;
+      const res = await fetch(url, { 
+        headers: { 
+          'Accept': 'application/vnd.github.v3+json',
+          'Cache-Control': 'no-cache' 
+        } 
+      });
       
       if (res.ok) {
         const comments = await res.json();
@@ -266,15 +274,16 @@
         });
         detailCommentsList.scrollTop = detailCommentsList.scrollHeight;
       } else {
-        const errData = await res.json().catch(() => ({}));
-        console.error('Failed to load comments:', res.status, errData);
-        detailCommentsList.innerHTML = `<div class="text-red-400 text-xs">Could not load comments (HTTP ${res.status}).</div>`;
+        const errText = await res.text();
+        console.error("Gist Comments API Error:", res.status, errText);
+        detailCommentsList.innerHTML = `<div class="text-red-400 text-xs">API Error: ${res.status} (Check Console)</div>`;
       }
     } catch (err) {
-      console.error('Comments network error:', err);
-      detailCommentsList.innerHTML = '<div class="text-red-400 text-xs">Network error loading comments.</div>';
+      console.error("Network/CORS Exception:", err);
+      detailCommentsList.innerHTML = `<div class="text-red-400 text-xs">Error: ${escapeHtml(err.message)}</div>`;
     }
   }
+
 
 
   commentSubmitBtn.addEventListener('click', async () => {

@@ -100,6 +100,8 @@
 
 <script>
   const UNIQUE_APP_SIGNATURE = "[CLEO-HUB-ID-998877]";
+  const REGISTRY_GIST_ID = "42183afd8d5722544524b1fc6f68ec3a";
+
 
   const sidebar = document.getElementById('sidebar');
   const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -136,35 +138,23 @@
   async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-[#949ba4] py-12 text-xs">Loading all community user scripts...</div>';
     try {
-      // 1. Fetch registered users from community registry gist
       let registeredUsers = [];
-      const searchRes = await fetch(`https://api.github.com/gists/public?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
-      if (searchRes.ok) {
-        const gists = await searchRes.json();
-        const registryGist = gists.find(g => g.description && g.description.includes("[CLEO-HUB-REGISTRY]"));
-        if (registryGist) {
-          const file = registryGist.files['community_users.json'];
+      if (REGISTRY_GIST_ID && !REGISTRY_GIST_ID.includes("YOUR_REGISTRY")) {
+        const res = await fetch(`https://api.github.com/gists/${REGISTRY_GIST_ID}?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+        if (res.ok) {
+          const data = await res.json();
+          const file = data.files['community_users.json'];
           if (file) {
-            const fileRes = await fetch(file.raw_url + `?t=${Date.now()}`);
-            if (fileRes.ok) {
-              registeredUsers = await fileRes.json();
-            }
+            registeredUsers = JSON.parse(file.content || '[]');
           }
         }
       }
 
-      // Fallback: If registry not found yet, search public gists directly
       if (registeredUsers.length === 0) {
-        const publicRes = await fetch(`https://api.github.com/gists/public?per_page=100&t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
-        if (publicRes.ok) {
-          const pubGists = await publicRes.json();
-          const communityScripts = pubGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
-          renderFeed(communityScripts);
-          return;
-        }
+        feedGrid.innerHTML = '<div class="text-center text-[#949ba4] py-12 text-xs">No community users registered yet. Be the first to publish a script!</div>';
+        return;
       }
 
-      // 2. Fetch gists for each registered user across multiple pages (upto 1000 gists per user)
       let allCommunityScripts = [];
       for (const username of registeredUsers) {
         for (let page = 1; page <= 10; page++) {
@@ -182,9 +172,7 @@
         }
       }
 
-      // Sort by newest first
       allCommunityScripts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
       renderFeed(allCommunityScripts);
 
     } catch (err) {

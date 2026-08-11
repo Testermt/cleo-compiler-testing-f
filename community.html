@@ -246,7 +246,7 @@
     }
   };
 
-  async function fetchComments(gistId) {
+    async function fetchComments(gistId) {
     try {
       detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
       const token = localStorage.getItem('gh_token');
@@ -275,12 +275,16 @@
         });
         detailCommentsList.scrollTop = detailCommentsList.scrollHeight;
       } else {
-        detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">No replies in this thread yet.</div>';
+        const errText = await res.text().catch(() => '');
+        console.error("Comments fetch failed:", res.status, errText);
+        detailCommentsList.innerHTML = `<div class="text-red-400 text-xs">Failed to load comments (HTTP ${res.status}). Ensure your GitHub Token has the 'gist' scope enabled!</div>`;
       }
     } catch (err) {
-      detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">No replies in this thread yet.</div>';
+      console.error("Comments error:", err);
+      detailCommentsList.innerHTML = `<div class="text-red-400 text-xs">Error: ${escapeHtml(err.message)}</div>`;
     }
   }
+
 
   commentSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();

@@ -250,10 +250,13 @@
     try {
       detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
       const token = localStorage.getItem('gh_token');
-      const apiHeaders = { 'Accept': 'application/vnd.github.v3+json', 'Cache-Control': 'no-cache' };
+      const apiHeaders = { 
+        'Accept': 'application/vnd.github.v3+json', 
+        'Cache-Control': 'no-cache, no-store, must-revalidate' 
+      };
       if (token) apiHeaders['Authorization'] = `token ${token}`;
 
-      const res = await fetch(`https://api.github.com/gists/${gistId}/comments?t=${Date.now()}`, { headers: apiHeaders });
+      const res = await fetch(`https://api.github.com/gists/${gistId}/comments?t=${Date.now()}&r=${Math.random()}`, { headers: apiHeaders });
       
       if (res.ok) {
         const comments = await res.json();
@@ -303,7 +306,8 @@
       
       if (res.ok) { 
         commentInput.value = ''; 
-        await fetchComments(activeGistId);
+        // 800ms delay to allow GitHub database to sync before fetching fresh comments
+        setTimeout(() => fetchComments(activeGistId), 800);
       } else {
         const errJson = await res.json().catch(() => ({}));
         alert('Failed to send message: ' + (errJson.message || res.status));

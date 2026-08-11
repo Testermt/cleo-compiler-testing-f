@@ -21,7 +21,7 @@ document.addEventListener('focusin', function(e) {
 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>GTA SA Online CLEO Compiler & Community</title>
+<title>GTA SA Online CLEO Compiler</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -92,7 +92,7 @@ document.addEventListener('focusin', function(e) {
   <input type="file" id="decompile-upload-input" accept=".cs,.csa,.csi" class="hidden" />
   <input type="file" id="db-upload-input" accept=".db" class="hidden" />
 
-  <!-- HEADER -->
+  <!-- HEADER (Exact Layout Matched) -->
   <header class="border-b border-hairline bg-panel/95 backdrop-blur sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-3 py-2.5 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
@@ -101,37 +101,34 @@ document.addEventListener('focusin', function(e) {
         </div>
         <div class="min-w-0">
           <h1 class="font-display font-semibold text-gray-100 text-xs sm:text-sm tracking-tight truncate">
-            GTA SA <span class="text-amber">CLEO</span> Compiler
+            GTA SA <span class="text-amber">CLEO</span> Co...
           </h1>
-          <p class="text-[9px] text-gray-500 hex-addr truncate">sanny.exe backend</p>
+          <p class="text-[9px] text-gray-500 hex-addr truncate">sanny.exe</p>
         </div>
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
-        <!-- COMMUNITY PAGE LINK BUTTON -->
-        <a href="community.html" class="btn-press text-[11px] px-2.5 py-1 rounded-sm border border-teal/50 bg-teal/10 text-teal hover:bg-teal/20 transition-colors font-bold text-decoration-none flex items-center gap-1">
-          🌐 Community
+        <!-- COMMUNITY ICON BUTTON -->
+        <a href="community.html" class="btn-press w-8 h-8 rounded-sm border border-teal/50 bg-teal/10 text-teal hover:bg-teal/20 transition-colors flex items-center justify-center text-sm font-bold text-decoration-none" title="Community Hub">
+          🌐
         </a>
 
-        <!-- DIRECT PUBLISH BUTTON -->
-        <button id="header-publish-btn" class="btn-press text-[11px] px-2.5 py-1 rounded-sm border border-amber/50 bg-amber/10 text-amber hover:bg-amber/20 transition-colors font-bold flex items-center gap-1">
-          🚀 Publish
+        <!-- PUBLISH ICON BUTTON -->
+        <button id="header-publish-btn" class="btn-press w-8 h-8 rounded-sm border border-amber/50 bg-amber/10 text-amber hover:bg-amber/20 transition-colors flex items-center justify-center text-sm" title="Publish Script">
+          🚀
         </button>
 
-        <span id="server-status" class="hidden md:flex items-center gap-1.5 text-[11px] text-gray-500 border border-hairline rounded-sm px-2 py-1">
-          <span id="server-dot" class="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
-          <span id="server-status-text">checking&hellip;</span>
-        </span>
+        <!-- OPCODES BUTTON -->
         <button id="opcode-btn"
-          class="btn-press text-[11px] px-2.5 py-1 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors">
+          class="btn-press text-[11px] px-3 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors">
           Opcodes
         </button>
 
         <!-- GITHUB SYNC BUTTON -->
         <div class="relative">
           <button id="gh-config-btn"
-            class="btn-press text-[11px] px-2.5 py-1 rounded-sm border border-hairline bg-panel2 text-gray-200 hover:border-amber/50 transition-colors flex items-center gap-1">
-            <svg class="w-3 h-3 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            class="btn-press text-[11px] px-3 py-1.5 rounded-sm border border-hairline bg-panel2 text-gray-200 hover:border-amber/50 transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
             <span id="gh-btn-text">GitHub</span>
           </button>
           
@@ -174,7 +171,7 @@ document.addEventListener('focusin', function(e) {
 
       <div class="bg-blue-900/10 border border-blue-500/20 p-2.5 rounded-sm">
         <p class="text-[10px] text-blue-300 leading-relaxed">
-          <strong>🔒 Privacy:</strong> Token stored in browser local storage. Requires <code class="text-amber">repo</code> &amp; <code class="text-amber">gist</code> scope.
+          <strong>🔒 Privacy:</strong> Token stored in browser local storage. Requires <code class="text-amber">repo</code> scope.
         </p>
       </div>
 
@@ -183,7 +180,7 @@ document.addEventListener('focusin', function(e) {
           <label class="block text-gray-400 mb-1">GitHub PAT Token:</label>
           <input type="password" id="gh-token-input" placeholder="ghp_xxxxxxxxxxxx" 
             class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full focus:outline-none focus:border-amber font-mono text-xs" />
-          <a href="https://github.com/settings/tokens/new?scopes=repo,gist&description=GTA%20SA%20CLEO%20Compiler" target="_blank" class="text-[10px] text-teal hover:underline mt-0.5 block">Generate new token with repo &amp; gist scope</a>
+          <a href="https://github.com/settings/tokens" target="_blank" class="text-[10px] text-teal hover:underline mt-0.5 block">Generate new token</a>
         </div>
         <div>
           <label class="block text-gray-400 mb-1">Repository Name (owner/repo):</label>
@@ -203,7 +200,7 @@ document.addEventListener('focusin', function(e) {
       </div>
       
       <div class="flex justify-end gap-2 pt-2 border-t border-hairline">
-        <button id="gh-modal-close-btn" class="px-3 py-1.5 text-gray-400 hover:text-gray-100 text-[11px]">Cancel</button>
+        <button id="gh-modal-close-btn" class="px-3 py-1.5 text-gray-400 text-[11px]">Cancel</button>
         <button id="gh-save-config" class="btn-press text-[11px] px-3.5 py-1.5 bg-amber text-ink font-semibold rounded-sm hover:bg-amber/90">
           Save &amp; Sync
         </button>
@@ -248,48 +245,55 @@ document.addEventListener('focusin', function(e) {
         </div>
       </div>
 
-      <div class="grid grid-cols-2 sm:flex flex-wrap items-center gap-1.5">
-        <button id="db-upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors text-center">Custom .db</button>
-        <button id="decompile-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors text-center">Decompile File</button>
-        <button id="upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors text-center">Upload Script</button>
-        <button id="clear-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-400 hover:text-gray-100 transition-colors text-center">Clear</button>
-        <button id="compile-btn" class="btn-press text-[11.5px] px-3.5 py-1.5 rounded-sm bg-amber text-ink font-semibold hover:bg-amber/90 transition-colors flex items-center justify-center gap-1.5 col-span-2 disabled:opacity-50">
-          <svg id="compile-spinner" class="hidden animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-          </svg>
-          <span id="compile-btn-text">Compile &amp; Download</span>
-        </button>
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button id="db-upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Custom .db</button>
+        <button id="decompile-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Decompile</button>
+        <button id="upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Upload</button>
+        <button id="clear-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-400 hover:text-gray-100 transition-colors">Clear</button>
       </div>
+    </div>
+
+    <!-- Compile & Download Button Row -->
+    <div>
+      <button id="compile-btn" class="btn-press text-xs sm:text-sm py-2.5 px-4 rounded-sm bg-amber text-ink font-bold transition-colors flex items-center justify-center gap-2 w-full disabled:opacity-50 shadow-md">
+        <svg id="compile-spinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <span id="compile-btn-text">Compile &amp; Download</span>
+      </button>
     </div>
 
     <!-- Advanced CLI Flags Bar -->
-    <div class="bg-panel2/60 border border-hairline rounded-sm px-3.5 py-3 flex flex-col gap-2.5 text-[11.5px]">
-      <div class="flex flex-wrap items-center gap-4 text-gray-400">
-        <span class="text-amber font-display font-semibold hex-addr">COMPILE FLAGS:</span>
-        <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber transition-colors"><input type="checkbox" id="check-conditions-cb" class="accent-amber rounded-sm" checked><span>--check-conditions</span></label>
-        <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber transition-colors"><input type="checkbox" id="no-splash-cb" class="accent-amber rounded-sm" checked><span>--no-splash</span></label>
-        <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber transition-colors"><input type="checkbox" id="case-sensitive-cb" class="accent-amber rounded-sm"><span>--case-sensitive</span></label>
-      </div>
+    <details class="bg-panel2/60 border border-hairline rounded-sm px-3.5 py-2.5 text-[11.5px]">
+      <summary class="cursor-pointer text-amber font-semibold select-none flex items-center gap-2">⚙️ Advanced Compiler &amp; Decompiler Flags</summary>
+      <div class="pt-3 flex flex-col gap-2.5 border-t border-hairline/60 mt-2 text-gray-400">
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="text-amber font-bold">Compile:</span>
+          <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber"><input type="checkbox" id="check-conditions-cb" class="accent-amber rounded-sm" checked><span>--check-conditions</span></label>
+          <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber"><input type="checkbox" id="no-splash-cb" class="accent-amber rounded-sm" checked><span>--no-splash</span></label>
+          <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber"><input type="checkbox" id="case-sensitive-cb" class="accent-amber rounded-sm"><span>--case-sensitive</span></label>
+        </div>
 
-      <div class="flex flex-wrap items-center gap-3 text-gray-400 border-t border-hairline/60 pt-2">
-        <span class="text-teal font-display font-semibold hex-addr">DECOMPILE FLAGS:</span>
-        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="use-source-cb" class="accent-teal rounded-sm" checked><span>--use-source</span></label>
-        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="code-offsets-cb" class="accent-teal rounded-sm"><span>CODE_OFFSETS</span></label>
-        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="ignore-unknown-cb" class="accent-teal rounded-sm"><span>IGNORE_UNKNOWN</span></label>
-        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="var-counter-cb" class="accent-teal rounded-sm"><span>VAR_COUNTER</span></label>
-        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="constant-indexes-cb" class="accent-teal rounded-sm"><span>CONSTANT_INDEXES</span></label>
-        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="skip-scm-header-cb" class="accent-teal rounded-sm"><span>SKIP_SCM_HEADER</span></label>
-        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="skip-extra-info-cb" class="accent-teal rounded-sm"><span>SKIP_EXTRA_INFO</span></label>
-        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="sb3-compat-cb" class="accent-teal rounded-sm" checked><span>SB3_COMPAT</span></label>
-      </div>
+        <div class="flex flex-wrap items-center gap-3 pt-1 border-t border-hairline/60">
+          <span class="text-teal font-bold">Decompile:</span>
+          <label class="flex items-center gap-1 cursor-pointer hover:text-teal"><input type="checkbox" id="use-source-cb" class="accent-teal rounded-sm" checked><span>--use-source</span></label>
+          <label class="flex items-center gap-1 cursor-pointer hover:text-teal"><input type="checkbox" id="code-offsets-cb" class="accent-teal rounded-sm"><span>CODE_OFFSETS</span></label>
+          <label class="flex items-center gap-1 cursor-pointer hover:text-teal"><input type="checkbox" id="ignore-unknown-cb" class="accent-teal rounded-sm"><span>IGNORE_UNKNOWN</span></label>
+          <label class="flex items-center gap-1 cursor-pointer hover:text-teal"><input type="checkbox" id="var-counter-cb" class="accent-teal rounded-sm"><span>VAR_COUNTER</span></label>
+          <label class="flex items-center gap-1 cursor-pointer hover:text-teal"><input type="checkbox" id="constant-indexes-cb" class="accent-teal rounded-sm"><span>CONSTANT_INDEXES</span></label>
+          <label class="flex items-center gap-1 cursor-pointer hover:text-teal"><input type="checkbox" id="skip-scm-header-cb" class="accent-teal rounded-sm"><span>SKIP_SCM_HEADER</span></label>
+          <label class="flex items-center gap-1 cursor-pointer hover:text-teal"><input type="checkbox" id="skip-extra-info-cb" class="accent-teal rounded-sm"><span>SKIP_EXTRA_INFO</span></label>
+          <label class="flex items-center gap-1 cursor-pointer hover:text-teal"><input type="checkbox" id="sb3-compat-cb" class="accent-teal rounded-sm" checked><span>SB3_COMPAT</span></label>
+        </div>
 
-      <div class="flex items-center gap-2 w-full pt-1 border-t border-hairline/60">
-        <label for="custom-flags-input" class="hex-addr text-gray-500 whitespace-nowrap">EXTRA FLAGS:</label>
-        <input type="text" id="custom-flags-input" placeholder="e.g. --constant MODE=1" 
-          class="bg-panel text-gray-200 border border-hairline rounded-sm px-2 py-0.5 text-[11px] w-full focus:outline-none focus:border-amber font-mono" />
+        <div class="flex items-center gap-2 w-full pt-1 border-t border-hairline/60">
+          <label for="custom-flags-input" class="hex-addr text-gray-500 whitespace-nowrap">EXTRA FLAGS:</label>
+          <input type="text" id="custom-flags-input" placeholder="e.g. --constant MODE=1" 
+            class="bg-panel text-gray-200 border border-hairline rounded-sm px-2 py-0.5 text-[11px] w-full focus:outline-none focus:border-amber font-mono" />
+        </div>
       </div>
-    </div>
+    </details>
 
     <!-- Editor Wrapper with File Tabs & Vertical 3-Dot Menu -->
     <div id="editor-wrapper-box" class="rounded-sm border border-hairline overflow-hidden shadow-2xl shadow-black/40 flex flex-col bg-panel">
@@ -349,7 +353,7 @@ document.addEventListener('focusin', function(e) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs/loader.min.js"></script>
 <script>
   const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-backend.onrender.com';
-  const UNIQUE_APP_SIGNATURE = "[CLEO-HUB-ID-998877]"; // Secret filter ID for community feed
+  const UNIQUE_APP_SIGNATURE = "[CLEO-HUB-ID-998877]";
 
   let openTabs = [
     { id: 'tab-1', name: 'script.txt', content: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'MAIN'\n\n:MAIN_START\nwait 0\nif\n  0256:   player $PLAYER_CHAR defined\njf @MAIN_START\n\n0001: wait 0\n0417: create_pickup_marker_at 0.0 0.0 0.0 color 1\n\n:MAIN_LOOP\nwait 250\njump @MAIN_LOOP\n` }
@@ -357,7 +361,6 @@ document.addEventListener('focusin', function(e) {
   let activeTabId = 'tab-1';
   let editor;
 
-  // Check URL parameters if user loaded script from community page
   window.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     const gistId = params.get('load_gist');
@@ -421,7 +424,6 @@ document.addEventListener('focusin', function(e) {
     }
   }
 
-  // --- EDITOR 3-DOT MENU LOGIC ---
   const editorMenuBtn = document.getElementById('editor-menu-btn');
   const editorDropdown = document.getElementById('editor-dropdown');
   const editorBox = document.getElementById('editor-wrapper-box');
@@ -472,7 +474,6 @@ document.addEventListener('focusin', function(e) {
     if (editor) editor.layout();
   });
 
-  // Publish to Community Functionality
   async function publishScriptToCommunity() {
     const token = localStorage.getItem('gh_token');
     if (!token) {
@@ -494,7 +495,6 @@ document.addEventListener('focusin', function(e) {
     if (!userTitle) return;
 
     const finalDescription = `${userTitle} ${UNIQUE_APP_SIGNATURE}`;
-
     logLine('[Community] Publishing script to public GitHub Gist...', 'info');
 
     try {
@@ -529,7 +529,6 @@ document.addEventListener('focusin', function(e) {
     }
   }
 
-  // Bind both header publish button and github dropdown publish button
   document.getElementById('header-publish-btn').addEventListener('click', publishScriptToCommunity);
   document.getElementById('gh-publish-gist').addEventListener('click', () => {
     ghDropdown.classList.add('hidden');
@@ -706,7 +705,7 @@ document.addEventListener('focusin', function(e) {
         alert('Authorization failed! Please make sure your token has "repo" scope permissions enabled.');
         return false;
       } else {
-        const errJson = await createRes.json();
+        const errJson = await checkRes.json();
         logLine(`[GitHub Error] Status ${checkRes.status}: ${errJson.message || 'API error'}`, 'error');
         alert(`GitHub API Error: ${errJson.message || 'Unknown error'}`);
         return false;

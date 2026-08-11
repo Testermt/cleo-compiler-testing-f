@@ -12,6 +12,7 @@ document.addEventListener('focusin', function(e) {
     }
   }
 });
+
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -27,8 +28,16 @@ document.addEventListener('focusin', function(e) {
     theme: {
       extend: {
         colors: {
-          ink: '#0c0f14', panel: '#12161d', panel2: '#181d26', hairline: '#242b36',
-          amber: '#e8a33d', amberdim: '#8a6528', teal: '#3fa9a0', bad: '#e05a4e', good: '#57b06b',
+          ink: '#0c0f14',
+          panel: '#12161d',
+          panel2: '#181d26',
+          hairline: '#242b36',
+          amber: '#e8a33d',
+          amberdim: '#8a6528',
+          teal: '#3fa9a0',
+          teal2: '#2e8a82',
+          bad: '#e05a4e',
+          good: '#57b06b',
         },
         fontFamily: {
           mono: ['"JetBrains Mono"', '"Fira Code"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
@@ -42,19 +51,27 @@ document.addEventListener('focusin', function(e) {
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   html, body { background: #0c0f14; overflow-x: hidden; }
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: #12161d; }
   ::-webkit-scrollbar-thumb { background: #242b36; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #303947; }
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
   .cursor-blink { animation: blink 1.2s step-end infinite; }
   .hex-addr { font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
   
-  #editor-container { height: 45vh; min-height: 280px; }
+  #editor-container { height: 50vh; min-height: 320px; }
   
+  /* Fullscreen IDE Mode */
   .fullscreen-editor { 
-    position: fixed !important; inset: 0 !important; z-index: 99999 !important; 
-    width: 100vw !important; height: 100vh !important; background: #0c0f14 !important; 
-    padding: 4px; display: flex; flex-direction: column; 
+    position: fixed !important; 
+    inset: 0 !important; 
+    z-index: 99999 !important; 
+    width: 100vw !important; 
+    height: 100vh !important; 
+    background: #0c0f14 !important; 
+    padding: 6px; 
+    display: flex; 
+    flex-direction: column; 
   }
   .fullscreen-editor #editor-container { height: calc(100vh - 45px) !important; flex: 1; }
 
@@ -62,10 +79,10 @@ document.addEventListener('focusin', function(e) {
   .error-line-highlight { background-color: rgba(224, 90, 78, 0.20) !important; border-left: 3px solid #e05a4e !important; }
 
   @media screen and (max-width: 640px) {
-    header .max-w-6xl { padding-left: 6px; padding-right: 6px; }
-    main { padding-left: 6px !important; padding-right: 6px !important; }
-    #editor-container { height: 40vh; min-height: 240px; }
-    .monaco-editor { font-size: 13px !important; }
+    header .max-w-6xl { padding-left: 8px; padding-right: 8px; }
+    main { padding-left: 8px !important; padding-right: 8px !important; }
+    #editor-container { height: 46vh; min-height: 280px; }
+    .monaco-editor { font-size: 14px !important; }
   }
 </style>
 </head>
@@ -77,45 +94,72 @@ document.addEventListener('focusin', function(e) {
 
   <!-- HEADER -->
   <header class="border-b border-hairline bg-panel/95 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-2 sm:px-3 py-2 flex items-center justify-between gap-1.5">
-      <div class="flex items-center gap-1.5 min-w-0">
-        <div class="w-6 h-6 rounded-sm bg-amber/10 border border-amber/40 flex items-center justify-center text-amber font-display font-bold text-[10px] shrink-0">CS</div>
+    <div class="max-w-6xl mx-auto px-3 py-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="w-7 h-7 rounded-sm bg-amber/10 border border-amber/40 flex items-center justify-center text-amber font-display font-bold text-xs shrink-0">
+          CS
+        </div>
         <div class="min-w-0">
-          <h1 class="font-display font-semibold text-gray-100 text-xs tracking-tight truncate">GTA SA <span class="text-amber">CLEO</span> Compiler</h1>
-          <p class="text-[8px] text-gray-500 hex-addr truncate">sanny.exe</p>
+          <h1 class="font-display font-semibold text-gray-100 text-xs sm:text-sm tracking-tight truncate">
+            GTA SA <span class="text-amber">CLEO</span> Compiler
+          </h1>
+          <p class="text-[9px] text-gray-500 hex-addr truncate">sanny.exe backend</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-1 shrink-0">
-        <a href="community.html" class="btn-press text-[10px] px-2 py-1 rounded-sm border border-teal/50 bg-teal/10 text-teal hover:bg-teal/20 font-bold text-decoration-none flex items-center gap-0.5">
-          🌐 <span class="hidden sm:inline">Community</span>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <!-- COMMUNITY PAGE LINK BUTTON -->
+        <a href="community.html" class="btn-press text-[11px] px-2.5 py-1 rounded-sm border border-teal/50 bg-teal/10 text-teal hover:bg-teal/20 transition-colors font-bold text-decoration-none flex items-center gap-1">
+          🌐 Community
         </a>
 
-        <button id="header-publish-btn" class="btn-press text-[10px] px-2 py-1 rounded-sm border border-amber/50 bg-amber/10 text-amber hover:bg-amber/20 font-bold flex items-center gap-0.5">
-          🚀 <span class="hidden sm:inline">Publish</span>
+        <!-- DIRECT PUBLISH BUTTON -->
+        <button id="header-publish-btn" class="btn-press text-[11px] px-2.5 py-1 rounded-sm border border-amber/50 bg-amber/10 text-amber hover:bg-amber/20 transition-colors font-bold flex items-center gap-1">
+          🚀 Publish
         </button>
 
-        <button id="opcode-btn" class="btn-press text-[10px] px-2 py-1 rounded-sm border border-hairline text-gray-300 hover:text-amber">Opcodes</button>
+        <span id="server-status" class="hidden md:flex items-center gap-1.5 text-[11px] text-gray-500 border border-hairline rounded-sm px-2 py-1">
+          <span id="server-dot" class="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+          <span id="server-status-text">checking&hellip;</span>
+        </span>
+        <button id="opcode-btn"
+          class="btn-press text-[11px] px-2.5 py-1 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors">
+          Opcodes
+        </button>
 
-        <!-- GITHUB SYNC BUTTON WITH LOGO -->
+        <!-- GITHUB SYNC BUTTON -->
         <div class="relative">
-          <button id="gh-config-btn" class="btn-press text-[10px] px-2 py-1 rounded-sm border border-hairline bg-panel2 text-gray-200 hover:border-amber/50 flex items-center gap-1">
+          <button id="gh-config-btn"
+            class="btn-press text-[11px] px-2.5 py-1 rounded-sm border border-hairline bg-panel2 text-gray-200 hover:border-amber/50 transition-colors flex items-center gap-1">
             <svg class="w-3 h-3 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            <span>GitHub</span>
+            <span id="gh-btn-text">GitHub</span>
           </button>
           
           <!-- GITHUB DROPDOWN MENU -->
           <div id="gh-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-panel border border-hairline rounded-sm shadow-xl z-50 py-1 text-[11.5px]">
-            <div class="px-3 py-1.5 border-b border-hairline text-gray-400 truncate">Repo: <strong id="gh-repo-label" class="text-amber">Not set</strong></div>
-            <button id="gh-save-source" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber">💾 Save Source (.txt)</button>
-            <button id="gh-save-compiled" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber">☁️ Save Compiled (.cs)</button>
+            <div class="px-3 py-1.5 border-b border-hairline text-gray-400 truncate">
+              Repo: <strong id="gh-repo-label" class="text-amber">Not set</strong>
+            </div>
+            <button id="gh-save-source" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors">
+              💾 Save Source (.txt)
+            </button>
+            <button id="gh-save-compiled" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors">
+              ☁️ Save Compiled (.cs)
+            </button>
             <div class="border-t border-hairline my-1"></div>
-            <button id="gh-publish-gist" class="w-full text-left px-3 py-2 text-teal hover:bg-panel2 font-bold">🚀 Publish to Community</button>
+            <button id="gh-publish-gist" class="w-full text-left px-3 py-2 text-teal hover:bg-panel2 transition-colors font-bold">
+              🚀 Publish to Community
+            </button>
             <div class="border-t border-hairline my-1"></div>
-            <button id="gh-settings-open" class="w-full text-left px-3 py-2 text-amber hover:bg-panel2">⚙️ Configure Token/Repo</button>
-            <button id="gh-disconnect" class="w-full text-left px-3 py-2 text-bad hover:bg-panel2">🗑️ Disconnect Repo</button>
+            <button id="gh-settings-open" class="w-full text-left px-3 py-2 text-amber hover:bg-panel2 transition-colors">
+              ⚙️ Configure Token/Repo
+            </button>
+            <button id="gh-disconnect" class="w-full text-left px-3 py-2 text-bad hover:bg-panel2 transition-colors">
+              🗑️ Disconnect Repo
+            </button>
           </div>
         </div>
+
       </div>
     </div>
   </header>
@@ -139,14 +183,13 @@ document.addEventListener('focusin', function(e) {
           <label class="block text-gray-400 mb-1">GitHub PAT Token:</label>
           <input type="password" id="gh-token-input" placeholder="ghp_xxxxxxxxxxxx" 
             class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full focus:outline-none focus:border-amber font-mono text-xs" />
-          <a href="https://github.com/settings/tokens/new?scopes=repo,gist&description=GTA%20SA%20CLEO%20Compiler" target="_blank" class="text-[10.5px] text-teal hover:underline mt-1 block font-semibold">
-            🔑 Generate new token with required scopes →
-          </a>
+          <a href="https://github.com/settings/tokens/new?scopes=repo,gist&description=GTA%20SA%20CLEO%20Compiler" target="_blank" class="text-[10px] text-teal hover:underline mt-0.5 block">Generate new token with repo &amp; gist scope</a>
         </div>
         <div>
           <label class="block text-gray-400 mb-1">Repository Name (owner/repo):</label>
           <input type="text" id="gh-repo-input" placeholder="e.g. Testermt/CleoSave" 
             class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full focus:outline-none focus:border-amber font-mono text-xs" />
+          <p class="text-[9.5px] text-gray-500 mt-0.5">Auto-creates as <strong>private</strong> if missing!</p>
         </div>
         <div>
           <label class="block text-gray-400 mb-1">Branch:</label>
@@ -169,92 +212,101 @@ document.addEventListener('focusin', function(e) {
   </div>
 
   <!-- MAIN -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-1.5 sm:px-3 py-2 flex flex-col gap-2">
-    <!-- Financial Notice -->
-    <div class="bg-amber/10 border border-amber/30 rounded-sm p-2 text-[10.5px] text-amber flex flex-col sm:flex-row items-center justify-between gap-1.5">
-      <p class="text-center sm:text-left leading-tight"><strong>Server Notice:</strong> Free-tier hosting with Request Queue System active.</p>
-      <a href="https://t.me/TechboyMaster" target="_blank" class="bg-[#0088cc] text-white px-2.5 py-0.5 rounded text-[10px] font-bold shrink-0">Report Bug</a>
+  <main class="flex-1 max-w-6xl w-full mx-auto px-2 sm:px-4 py-3 flex flex-col gap-3">
+
+    <!-- FINANCIAL NOTICE BANNER -->
+    <div class="bg-amber/10 border border-amber/30 rounded-sm p-2.5 text-[11px] text-amber flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p class="text-center sm:text-left"><strong>Server Notice:</strong>Due to financial constraints and lack of funds to purchase a paid high-performance server, this tool runs on a free-tier hosting instance with limited memory. To prevent server crashes from traffic spikes, an automatic Request Queue System is active. Thank you for your patience and support!</p>
+      <a href="https://t.me/TechboyMaster" target="_blank" class="bg-[#0088cc] text-white px-3 py-1 rounded text-[10.5px] font-bold shrink-0 hover:opacity-90">Report Bug</a>
     </div>
 
     <!-- Toolbar -->
-    <div class="flex flex-col gap-2 bg-panel p-2 rounded-sm border border-hairline">
-      <div class="grid grid-cols-2 gap-1.5 text-[11px]">
-        <select id="gameSelect" class="bg-panel2 text-gray-200 border border-hairline rounded px-2 py-1 text-[11px]">
-          <option value="sa" selected>GTA SA (PC - .cs)</option>
-          <option value="sa_mobile_csa">GTA SA (Mobile - .csa)</option>
-          <option value="sa_mobile_csi">GTA SA (Mobile - .csi)</option>
-          <option value="vc">GTA VC (PC - .cs)</option>
-          <option value="vc_mobile_csa">GTA VC (Mobile - .csa)</option>
-          <option value="vc_mobile_csi">GTA VC (Mobile - .csi)</option>
-          <option value="gta3">GTA III (PC - .cs)</option>
-          <option value="gta3_mobile_csa">GTA III (Mobile - .csa)</option>
-          <option value="gta3_mobile_csi">GTA III (Mobile - .csi)</option>
-        </select>
-        <select id="templateSelect" class="bg-panel2 text-amber border border-hairline rounded px-2 py-1 text-[11px]">
-          <option value="default" selected>Select Template...</option>
-          <option value="spawner">Car Spawner</option>
-          <option value="teleport">Teleport</option>
-          <option value="godmode">Godmode</option>
-        </select>
+    <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-2.5 bg-panel p-2.5 sm:p-3 rounded-sm border border-hairline">
+      <div class="flex flex-wrap items-center gap-2 text-[11.5px] text-gray-400">
+        <div class="flex items-center gap-1.5 flex-1 sm:flex-initial">
+          <span class="hex-addr text-gray-500 text-[10px]">GAME</span>
+          <select id="gameSelect" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2 py-1 text-[11.5px] focus:outline-none focus:border-amber w-full sm:w-auto">
+            <option value="sa" selected>GTA SA (PC - .cs)</option>
+            <option value="sa_mobile_csa">GTA SA (Mobile - .csa)</option>
+            <option value="sa_mobile_csi">GTA SA (Mobile - .csi)</option>
+            <option value="vc">GTA VC (PC - .cs)</option>
+            <option value="vc_mobile_csa">GTA VC (Mobile - .csa)</option>
+            <option value="vc_mobile_csi">GTA VC (Mobile - .csi)</option>
+            <option value="gta3">GTA III (PC - .cs)</option>
+            <option value="gta3_mobile_csa">GTA III (Mobile - .csa)</option>
+            <option value="gta3_mobile_csi">GTA III (Mobile - .csi)</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-1.5 flex-1 sm:flex-initial">
+          <label for="templateSelect" class="hex-addr text-gray-500 text-[10px]">TEMPLATE</label>
+          <select id="templateSelect" class="bg-panel2 text-amber border border-hairline rounded-sm px-2 py-1 text-[11.5px] focus:outline-none focus:border-amber w-full sm:w-auto">
+            <option value="default" selected>Select...</option>
+            <option value="spawner">Car Spawner</option>
+            <option value="teleport">Teleport</option>
+            <option value="godmode">Godmode</option>
+          </select>
+        </div>
       </div>
 
-      <div class="grid grid-cols-4 gap-1">
-        <button id="db-upload-btn" class="btn-press text-[10.5px] py-1 rounded border border-hairline text-gray-300 text-center truncate px-1">.db</button>
-        <button id="decompile-btn" class="btn-press text-[10.5px] py-1 rounded border border-hairline text-gray-300 text-center truncate px-1">Decompile</button>
-        <button id="upload-btn" class="btn-press text-[10.5px] py-1 rounded border border-hairline text-gray-300 text-center truncate px-1">Upload</button>
-        <button id="clear-btn" class="btn-press text-[10.5px] py-1 rounded border border-hairline text-gray-400 text-center truncate px-1">Clear</button>
+      <div class="grid grid-cols-2 sm:flex flex-wrap items-center gap-1.5">
+        <button id="db-upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors text-center">Custom .db</button>
+        <button id="decompile-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors text-center">Decompile File</button>
+        <button id="upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors text-center">Upload Script</button>
+        <button id="clear-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-400 hover:text-gray-100 transition-colors text-center">Clear</button>
+        <button id="compile-btn" class="btn-press text-[11.5px] px-3.5 py-1.5 rounded-sm bg-amber text-ink font-semibold hover:bg-amber/90 transition-colors flex items-center justify-center gap-1.5 col-span-2 disabled:opacity-50">
+          <svg id="compile-spinner" class="hidden animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span id="compile-btn-text">Compile &amp; Download</span>
+        </button>
       </div>
-
-      <button id="compile-btn" class="btn-press text-xs py-1.5 rounded bg-amber text-ink font-bold transition-colors flex items-center justify-center gap-1.5 w-full disabled:opacity-50">
-        <svg id="compile-spinner" class="hidden animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-        <span id="compile-btn-text">Compile &amp; Download</span>
-      </button>
     </div>
 
-    <!-- Advanced CLI & Decompiler Flags Bar -->
-    <details class="bg-panel2/60 border border-hairline rounded-sm px-2.5 py-1.5 text-[11px]">
-      <summary class="cursor-pointer text-amber font-semibold text-[11px] select-none">⚙️ Advanced Compiler &amp; Decompiler Flags</summary>
-      <div class="pt-2 flex flex-col gap-2 border-t border-hairline/60 mt-2 text-gray-400">
-        <div class="flex flex-wrap gap-3">
-          <span class="text-amber font-bold">Compile:</span>
-          <label class="flex items-center gap-1"><input type="checkbox" id="check-conditions-cb" checked><span>--check-conditions</span></label>
-          <label class="flex items-center gap-1"><input type="checkbox" id="no-splash-cb" checked><span>--no-splash</span></label>
-          <label class="flex items-center gap-1"><input type="checkbox" id="case-sensitive-cb"><span>--case-sensitive</span></label>
-        </div>
-        <div class="flex flex-wrap gap-2 pt-1 border-t border-hairline/40">
-          <span class="text-teal font-bold">Decompile:</span>
-          <label class="flex items-center gap-1"><input type="checkbox" id="use-source-cb" checked><span>--use-source</span></label>
-          <label class="flex items-center gap-1"><input type="checkbox" id="code-offsets-cb"><span>CODE_OFFSETS</span></label>
-          <label class="flex items-center gap-1"><input type="checkbox" id="ignore-unknown-cb"><span>IGNORE_UNKNOWN</span></label>
-          <label class="flex items-center gap-1"><input type="checkbox" id="var-counter-cb"><span>VAR_COUNTER</span></label>
-          <label class="flex items-center gap-1"><input type="checkbox" id="constant-indexes-cb"><span>CONSTANT_INDEXES</span></label>
-          <label class="flex items-center gap-1"><input type="checkbox" id="skip-scm-header-cb"><span>SKIP_SCM_HEADER</span></label>
-          <label class="flex items-center gap-1"><input type="checkbox" id="skip-extra-info-cb"><span>SKIP_EXTRA_INFO</span></label>
-          <label class="flex items-center gap-1"><input type="checkbox" id="sb3-compat-cb" checked><span>SB3_COMPAT</span></label>
-        </div>
-        <input type="text" id="custom-flags-input" placeholder="Extra flags e.g. --constant MODE=1" 
-          class="bg-panel text-gray-200 border border-hairline rounded px-2 py-1 text-[10.5px] w-full focus:outline-none focus:border-amber font-mono" />
+    <!-- Advanced CLI Flags Bar -->
+    <div class="bg-panel2/60 border border-hairline rounded-sm px-3.5 py-3 flex flex-col gap-2.5 text-[11.5px]">
+      <div class="flex flex-wrap items-center gap-4 text-gray-400">
+        <span class="text-amber font-display font-semibold hex-addr">COMPILE FLAGS:</span>
+        <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber transition-colors"><input type="checkbox" id="check-conditions-cb" class="accent-amber rounded-sm" checked><span>--check-conditions</span></label>
+        <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber transition-colors"><input type="checkbox" id="no-splash-cb" class="accent-amber rounded-sm" checked><span>--no-splash</span></label>
+        <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber transition-colors"><input type="checkbox" id="case-sensitive-cb" class="accent-amber rounded-sm"><span>--case-sensitive</span></label>
       </div>
-    </details>
+
+      <div class="flex flex-wrap items-center gap-3 text-gray-400 border-t border-hairline/60 pt-2">
+        <span class="text-teal font-display font-semibold hex-addr">DECOMPILE FLAGS:</span>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="use-source-cb" class="accent-teal rounded-sm" checked><span>--use-source</span></label>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="code-offsets-cb" class="accent-teal rounded-sm"><span>CODE_OFFSETS</span></label>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="ignore-unknown-cb" class="accent-teal rounded-sm"><span>IGNORE_UNKNOWN</span></label>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="var-counter-cb" class="accent-teal rounded-sm"><span>VAR_COUNTER</span></label>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="constant-indexes-cb" class="accent-teal rounded-sm"><span>CONSTANT_INDEXES</span></label>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="skip-scm-header-cb" class="accent-teal rounded-sm"><span>SKIP_SCM_HEADER</span></label>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="skip-extra-info-cb" class="accent-teal rounded-sm"><span>SKIP_EXTRA_INFO</span></label>
+        <label class="flex items-center gap-1 cursor-pointer hover:text-teal transition-colors"><input type="checkbox" id="sb3-compat-cb" class="accent-teal rounded-sm" checked><span>SB3_COMPAT</span></label>
+      </div>
+
+      <div class="flex items-center gap-2 w-full pt-1 border-t border-hairline/60">
+        <label for="custom-flags-input" class="hex-addr text-gray-500 whitespace-nowrap">EXTRA FLAGS:</label>
+        <input type="text" id="custom-flags-input" placeholder="e.g. --constant MODE=1" 
+          class="bg-panel text-gray-200 border border-hairline rounded-sm px-2 py-0.5 text-[11px] w-full focus:outline-none focus:border-amber font-mono" />
+      </div>
+    </div>
 
     <!-- Editor Wrapper with File Tabs & Vertical 3-Dot Menu -->
-    <div id="editor-wrapper-box" class="rounded-sm border border-hairline overflow-hidden shadow-xl flex flex-col bg-panel">
+    <div id="editor-wrapper-box" class="rounded-sm border border-hairline overflow-hidden shadow-2xl shadow-black/40 flex flex-col bg-panel">
       <!-- TABS & 3-DOT MENU BAR -->
-      <div class="bg-panel2 border-b border-hairline px-2 py-1 flex items-center justify-between gap-1 text-[11px] text-gray-400 relative">
-        <div id="file-tabs-container" class="flex items-center gap-1 overflow-x-auto flex-1 py-0.5"></div>
+      <div class="bg-panel2 border-b border-hairline px-2.5 py-1.5 flex items-center justify-between gap-2 text-[11px] text-gray-400 relative">
+        <div id="file-tabs-container" class="flex items-center gap-1.5 overflow-x-auto flex-1 py-0.5"></div>
         
+        <!-- VERTICAL 3-DOT MENU BUTTON & DROPDOWN -->
         <div class="relative shrink-0">
-          <button id="editor-menu-btn" class="px-2 py-0.5 rounded bg-panel hover:bg-hairline text-amber font-bold text-sm tracking-widest transition-colors" title="Editor Menu">⋮</button>
+          <button id="editor-menu-btn" class="px-2.5 py-1 rounded bg-panel hover:bg-hairline text-amber font-bold text-sm tracking-widest transition-colors" title="Editor Menu">⋮</button>
           
-          <div id="editor-dropdown" class="hidden absolute right-0 mt-1 w-36 bg-panel border border-hairline rounded shadow-xl z-50 py-1 text-[11px]">
-            <button id="new-tab-dropdown" class="w-full text-left px-3 py-1.5 text-amber hover:bg-panel2 flex items-center gap-2">+ New Tab</button>
-            <button id="undo-dropdown" class="w-full text-left px-3 py-1.5 text-gray-300 hover:bg-panel2 flex items-center gap-2">↩ Undo</button>
-            <button id="redo-dropdown" class="w-full text-left px-3 py-1.5 text-gray-300 hover:bg-panel2 flex items-center gap-2">↪ Redo</button>
+          <div id="editor-dropdown" class="hidden absolute right-0 mt-1.5 w-40 bg-panel border border-hairline rounded-sm shadow-xl z-50 py-1 text-[11.5px]">
+            <button id="new-tab-dropdown" class="w-full text-left px-3 py-2 text-amber hover:bg-panel2 transition-colors flex items-center gap-2"><span>+ New Tab</span></button>
+            <button id="undo-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>↩ Undo</span></button>
+            <button id="redo-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>↪ Redo</span></button>
             <div class="border-t border-hairline my-1"></div>
-            <button id="fullscreen-dropdown" class="w-full text-left px-3 py-1.5 text-amber hover:bg-panel2 flex items-center gap-2"><span id="fullscreen-text">⛶ Fullscreen</span></button>
+            <button id="fullscreen-dropdown" class="w-full text-left px-3 py-2 text-amber hover:bg-panel2 transition-colors flex items-center gap-2"><span id="fullscreen-text">⛶ Fullscreen</span></button>
           </div>
         </div>
       </div>
@@ -263,29 +315,29 @@ document.addEventListener('focusin', function(e) {
 
     <!-- Console -->
     <div class="rounded-sm border border-hairline bg-panel flex flex-col">
-      <div class="border-b border-hairline px-2.5 py-1 flex items-center justify-between">
-        <span class="text-[10.5px] text-gray-500 hex-addr">CONSOLE</span>
-        <button id="console-clear" class="text-[10.5px] text-gray-600 hover:text-gray-300">clear</button>
+      <div class="border-b border-hairline px-3 py-1.5 flex items-center justify-between">
+        <span class="text-[11px] text-gray-500 hex-addr">CONSOLE</span>
+        <button id="console-clear" class="text-[11px] text-gray-600 hover:text-gray-300 transition-colors">clear</button>
       </div>
-      <div id="console-log" class="h-24 overflow-y-auto px-2.5 py-1.5 text-[11px] leading-tight space-y-0.5">
-        <div class="text-gray-600">&gt; ready&hellip; <span class="cursor-blink">_</span></div>
+      <div id="console-log" class="h-32 overflow-y-auto px-3 py-2 text-[11.5px] leading-relaxed space-y-1">
+        <div class="text-gray-600">&gt; awaiting compile&hellip; <span class="cursor-blink">_</span></div>
       </div>
     </div>
   </main>
 
   <!-- OPCODE MODAL -->
   <div id="opcode-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
-    <div class="bg-panel border border-hairline rounded-sm max-w-lg w-full max-h-[80vh] flex flex-col">
-      <div class="border-b border-hairline px-3 py-2 flex items-center justify-between">
-        <h2 class="text-xs text-gray-200 font-bold">Common CLEO Opcodes</h2>
-        <button id="opcode-close" class="text-gray-500 hover:text-gray-200 text-base">&times;</button>
+    <div class="bg-panel border border-hairline rounded-sm max-w-2xl w-full max-h-[80vh] flex flex-col">
+      <div class="border-b border-hairline px-4 py-3 flex items-center justify-between">
+        <h2 class="font-display text-sm text-gray-200">Common CLEO Opcodes</h2>
+        <button id="opcode-close" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
       </div>
-      <div class="overflow-y-auto px-3 py-2 text-[11.5px]">
+      <div class="overflow-y-auto px-4 py-3 text-[12.5px]">
         <table class="w-full">
           <thead>
-            <tr class="text-gray-600 text-left border-b border-hairline text-[11px]">
-              <th class="pb-1 pr-2">OPCODE</th>
-              <th class="pb-1">DESCRIPTION</th>
+            <tr class="text-gray-600 text-left border-b border-hairline">
+              <th class="pb-2 pr-4 hex-addr">OPCODE</th>
+              <th class="pb-2">DESCRIPTION</th>
             </tr>
           </thead>
           <tbody id="opcode-table" class="text-gray-300"></tbody>
@@ -297,7 +349,7 @@ document.addEventListener('focusin', function(e) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs/loader.min.js"></script>
 <script>
   const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-backend.onrender.com';
-  const UNIQUE_APP_SIGNATURE = "[CLEO-HUB-ID-998877]";
+  const UNIQUE_APP_SIGNATURE = "[CLEO-HUB-ID-998877]"; // Secret filter ID for community feed
 
   let openTabs = [
     { id: 'tab-1', name: 'script.txt', content: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'MAIN'\n\n:MAIN_START\nwait 0\nif\n  0256:   player $PLAYER_CHAR defined\njf @MAIN_START\n\n0001: wait 0\n0417: create_pickup_marker_at 0.0 0.0 0.0 color 1\n\n:MAIN_LOOP\nwait 250\njump @MAIN_LOOP\n` }
@@ -305,6 +357,7 @@ document.addEventListener('focusin', function(e) {
   let activeTabId = 'tab-1';
   let editor;
 
+  // Check URL parameters if user loaded script from community page
   window.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     const gistId = params.get('load_gist');
@@ -319,7 +372,7 @@ document.addEventListener('focusin', function(e) {
             editor.setValue(file.content);
             openTabs[0].name = filename || 'community_script.txt';
             renderTabs();
-            logLine('Community script loaded successfully!', 'success');
+            logLine('Community script loaded successfully into editor!', 'success');
           }
         }
       } catch(e) { logLine('Failed to load community script.', 'error'); }
@@ -332,9 +385,9 @@ document.addEventListener('focusin', function(e) {
     tabsContainer.innerHTML = '';
     openTabs.forEach(tab => {
       const tabEl = document.createElement('div');
-      tabEl.className = `flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer text-[11px] border shrink-0 ${tab.id === activeTabId ? 'bg-panel border-amber text-amber font-semibold' : 'bg-panel2 border-hairline text-gray-400'}`;
+      tabEl.className = `flex items-center gap-1.5 px-2.5 py-1 rounded cursor-pointer text-xs border transition-all shrink-0 ${tab.id === activeTabId ? 'bg-panel border-amber text-amber font-semibold shadow' : 'bg-panel2 border-hairline text-gray-400 hover:text-gray-200'}`;
       tabEl.innerHTML = `
-        <span onclick="switchTab('${tab.id}')" class="truncate max-w-[90px]">${escapeHtml(tab.name)}</span>
+        <span onclick="switchTab('${tab.id}')" class="truncate max-w-[110px]">${escapeHtml(tab.name)}</span>
         ${openTabs.length > 1 ? `<span onclick="closeTab(event, '${tab.id}')" class="hover:text-bad text-gray-500 font-bold ml-1">&times;</span>` : ''}
       `;
       tabsContainer.appendChild(tabEl);
@@ -368,6 +421,7 @@ document.addEventListener('focusin', function(e) {
     }
   }
 
+  // --- EDITOR 3-DOT MENU LOGIC ---
   const editorMenuBtn = document.getElementById('editor-menu-btn');
   const editorDropdown = document.getElementById('editor-dropdown');
   const editorBox = document.getElementById('editor-wrapper-box');
@@ -378,7 +432,9 @@ document.addEventListener('focusin', function(e) {
     editorDropdown.classList.toggle('hidden');
   });
 
-  window.addEventListener('click', () => { editorDropdown.classList.add('hidden'); });
+  window.addEventListener('click', () => {
+    editorDropdown.classList.add('hidden');
+  });
 
   document.getElementById('new-tab-dropdown').addEventListener('click', () => {
     editorDropdown.classList.add('hidden');
@@ -393,14 +449,21 @@ document.addEventListener('focusin', function(e) {
     switchTab(newId);
   });
 
-  document.getElementById('undo-dropdown').addEventListener('click', () => { editorDropdown.classList.add('hidden'); if (editor) editor.trigger('keyboard', 'undo', null); });
-  document.getElementById('redo-dropdown').addEventListener('click', () => { editorDropdown.classList.add('hidden'); if (editor) editor.trigger('keyboard', 'redo', null); });
+  document.getElementById('undo-dropdown').addEventListener('click', () => {
+    editorDropdown.classList.add('hidden');
+    if (editor) editor.trigger('keyboard', 'undo', null);
+  });
+
+  document.getElementById('redo-dropdown').addEventListener('click', () => {
+    editorDropdown.classList.add('hidden');
+    if (editor) editor.trigger('keyboard', 'redo', null);
+  });
 
   document.getElementById('fullscreen-dropdown').addEventListener('click', () => {
     editorDropdown.classList.add('hidden');
     editorBox.classList.toggle('fullscreen-editor');
     if (editorBox.classList.contains('fullscreen-editor')) {
-      fullscreenText.textContent = '🗗 Exit';
+      fullscreenText.textContent = '🗗 Exit Fullscreen';
       editorMenuBtn.classList.add('text-bad');
     } else {
       fullscreenText.textContent = '⛶ Fullscreen';
@@ -409,6 +472,7 @@ document.addEventListener('focusin', function(e) {
     if (editor) editor.layout();
   });
 
+  // Publish to Community Functionality
   async function publishScriptToCommunity() {
     const token = localStorage.getItem('gh_token');
     if (!token) {
@@ -421,19 +485,33 @@ document.addEventListener('focusin', function(e) {
     const activeTab = openTabs.find(t => t.id === activeTabId);
     const filename = activeTab ? activeTab.name : 'script.txt';
 
-    if (!code.trim()) { alert('Editor is empty!'); return; }
+    if (!code.trim()) {
+      alert('Editor is empty!');
+      return;
+    }
 
-    const userTitle = prompt("Enter a title for your community script:", "GTA SA CLEO Script");
+    const userTitle = prompt("Enter a title or description for your public community script:", "GTA SA CLEO Script");
     if (!userTitle) return;
 
     const finalDescription = `${userTitle} ${UNIQUE_APP_SIGNATURE}`;
-    logLine('[Community] Publishing script to GitHub Gist...', 'info');
+
+    logLine('[Community] Publishing script to public GitHub Gist...', 'info');
 
     try {
       const res = await fetch('https://api.github.com/gists', {
         method: 'POST',
-        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
-        body: JSON.stringify({ description: finalDescription, public: true, files: { [filename]: { content: code } } })
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({
+          description: finalDescription,
+          public: true,
+          files: {
+            [filename]: { content: code }
+          }
+        })
       });
 
       if (res.ok) {
@@ -451,8 +529,12 @@ document.addEventListener('focusin', function(e) {
     }
   }
 
+  // Bind both header publish button and github dropdown publish button
   document.getElementById('header-publish-btn').addEventListener('click', publishScriptToCommunity);
-  document.getElementById('gh-publish-gist').addEventListener('click', () => { ghDropdown.classList.add('hidden'); publishScriptToCommunity(); });
+  document.getElementById('gh-publish-gist').addEventListener('click', () => {
+    ghDropdown.classList.add('hidden');
+    publishScriptToCommunity();
+  });
 
   const ghConfigBtn = document.getElementById('gh-config-btn');
   const ghDropdown = document.getElementById('gh-dropdown');
@@ -476,31 +558,51 @@ document.addEventListener('focusin', function(e) {
     ghRepoInput.value = repo;
     ghBranchInput.value = branch;
     ghAutosaveCb.checked = autosave;
-    ghRepoLabel.textContent = repo || 'Not set';
+    if (repo) {
+      ghRepoLabel.textContent = repo;
+    } else {
+      ghRepoLabel.textContent = 'Not set';
+    }
   }
   loadGhSettings();
 
   ghConfigBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     const repo = localStorage.getItem('gh_repo');
-    if (!repo) ghModal.classList.remove('hidden');
-    else ghDropdown.classList.toggle('hidden');
+    if (!repo) {
+      ghModal.classList.remove('hidden');
+    } else {
+      ghDropdown.classList.toggle('hidden');
+    }
   });
 
-  document.getElementById('gh-settings-open').addEventListener('click', () => { ghDropdown.classList.add('hidden'); ghModal.classList.remove('hidden'); });
+  document.getElementById('gh-settings-open').addEventListener('click', () => {
+    ghDropdown.classList.add('hidden');
+    ghModal.classList.remove('hidden');
+  });
 
   ghDisconnectBtn.addEventListener('click', () => {
     ghDropdown.classList.add('hidden');
-    if (confirm('Disconnect GitHub repository and clear token?')) {
-      localStorage.removeItem('gh_token'); localStorage.removeItem('gh_repo'); localStorage.removeItem('gh_branch'); localStorage.removeItem('gh_autosave');
-      loadGhSettings();
-      logLine('GitHub disconnected.', 'warn');
+    if (confirm('Are you sure you want to disconnect your GitHub repository and clear your saved token?')) {
+      localStorage.removeItem('gh_token');
+      localStorage.removeItem('gh_repo');
+      localStorage.removeItem('gh_branch');
+      localStorage.removeItem('gh_autosave');
+      ghTokenInput.value = '';
+      ghRepoInput.value = '';
+      ghBranchInput.value = 'main';
+      ghAutosaveCb.checked = true;
+      ghRepoLabel.textContent = 'Not set';
+      logLine('GitHub repository settings removed and disconnected.', 'warn');
     }
   });
 
   ghModalClose.addEventListener('click', () => ghModal.classList.add('hidden'));
   ghModalCloseBtn.addEventListener('click', () => ghModal.classList.add('hidden'));
-  window.addEventListener('click', (e) => { if (e.target === ghModal) ghModal.classList.add('hidden'); ghDropdown.classList.add('hidden'); });
+  window.addEventListener('click', (e) => {
+    if (e.target === ghModal) ghModal.classList.add('hidden');
+    ghDropdown.classList.add('hidden');
+  });
 
   ghSaveConfig.addEventListener('click', async () => {
     let token = ghTokenInput.value.trim();
@@ -508,23 +610,199 @@ document.addEventListener('focusin', function(e) {
     const branch = ghBranchInput.value.trim() || 'main';
     const autosave = ghAutosaveCb.checked;
 
-    if (!token || !repo) { alert('Fill Token and Repository name!'); return; }
-
-    if (!repo.includes('/')) {
-      const userRes = await fetch('https://api.github.com/user', { headers: { 'Authorization': `token ${token}` } });
-      if (userRes.ok) {
-        repo = `${(await userRes.json()).login}/${repo}`;
-        ghRepoInput.value = repo;
-      } else { alert('Invalid GitHub Token!'); return; }
+    if (!token || !repo) {
+      alert('Please fill both Token and Repository name!');
+      return;
     }
 
-    localStorage.setItem('gh_token', token);
-    localStorage.setItem('gh_repo', repo);
-    localStorage.setItem('gh_branch', branch);
-    localStorage.setItem('gh_autosave', autosave);
-    ghRepoLabel.textContent = repo;
-    ghModal.classList.add('hidden');
-    logLine(`GitHub configured: <span class="text-amber">${repo}</span>`, 'success');
+    if (!repo.includes('/')) {
+      try {
+        logLine('[GitHub] Validating token and fetching username...', 'info');
+        const userRes = await fetch('https://api.github.com/user', {
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          repo = `${userData.login}/${repo}`;
+          ghRepoInput.value = repo;
+        } else {
+          logLine('[GitHub Error] Invalid Personal Access Token or missing "repo" scope.', 'error');
+          alert('Invalid GitHub Token! Ensure your token has "repo" scope permissions.');
+          return;
+        }
+      } catch (err) {
+        logLine(`[GitHub] Network error validating token: ${err.message}`, 'error');
+        alert('Network error while validating token.');
+        return;
+      }
+    }
+
+    ghSaveConfig.disabled = true;
+    ghSaveConfig.textContent = 'Connecting...';
+    logLine(`[GitHub] Connecting to repository <span class="text-amber">${repo}</span>...`, 'info');
+
+    const repoReady = await ensureRepositoryExists(token, repo);
+
+    ghSaveConfig.disabled = false;
+    ghSaveConfig.textContent = 'Save & Sync';
+
+    if (repoReady) {
+      localStorage.setItem('gh_token', token);
+      localStorage.setItem('gh_repo', repo);
+      localStorage.setItem('gh_branch', branch);
+      localStorage.setItem('gh_autosave', autosave);
+      ghRepoLabel.textContent = repo;
+      ghModal.classList.add('hidden');
+      logLine(`GitHub sync configured successfully for <span class="text-amber">${repo}</span>!`, 'success');
+    }
+  });
+
+  async function ensureRepositoryExists(token, repoFullName) {
+    const [owner, repoName] = repoFullName.split('/');
+    if (!owner || !repoName) {
+      logLine(`[GitHub Error] Invalid format '${repoFullName}'. Expected owner/repo`, 'error');
+      alert('Invalid repository format. Use owner/repo (e.g. Testermt/CleoSave)');
+      return false;
+    }
+
+    try {
+      const checkRes = await fetch(`https://api.github.com/repos/${repoFullName}`, {
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+
+      if (checkRes.ok) {
+        logLine(`[GitHub] Connected to existing repository <span class="text-good">${repoFullName}</span>.`, 'success');
+        return true;
+      }
+
+      if (checkRes.status === 404) {
+        logLine(`[GitHub] Repository <span class="text-amber">${repoFullName}</span> not found. Creating private repo...`, 'warn');
+        
+        const createRes = await fetch(`https://api.github.com/user/repos`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github.v3+json'
+          },
+          body: JSON.stringify({
+            name: repoName,
+            private: true,
+            description: 'Created automatically via GTA SA Online CLEO Compiler'
+          })
+        });
+
+        if (createRes.ok) {
+          logLine(`Successfully created private repository <span class="text-good">${repoFullName}</span>!`, 'success');
+          return true;
+        } else {
+          const errJson = await createRes.json();
+          logLine(`[GitHub Error] Failed to create repo: ${errJson.message || 'Unknown error'}`, 'error');
+          alert(`Failed to create repository: ${errJson.message || 'Unknown error'}`);
+          return false;
+        }
+      } else if (checkRes.status === 401 || checkRes.status === 403) {
+        logLine(`[GitHub Error] Authorization failed. Check if your token has 'repo' scope permissions.`, 'error');
+        alert('Authorization failed! Please make sure your token has "repo" scope permissions enabled.');
+        return false;
+      } else {
+        const errJson = await createRes.json();
+        logLine(`[GitHub Error] Status ${checkRes.status}: ${errJson.message || 'API error'}`, 'error');
+        alert(`GitHub API Error: ${errJson.message || 'Unknown error'}`);
+        return false;
+      }
+    } catch (err) {
+      logLine(`[GitHub Network Error] ${err.message}`, 'error');
+      alert(`Network error: ${err.message}`);
+      return false;
+    }
+  }
+
+  async function commitToGitHub(content, filename, isBase64 = false, forcePrompt = false) {
+    const token = localStorage.getItem('gh_token');
+    const repo = localStorage.getItem('gh_repo');
+    const branch = localStorage.getItem('gh_branch') || 'main';
+
+    if (!token || !repo) {
+      if (forcePrompt) {
+        logLine('GitHub token or repository not configured. Click GitHub Sync to set up.', 'warn');
+        ghModal.classList.remove('hidden');
+      }
+      return;
+    }
+
+    logLine(`[GitHub] Committing <span class="text-amber">${filename}</span> to repository <span class="text-amber">${repo}</span>...`, 'info');
+
+    let encodedContent = '';
+    if (isBase64) {
+      encodedContent = content;
+    } else {
+      encodedContent = btoa(unescape(encodeURIComponent(content)));
+    }
+
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/${filename}`;
+
+    try {
+      let sha = null;
+      const getRes = await fetch(`${apiUrl}?ref=${branch}`, {
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (getRes.ok) {
+        const fileData = await getRes.json();
+        sha = fileData.sha;
+      }
+
+      const timestamp = new Date().toLocaleTimeString('en-GB', { hour12: false });
+      const bodyData = {
+        message: `Update ${filename} at ${timestamp} via GTA SA Online CLEO Compiler`,
+        content: encodedContent,
+        branch: branch
+      };
+      if (sha) bodyData.sha = sha;
+
+      const putRes = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify(bodyData)
+      });
+
+      const resJson = await putRes.json();
+      if (putRes.ok) {
+        logLine(`Successfully committed <span class="text-good">${filename}</span> to your private GitHub repo!`, 'success');
+      } else {
+        logLine(`[GitHub Commit Error] ${resJson.message || 'Unknown commit error'}`, 'error');
+      }
+    } catch (err) {
+      logLine(`[GitHub Network Error during commit] ${err.message}`, 'error');
+    }
+  }
+
+  document.getElementById('gh-save-source').addEventListener('click', () => {
+    ghDropdown.classList.add('hidden');
+    if (!editor) return;
+    const activeTab = openTabs.find(t => t.id === activeTabId);
+    const code = editor.getValue();
+    const filename = activeTab ? activeTab.name : 'script.txt';
+    if (!code.trim()) {
+      logLine('Editor is empty, nothing to commit.', 'warn');
+      return;
+    }
+    commitToGitHub(code, filename, false, true);
+  });
+
+  document.getElementById('gh-save-compiled').addEventListener('click', () => {
+    ghDropdown.classList.add('hidden');
+    const token = localStorage.getItem('gh_token');
+    const repo = localStorage.getItem('gh_repo');
+    if (!token || !repo) {
+      ghModal.classList.remove('hidden');
+      return;
+    }
+    compileBtn.click();
   });
 
   const TEMPLATES = {
@@ -533,58 +811,79 @@ document.addEventListener('focusin', function(e) {
     godmode: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'GOD'\n\n:MAIN\nwait 500\nif\n  0256: player $PLAYER_CHAR defined\njf @MAIN\n\n0223: set_actor $PLAYER_ACTOR health_to 1000\n02AB: set_actor $PLAYER_ACTOR immunities BP 1 FP 1 EP 1 CP 1 MP 1\n01E5: show_text_lowpriority "Godmode Activated" time 2000 flag 1\n0A93: end_custom_thread`
   };
 
-  const OPCODES = [['0000:', 'NOP — no operation'], ['0001:', 'wait N'], ['0002:', 'jump @label'], ['0004:', 'set var = value']];
+  const OPCODES = [
+    ['0000:', 'NOP — no operation'],
+    ['0001:', 'wait N — pauses thread for N ms'],
+    ['0002:', 'jump @label — unconditional jump'],
+    ['0004:', 'set var = value'],
+    ['0247:', 'request_model — load model into memory'],
+    ['03A4:', "name_thread 'NAME'"],
+  ];
+
   const opcodeTable = document.getElementById('opcode-table');
   OPCODES.forEach(([code, desc]) => {
     const row = document.createElement('tr');
     row.className = 'border-b border-hairline/50';
-    row.innerHTML = `<td class="py-1 pr-2 text-amber hex-addr">${code}</td><td class="py-1 text-gray-400">${desc}</td>`;
+    row.innerHTML = `<td class="py-1.5 pr-4 text-amber hex-addr">${code}</td><td class="py-1.5 text-gray-400">${desc}</td>`;
     opcodeTable.appendChild(row);
   });
+
   const opcodeModal = document.getElementById('opcode-modal');
   document.getElementById('opcode-btn').addEventListener('click', () => opcodeModal.classList.remove('hidden'));
   document.getElementById('opcode-close').addEventListener('click', () => opcodeModal.classList.add('hidden'));
+  opcodeModal.addEventListener('click', (e) => { if (e.target === opcodeModal) opcodeModal.classList.add('hidden'); });
 
   const consoleLog = document.getElementById('console-log');
   function logLine(text, type = 'info') {
     const colors = { info: 'text-gray-400', success: 'text-good', error: 'text-bad', warn: 'text-amber' };
     const line = document.createElement('div');
     line.className = colors[type] || colors.info;
-    line.innerHTML = `[${new Date().toLocaleTimeString()}] ${text}`;
+    const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
+    line.innerHTML = `<span class="text-gray-700">[${ts}]</span> ${text}`;
     consoleLog.appendChild(line);
     consoleLog.scrollTop = consoleLog.scrollHeight;
   }
   document.getElementById('console-clear').addEventListener('click', () => { consoleLog.innerHTML = ''; });
 
   let uploadedDbBase64 = null;
-  document.getElementById('db-upload-btn').addEventListener('click', () => document.getElementById('db-upload-input').click());
-  document.getElementById('db-upload-input').addEventListener('change', (e) => {
+  const dbUploadBtn = document.getElementById('db-upload-btn');
+  const dbUploadInput = document.getElementById('db-upload-input');
+
+  dbUploadBtn.addEventListener('click', () => dbUploadInput.click());
+  dbUploadInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => { uploadedDbBase64 = event.target.result.split(',')[1]; logLine(`Custom .db loaded`, 'success'); };
+    reader.onload = (event) => {
+      uploadedDbBase64 = event.target.result.split(',')[1] || event.target.result;
+      logLine(`Custom class database loaded: <span class="text-amber">${escapeHtml(file.name)}</span>`, 'success');
+    };
     reader.readAsDataURL(file);
   });
 
-  document.getElementById('upload-btn').addEventListener('click', () => document.getElementById('file-upload-input').click());
-  document.getElementById('file-upload-input').addEventListener('change', (e) => {
+  const uploadBtn = document.getElementById('upload-btn');
+  const fileInput = document.getElementById('file-upload-input');
+
+  uploadBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
       if (editor) {
+        clearEditorErrorMarkers();
         editor.setValue(event.target.result);
         const activeTab = openTabs.find(t => t.id === activeTabId);
         if (activeTab) activeTab.name = file.name;
         renderTabs();
-        logLine(`Loaded file: ${file.name}`, 'success');
+        logLine(`Uploaded file loaded: <span class="text-amber">${escapeHtml(file.name)}</span>`, 'success');
       }
     };
     reader.readAsText(file);
-    e.target.value = '';
+    fileInput.value = '';
   });
 
-  // DECOMPILE SCRIPT WITH FLAGS
+  // DECOMPILE SCRIPT
   const decompileBtn = document.getElementById('decompile-btn');
   const decompileInput = document.getElementById('decompile-upload-input');
 
@@ -607,7 +906,9 @@ document.addEventListener('focusin', function(e) {
     const debugBits = `${codeOffsets}${ignoreUnknown}${varCounter}${constantIndexes}${skipScmHeader}${skipExtraInfo}${sb3Compat}`;
     const customFlags = document.getElementById('custom-flags-input').value;
 
-    logLine(`Decompiling ${file.name}…`, 'info');
+    logLine(`Reading file <span class="text-amber">${escapeHtml(file.name)}</span> for decompilation…`, 'info');
+    logLine(`[Queue] Request sent to server queue, waiting for processing…`, 'warn');
+
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64Data = event.target.result.split(',')[1] || event.target.result;
@@ -615,20 +916,33 @@ document.addEventListener('focusin', function(e) {
         const response = await fetch(`${API_BASE}/api/decompile`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileBase64: base64Data, filename: file.name, game: selectedGame, useSource, debugBits, customFlags })
+          body: JSON.stringify({ 
+            fileBase64: base64Data, 
+            filename: file.name,
+            game: selectedGame,
+            useSource,
+            debugBits,
+            customFlags
+          }),
         });
         const data = await response.json();
-        if (response.ok && data.success && editor) {
+        if (data.cmd) {
+          logLine(`Command: <span class="text-amber">${escapeHtml(data.cmd)}</span>`, 'warn');
+        }
+        if (!response.ok || !data.success) {
+          logLine(`Decompilation failed: ${escapeHtml(data.error || 'Unknown error')}`, 'error');
+          return;
+        }
+        if (editor && data.code) {
+          clearEditorErrorMarkers();
           editor.setValue(data.code);
           const activeTab = openTabs.find(t => t.id === activeTabId);
           if (activeTab) activeTab.name = file.name.replace(/\.(cs|csa|csi)$/i, '.txt');
           renderTabs();
-          logLine(`Successfully decompiled <span class="text-good">${file.name}</span>!`, 'success');
-        } else {
-          logLine(`Decompilation failed: ${data.error || 'Unknown'}`, 'error');
+          logLine(`Successfully decompiled <span class="text-good">${escapeHtml(file.name)}</span>!`, 'success');
         }
       } catch (err) {
-        logLine(`Error: ${err.message}`, 'error');
+        logLine(`Error: ${escapeHtml(err.message)}`, 'error');
       } finally {
         decompileInput.value = '';
       }
@@ -653,8 +967,13 @@ document.addEventListener('focusin', function(e) {
       if (labelMatch) {
         const lbl = labelMatch[1].toUpperCase();
         if (definedLabels.has(lbl)) {
-          markers.push({ startLineNumber: lineNum, startColumn: 1, endLineNumber: lineNum, endColumn: model.getLineMaxColumn(lineNum), message: `Symbol twice defined.`, severity: monaco.MarkerSeverity.Error });
-        } else { definedLabels.add(lbl); }
+          markers.push({
+            startLineNumber: lineNum, startColumn: 1, endLineNumber: lineNum, endColumn: model.getLineMaxColumn(lineNum),
+            message: `Symbol '${labelMatch[1]}' is already defined.`, severity: monaco.MarkerSeverity.Error
+          });
+        } else {
+          definedLabels.add(lbl);
+        }
       }
     });
 
@@ -663,28 +982,58 @@ document.addEventListener('focusin', function(e) {
       const clean = lineText.replace(/\/\/.*$/, '').trim();
       if (!clean || clean.startsWith('{$')) return;
       const refMatches = clean.matchAll(/(?:jump|jf|gosub)\s+@([A-Za-z0-9_]+)/gi);
-      for (const m of refMatches) { referencedLabels.push({ name: m[1].toUpperCase(), originalName: m[1], line: lineNum }); }
+      for (const m of refMatches) {
+        referencedLabels.push({ name: m[1].toUpperCase(), originalName: m[1], line: lineNum });
+      }
     });
 
     referencedLabels.forEach(ref => {
       if (!definedLabels.has(ref.name)) {
-        markers.push({ startLineNumber: ref.line, startColumn: 1, endLineNumber: ref.line, endColumn: model.getLineMaxColumn(ref.line), message: `Label not found.`, severity: monaco.MarkerSeverity.Error });
+        markers.push({
+          startLineNumber: ref.line, startColumn: 1, endLineNumber: ref.line, endColumn: model.getLineMaxColumn(ref.line),
+          message: `Label '@${ref.originalName}' is not defined in script.`, severity: monaco.MarkerSeverity.Error
+        });
       }
     });
+
     return markers;
   }
 
   require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs' } });
 
   let errorDecorations = [];
+
   function clearEditorErrorMarkers() {
     if (editor && window.monaco) {
-      monaco.editor.setModelMarkers(editor.getModel(), 'cleo-compiler', []);
+      const model = editor.getModel();
+      monaco.editor.setModelMarkers(model, 'cleo-compiler', []);
+      monaco.editor.setModelMarkers(model, 'cleo-gui-linter', []);
       errorDecorations = editor.deltaDecorations(errorDecorations, []);
     }
   }
 
-  // MONACO EDITOR & CLEO SYNTAX HIGHLIGHTING SETUP
+  function setEditorErrorMarker(lineNum, message) {
+    if (editor && window.monaco && lineNum && typeof lineNum === 'number') {
+      const model = editor.getModel();
+      const maxLines = model.getLineCount();
+      const safeLine = Math.max(1, Math.min(Math.floor(lineNum), maxLines));
+
+      monaco.editor.setModelMarkers(model, 'cleo-compiler', [{
+        startLineNumber: safeLine, startColumn: 1, endLineNumber: safeLine, endColumn: model.getLineMaxColumn(safeLine),
+        message: message, severity: monaco.MarkerSeverity.Error
+      }]);
+
+      errorDecorations = editor.deltaDecorations(errorDecorations, [
+        {
+          range: new monaco.Range(safeLine, 1, safeLine, model.getLineMaxColumn(safeLine)),
+          options: { isWholeLine: true, className: 'error-line-highlight' }
+        }
+      ]);
+      editor.revealLineInCenter(safeLine);
+      editor.setPosition({ lineNumber: safeLine, column: 1 });
+    }
+  }
+
   require(['vs/editor/editor.main'], function () {
     monaco.languages.register({ id: 'cleo' });
     monaco.languages.setMonarchTokensProvider('cleo', {
@@ -741,7 +1090,7 @@ document.addEventListener('focusin', function(e) {
       automaticLayout: true,
       scrollBeyondLastLine: false,
       renderLineHighlight: 'all',
-      padding: { top: 10 },
+      padding: { top: 12 },
     });
 
     let lintTimeout;
@@ -759,9 +1108,12 @@ document.addEventListener('focusin', function(e) {
   document.getElementById('templateSelect').addEventListener('change', (e) => {
     const val = e.target.value;
     if (TEMPLATES[val] && editor) {
+      clearEditorErrorMarkers();
       editor.setValue(TEMPLATES[val]);
+      const activeTab = openTabs.find(t => t.id === activeTabId);
+      if (activeTab) activeTab.name = 'script.txt';
       renderTabs();
-      logLine(`Template loaded: ${val}`, 'info');
+      logLine(`Loaded template: <span class="text-amber">${val}</span>`, 'info');
     }
   });
 
@@ -780,38 +1132,122 @@ document.addEventListener('focusin', function(e) {
     const noSplash = document.getElementById('no-splash-cb').checked;
     const customFlags = document.getElementById('custom-flags-input').value;
 
-    if (!code.trim()) { logLine('Editor is empty.', 'warn'); return; }
+    if (!code.trim()) {
+      logLine('Editor is empty.', 'warn');
+      return;
+    }
 
+    const linterErrors = validateCleoSyntax(code);
+    if (linterErrors.length > 0) {
+      const firstErr = linterErrors[0];
+      logLine(`GUI Linter Error: Line ${firstErr.startLineNumber} — ${escapeHtml(firstErr.message)}`, 'error');
+      setEditorErrorMarker(firstErr.startLineNumber, firstErr.message);
+      return;
+    }
+
+    clearEditorErrorMarkers();
     compileBtn.disabled = true;
     compileSpinner.classList.remove('hidden');
     compileBtnText.textContent = 'Compiling…';
-    logLine('Compiling script…', 'info');
+    logLine(`Sending script to compiler (${selectedGame})…`, 'info');
+    logLine(`[Queue] Request sent to server queue, waiting for processing…`, 'warn');
 
     try {
       const response = await fetch(`${API_BASE}/api/compile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, filename: currentFilename, game: selectedGame, caseSensitive, checkConditions, noSplash, customFlags, customDbBase64: uploadedDbBase64 })
+        body: JSON.stringify({ 
+          code, 
+          filename: currentFilename, 
+          game: selectedGame, 
+          caseSensitive, 
+          checkConditions, 
+          noSplash, 
+          customFlags, 
+          customDbBase64: uploadedDbBase64 
+        }),
       });
 
-      if (!response.ok) { logLine('Compilation failed.', 'error'); return; }
+      const contentType = response.headers.get('content-type') || '';
+      const cmdHeader = response.headers.get('x-compiler-cmd');
+
+      if (!response.ok || contentType.includes('application/json')) {
+        const data = await response.json().catch(() => ({}));
+        if (data.cmd || cmdHeader) {
+          logLine(`Command: <span class="text-amber">${escapeHtml(data.cmd || cmdHeader)}</span>`, 'warn');
+        }
+        const message = data.error || `Compilation failed (HTTP ${response.status}).`;
+        logLine(escapeHtml(message), 'error');
+        if (data.line && typeof data.line === 'number') {
+          setEditorErrorMarker(data.line, message);
+        }
+        return;
+      }
+
+      if (cmdHeader) {
+        logLine(`Command: <span class="text-amber">${escapeHtml(cmdHeader)}</span>`, 'warn');
+      }
 
       let filename = response.headers.get('x-download-filename') || currentFilename.replace(/\.txt$/i, '.cs');
       const blob = await response.blob();
+      
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = filename;
-      document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url);
-      logLine(`Success: <span class="text-good">${filename}</span> downloaded.`, 'success');
-    } catch (err) { logLine(`Error: ${err.message}`, 'error'); }
-    finally { compileBtn.disabled = false; compileSpinner.classList.add('hidden'); compileBtnText.textContent = 'Compile & Download'; }
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      logLine(`Compilation succeeded — <span class="text-good">${filename}</span> downloaded.`, 'success');
+
+      // Check GitHub auto-save logic
+      const token = localStorage.getItem('gh_token');
+      const repo = localStorage.getItem('gh_repo');
+      const autosave = localStorage.getItem('gh_autosave') !== 'false';
+
+      if (token && repo) {
+        let shouldSave = autosave;
+        if (!autosave) {
+          shouldSave = confirm("Save output to GitHub?");
+        }
+        if (shouldSave) {
+          const reader = new FileReader();
+          reader.onload = function() {
+            const base64Data = reader.result.split(',')[1] || reader.result;
+            commitToGitHub(base64Data, filename, true, false);
+          };
+          reader.readAsDataURL(blob);
+        }
+      }
+
+    } catch (err) {
+      logLine(`Network error: ${escapeHtml(err.message)}`, 'error');
+    } finally {
+      compileBtn.disabled = false;
+      compileSpinner.classList.add('hidden');
+      compileBtnText.textContent = 'Compile & Download';
+    }
   });
 
   document.getElementById('clear-btn').addEventListener('click', () => {
-    if (editor) editor.setValue('');
+    if (editor) {
+      clearEditorErrorMarkers();
+      editor.setValue('');
+      const activeTab = openTabs.find(t => t.id === activeTabId);
+      if (activeTab) activeTab.name = 'script.txt';
+      renderTabs();
+      uploadedDbBase64 = null;
+    }
     logLine('Editor cleared.', 'info');
   });
 
-  function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
 </script>
 </body>
 </html>

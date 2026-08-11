@@ -474,6 +474,79 @@ document.addEventListener('focusin', function(e) {
     if (editor) editor.layout();
   });
 
+  // MULTI-USER REGISTRY FUNCTION TO SAVE USERNAME TO A PUBLIC GIST REGISTRY
+  async function registerUserToHub(username, token) {
+    try {
+      const registryGistId = localStorage.getItem('cleo_hub_registry_id');
+      if (registryGistId) {
+        // Fetch existing registry to check if user already exists
+        const res = await fetch(`https://api.github.com/gists/${registryGistId}`, {
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const file = data.files['community_users.json'];
+          if (file) {
+            let users = JSON.parse(file.content || '[]');
+            if (!users.includes(username)) {
+              users.push(username);
+              // Update registry gist
+              await fetch(`https://api.github.com/gists/${registryGistId}`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+                body: JSON.stringify({
+                  files: { 'community_users.json': { content: JSON.stringify(users) } }
+                })
+              });
+            }
+            return;
+          }
+        }
+      }
+      // If no registry cached or found, create one or search public gists for registry
+      const searchRes = await fetch(`https://api.github.com/gists/public?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+      if (searchRes.ok) {
+        const gists = await searchRes.json();
+        const existingReg = gists.find(g => g.description && g.description.includes("[CLEO-HUB-REGISTRY]"));
+        if (existingReg) {
+          localStorage.setItem('cleo_hub_registry_id', existingReg.id);
+          const file = existingReg.files['community_users.json'];
+          if (file) {
+            const fileRes = await fetch(file.raw_url);
+            let users = fileRes.ok ? await fileRes.json() : [];
+            if (!users.includes(username)) {
+              users.push(username);
+              await fetch(`https://api.github.com/gists/${existingReg.id}`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+                body: JSON.stringify({
+                  files: { 'community_users.json': { content: JSON.stringify(users) } }
+                })
+              });
+            }
+            return;
+          }
+        }
+      }
+      // Create new registry gist if none exists
+      const createRes = await fetch('https://api.github.com/gists', {
+        method: 'POST',
+        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+        body: JSON.stringify({
+          description: "GTA SA CLEO Hub Community Registry [CLEO-HUB-REGISTRY]",
+          public: true,
+          files: {
+            'community_users.json': { content: JSON.stringify([username]) }
+          }
+        })
+      });
+      if (createRes.ok) {
+        const newGist = await createRes.json();
+        localStorage.setItem('cleo_hub_registry_id', newGist.id);
+      }
+    } catch(e) { console.error('Registry error:', e); }
+  }
+
   async function publishScriptToCommunity() {
     const token = localStorage.getItem('gh_token');
     if (!token) {
@@ -498,6 +571,21 @@ document.addEventListener('focusin', function(e) {
     logLine('[Community] Publishing script to public GitHub Gist...', 'info');
 
     try {
+      // Fetch authenticated username
+      const userRes = await fetch('https://api.github.com/user', {
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!userRes.ok) {
+        alert('Invalid GitHub Token!');
+        return;
+      }
+      const userData = await userRes.json();
+      const username = userData.login;
+      localStorage.setItem('gh_username', username);
+
+      // Register user to community registry so community page can fetch their scripts
+      await registerUserToHub(username, token);
+
       const res = await fetch('https://api.github.com/gists', {
         method: 'POST',
         headers: {
@@ -705,7 +793,7 @@ document.addEventListener('focusin', function(e) {
         alert('Authorization failed! Please make sure your token has "repo" scope permissions enabled.');
         return false;
       } else {
-        const errJson = await createRes.json();
+        const errJson = await checkRes.json();
         logLine(`[GitHub Error] Status ${checkRes.status}: ${errJson.message || 'API error'}`, 'error');
         alert(`GitHub API Error: ${errJson.message || 'Unknown error'}`);
         return false;
@@ -798,7 +886,7 @@ document.addEventListener('focusin', function(e) {
     const token = localStorage.getItem('gh_token');
     const repo = localStorage.getItem('gh_repo');
     if (!token || !repo) {
-      ghModal.classList.remove('hidden');
+      ghModal.classList.add('hidden');
       return;
     }
     compileBtn.click();
@@ -1204,7 +1292,7 @@ document.addEventListener('focusin', function(e) {
       // FIXED GITHUB AUTO-SAVE LOGIC (Respects auto-save setting and asks if off)
       const token = localStorage.getItem('gh_token');
       const repo = localStorage.getItem('gh_repo');
-      const autosave = localStorage.getItem('gh_autosave') === 'true'; // Strict boolean check
+      const autosave = localStorage.getItem('gh_autosave'] === 'true'; // Strict boolean check
 
       if (token && repo) {
         let shouldSave = autosave;

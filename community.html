@@ -58,7 +58,7 @@
     </header>
 
     <main id="community-feed-grid" class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
-      <div class="text-center text-[#949ba4] py-12 text-xs">Loading community scripts...</div>
+      <div class="text-center text-[#949ba4] py-12 text-xs">Loading community scripts from all users...</div>
     </main>
   </div>
 
@@ -134,84 +134,95 @@
   detailClose.addEventListener('click', () => detailModal.classList.add('hidden'));
 
   async function fetchGists() {
-    feedGrid.innerHTML = '<div class="text-center text-[#949ba4] py-12 text-xs">Loading user scripts (up to 1000 gists)...</div>';
+    feedGrid.innerHTML = '<div class="text-center text-[#949ba4] py-12 text-xs">Loading all community user scripts...</div>';
     try {
-      let username = localStorage.getItem('gh_username');
-      if (!username) {
-        const repo = localStorage.getItem('gh_repo');
-        if (repo && repo.includes('/')) {
-          username = repo.split('/')[0];
-        }
-      }
-
-      if (!username) {
-        const token = localStorage.getItem('gh_token');
-        if (token) {
-          const userRes = await fetch('https://api.github.com/user', {
-            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-          });
-          if (userRes.ok) {
-            const userData = await userRes.json();
-            username = userData.login;
-            localStorage.setItem('gh_username', username);
+      // 1. Fetch registered users from community registry gist
+      let registeredUsers = [];
+      const searchRes = await fetch(`https://api.github.com/gists/public?t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+      if (searchRes.ok) {
+        const gists = await searchRes.json();
+        const registryGist = gists.find(g => g.description && g.description.includes("[CLEO-HUB-REGISTRY]"));
+        if (registryGist) {
+          const file = registryGist.files['community_users.json'];
+          if (file) {
+            const fileRes = await fetch(file.raw_url + `?t=${Date.now()}`);
+            if (fileRes.ok) {
+              registeredUsers = await fileRes.json();
+            }
           }
         }
       }
 
-      if (!username) {
-        feedGrid.innerHTML = '<div class="text-center text-amber-400 py-12 text-xs">Please configure your GitHub Repository in the editor first so we know whose scripts to load!</div>';
-        return;
-      }
-
-      let allGists = [];
-      for (let page = 1; page <= 10; page++) {
-        const res = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`, { 
-          headers: { 'Accept': 'application/vnd.github.v3+json' } 
-        });
-        if (res.ok) {
-          const gists = await res.json();
-          if (gists.length === 0) break;
-          allGists = allGists.concat(gists);
-        } else {
-          break;
+      // Fallback: If registry not found yet, search public gists directly
+      if (registeredUsers.length === 0) {
+        const publicRes = await fetch(`https://api.github.com/gists/public?per_page=100&t=${Date.now()}`, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+        if (publicRes.ok) {
+          const pubGists = await publicRes.json();
+          const communityScripts = pubGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
+          renderFeed(communityScripts);
+          return;
         }
       }
 
-      const communityScripts = allGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
-
-      if (communityScripts.length === 0) {
-        feedGrid.innerHTML = `<div class="text-center text-[#949ba4] py-12 text-xs">No scripts found for user "${username}" yet. Publish a script from the editor!</div>`;
-        return;
+      // 2. Fetch gists for each registered user across multiple pages (upto 1000 gists per user)
+      let allCommunityScripts = [];
+      for (const username of registeredUsers) {
+        for (let page = 1; page <= 10; page++) {
+          const res = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`, { 
+            headers: { 'Accept': 'application/vnd.github.v3+json' } 
+          });
+          if (res.ok) {
+            const userGists = await res.json();
+            if (userGists.length === 0) break;
+            const validScripts = userGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
+            allCommunityScripts = allCommunityScripts.concat(validScripts);
+          } else {
+            break;
+          }
+        }
       }
 
-      feedGrid.innerHTML = '';
-      communityScripts.forEach(g => {
-        const filename = Object.keys(g.files)[0] || 'script.txt';
-        const owner = g.owner ? g.owner.login : username;
-        const avatar = g.owner ? g.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
-        const cleanTitle = g.description.replace(UNIQUE_APP_SIGNATURE, '').trim() || filename;
+      // Sort by newest first
+      allCommunityScripts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-        const messageCard = document.createElement('div');
-        messageCard.className = 'flex gap-3 p-2.5 sm:p-3 rounded-lg hover:bg-[#2b2d31] transition-colors group';
-        messageCard.innerHTML = `
-          <img src="${avatar}" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full shrink-0 mt-0.5" />
-          <div class="flex-1 min-w-0">
-            <div class="flex items-baseline gap-2 mb-0.5">
-              <span class="font-bold text-gray-100 text-xs sm:text-sm truncate">${escapeHtml(owner)}</span>
-              <span class="text-[9px] text-[#949ba4] shrink-0">${new Date(g.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-            </div>
-            <p class="text-gray-300 text-xs mb-2 break-words">${escapeHtml(cleanTitle)}</p>
-            <div class="inline-flex flex-wrap items-center gap-2 bg-[#2b2d31] border border-[#1f2023] px-2.5 py-1.5 rounded-md max-w-full">
-              <span class="text-xs text-[#e8a33d] truncate max-w-[150px] sm:max-w-xs">📄 ${escapeHtml(filename)}</span>
-              <button onclick="openDetails('${g.id}', '${filename}', '${escapeHtml(owner)}', '${avatar}')" class="px-2 py-1 bg-[#5865f2] text-white rounded text-[11px] font-bold hover:bg-[#4752c4] shrink-0">View Code</button>
-            </div>
-          </div>
-        `;
-        feedGrid.appendChild(messageCard);
-      });
+      renderFeed(allCommunityScripts);
+
     } catch (err) {
-      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch user scripts.</div>`;
+      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed.</div>`;
     }
+  }
+
+  function renderFeed(communityScripts) {
+    if (communityScripts.length === 0) {
+      feedGrid.innerHTML = '<div class="text-center text-[#949ba4] py-12 text-xs">No community scripts found yet. Be the first to publish a script from the editor!</div>';
+      return;
+    }
+
+    feedGrid.innerHTML = '';
+    communityScripts.forEach(g => {
+      const filename = Object.keys(g.files)[0] || 'script.txt';
+      const owner = g.owner ? g.owner.login : 'Anonymous Modder';
+      const avatar = g.owner ? g.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
+      const cleanTitle = g.description.replace(UNIQUE_APP_SIGNATURE, '').trim() || filename;
+
+      const messageCard = document.createElement('div');
+      messageCard.className = 'flex gap-3 p-2.5 sm:p-3 rounded-lg hover:bg-[#2b2d31] transition-colors group';
+      messageCard.innerHTML = `
+        <img src="${avatar}" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full shrink-0 mt-0.5" />
+        <div class="flex-1 min-w-0">
+          <div class="flex items-baseline gap-2 mb-0.5">
+            <span class="font-bold text-gray-100 text-xs sm:text-sm truncate">${escapeHtml(owner)}</span>
+            <span class="text-[9px] text-[#949ba4] shrink-0">${new Date(g.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+          </div>
+          <p class="text-gray-300 text-xs mb-2 break-words">${escapeHtml(cleanTitle)}</p>
+          <div class="inline-flex flex-wrap items-center gap-2 bg-[#2b2d31] border border-[#1f2023] px-2.5 py-1.5 rounded-md max-w-full">
+            <span class="text-xs text-[#e8a33d] truncate max-w-[150px] sm:max-w-xs">📄 ${escapeHtml(filename)}</span>
+            <button onclick="openDetails('${g.id}', '${filename}', '${escapeHtml(owner)}', '${avatar}')" class="px-2 py-1 bg-[#5865f2] text-white rounded text-[11px] font-bold hover:bg-[#4752c4] shrink-0">View Code</button>
+          </div>
+        </div>
+      `;
+      feedGrid.appendChild(messageCard);
+    });
   }
 
   window.openDetails = async function(gistId, filename, owner, avatar) {

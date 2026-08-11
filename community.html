@@ -194,7 +194,7 @@
     }
 
     feedGrid.innerHTML = '';
-    communityScripts.format = communityScripts.forEach(g => {
+    communityScripts.forEach(g => {
       gistsMap[g.id] = g;
       const filenames = Object.keys(g.files).filter(f => f !== 'comments.json');
       const filename = filenames[0] || 'script.txt';
@@ -228,30 +228,36 @@
     detailCodePreview.textContent = 'Loading...';
     detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
 
+    let gistData = gistsMap[gistId];
+
     try {
       const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`);
       if (res.ok) {
-        activeGistData = await res.json();
-        const filenames = Object.keys(activeGistData.files).filter(f => f !== 'comments.json');
-        const filename = filenames[0] || 'script.txt';
-        const owner = activeGistData.owner ? activeGistData.owner.login : 'Anonymous Modder';
-        const avatar = activeGistData.owner ? activeGistData.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
-
-        detailTitle.textContent = `Thread: ${filename}`;
-        detailAuthorName.textContent = owner;
-        detailAuthorAvatar.src = avatar;
-
-        const file = activeGistData.files[filename];
-        detailCodePreview.textContent = file ? file.content : 'No content';
-        detailLoadLink.href = `index.html?load_gist=${gistId}&file=${encodeURIComponent(filename)}`;
-        
-        renderComments(activeGistData);
-      } else {
-        detailCodePreview.textContent = 'Failed to load script content.';
-        detailCommentsList.innerHTML = '<div class="text-red-400 text-xs">Could not load comments.</div>';
+        gistData = await res.json();
+        gistsMap[gistId] = gistData;
       }
     } catch (err) {
-      detailCodePreview.textContent = 'Error loading content.';
+      console.warn("Using cached gist data due to fetch error");
+    }
+
+    if (gistData) {
+      activeGistData = gistData;
+      const filenames = Object.keys(gistData.files).filter(f => f !== 'comments.json');
+      const filename = filenames[0] || 'script.txt';
+      const owner = gistData.owner ? gistData.owner.login : 'Anonymous Modder';
+      const avatar = gistData.owner ? gistData.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
+
+      detailTitle.textContent = `Thread: ${filename}`;
+      detailAuthorName.textContent = owner;
+      detailAuthorAvatar.src = avatar;
+
+      const file = gistData.files[filename];
+      detailCodePreview.textContent = file ? file.content : 'No content';
+      detailLoadLink.href = `index.html?load_gist=${gistId}&file=${encodeURIComponent(filename)}`;
+      
+      renderComments(gistData);
+    } else {
+      detailCodePreview.textContent = 'Failed to load script content.';
       detailCommentsList.innerHTML = '<div class="text-red-400 text-xs">Could not load comments.</div>';
     }
   };
@@ -259,11 +265,11 @@
   function renderComments(gistData) {
     try {
       let comments = [];
-      if (gistData.files['comments.json']) {
+      if (gistData && gistData.files && gistData.files['comments.json']) {
         comments = JSON.parse(gistData.files['comments.json'].content || '[]');
       }
 
-      if (comments.length === 0) {
+      if (!Array.isArray(comments) || comments.length === 0) {
         detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">No replies in this thread yet. Be the first to comment!</div>';
         return;
       }
@@ -293,18 +299,15 @@
     commentSubmitBtn.textContent = 'Sending...';
 
     try {
-      // 1. Fetch latest Gist data to get current comments.json
-      const getRes = await fetch(`https://api.github.com/gists/${activeGistId}?t=${Date.now()}`);
-      if (!getRes.ok) throw new Error('Failed to sync gist');
-      const gistJson = await getRes.json();
-
       let comments = [];
-      if (gistJson.files['comments.json']) {
-        comments = JSON.parse(gistJson.files['comments.json'].content || '[]');
+      if (activeGistData && activeGistData.files && activeGistData.files['comments.json']) {
+        try {
+          comments = JSON.parse(activeGistData.files['comments.json'].content || '[]');
+        } catch(err) { comments = []; }
       }
 
       const username = localStorage.getItem('gh_username') || 'Modder';
-      const avatar = gistJson.owner ? gistJson.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
+      const avatar = activeGistData && activeGistData.owner ? activeGistData.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
 
       comments.push({
         user: username,
@@ -313,7 +316,6 @@
         time: Date.now()
       });
 
-      // 2. PATCH the Gist with updated comments.json
       const patchRes = await fetch(`https://api.github.com/gists/${activeGistId}`, {
         method: 'PATCH',
         headers: { 
@@ -331,6 +333,7 @@
       if (patchRes.ok) {
         const updatedGist = await patchRes.json();
         activeGistData = updatedGist;
+        gistsMap[activeGistId] = updatedGist;
         commentInput.value = '';
         renderComments(updatedGist);
       } else {

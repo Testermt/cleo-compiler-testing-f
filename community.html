@@ -287,7 +287,7 @@
     }
   }
 
-  commentSubmitBtn.addEventListener('click', async (e) => {
+    commentSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const text = commentInput.value.trim();
     if (!text || !activeGistId) return;
@@ -299,15 +299,33 @@
     commentSubmitBtn.textContent = 'Sending...';
 
     try {
+      // Dynamic username aur avatar fetch karne ke liye GitHub API call
+      let username = localStorage.getItem('gh_username');
+      let avatar = 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
+
+      if (!username || username === 'Modder') {
+        const userRes = await fetch('https://api.github.com/user', {
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          username = userData.login;
+          avatar = userData.avatar_url;
+          localStorage.setItem('gh_username', username);
+          localStorage.setItem('gh_avatar', avatar);
+        } else {
+          username = 'Modder';
+        }
+      } else {
+        avatar = localStorage.getItem('gh_avatar') || (activeGistData && activeGistData.owner ? activeGistData.owner.avatar_url : avatar);
+      }
+
       let comments = [];
       if (activeGistData && activeGistData.files && activeGistData.files['comments.json']) {
         try {
           comments = JSON.parse(activeGistData.files['comments.json'].content || '[]');
         } catch(err) { comments = []; }
       }
-
-      const username = localStorage.getItem('gh_username') || 'Modder';
-      const avatar = activeGistData && activeGistData.owner ? activeGistData.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
 
       comments.push({
         user: username,
@@ -347,6 +365,7 @@
       commentSubmitBtn.textContent = 'Send';
     }
   });
+
 
   function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
   fetchGists();

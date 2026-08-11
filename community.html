@@ -256,17 +256,23 @@
     fetchComments(gistId);
   };
 
-  async function fetchComments(gistId) {
+        async function fetchComments(gistId) {
     detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">Loading messages...</div>';
     
     try {
-      const publicHeaders = { 
+      const token = getValidToken();
+      const headers = { 
         'Accept': 'application/vnd.github.v3+json', 
         'Cache-Control': 'no-cache, no-store, must-revalidate' 
       };
+      
+      // Include token so GitHub allows fetching the comments for this Gist
+      if (token) {
+        headers['Authorization'] = `token ${token}`;
+      }
 
-      const res = await fetch(`https://api.github.com/gists/${gistId}/comments?t=${Date.now()}&r=${Math.random()}`, { headers: publicHeaders });
-
+      const res = await fetch(`https://api.github.com/gists/${gistId}/comments?t=${Date.now()}&r=${Math.random()}`, { headers });
+      
       if (res.ok) {
         const comments = await res.json();
         if (!Array.isArray(comments) || comments.length === 0) {
@@ -291,6 +297,9 @@
     }
   }
 
+
+
+
   commentSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const text = commentInput.value.trim();
@@ -314,8 +323,24 @@
       });
       
       if (res.ok) { 
+        const username = localStorage.getItem('gh_username') || 'Modder';
+        const avatar = `https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png`;
+        
+        // Remove "No replies" placeholder if it exists
+        const emptyMsg = detailCommentsList.querySelector('.text-gray-500');
+        if (emptyMsg) detailCommentsList.innerHTML = '';
+        
+        // Instantly render comment on screen (Optimistic UI Update)
+        const div = document.createElement('div');
+        div.className = 'flex gap-2 items-start text-xs';
+        div.innerHTML = `<img src="${avatar}" class="w-5 h-5 rounded-full mt-0.5 shrink-0" /><div class="flex-1 min-w-0"><span class="font-bold text-[#5865f2]">${escapeHtml(username)}:</span> <span class="text-gray-300 break-words">${escapeHtml(text)}</span></div>`;
+        detailCommentsList.appendChild(div);
+        detailCommentsList.scrollTop = detailCommentsList.scrollHeight;
+
         commentInput.value = ''; 
-        setTimeout(() => fetchComments(activeGistId), 600);
+
+        // Wait 2.5 seconds for GitHub DB to index, then fetch fresh comments list from server
+        setTimeout(() => fetchComments(activeGistId), 2500);
       } else {
         const errJson = await res.json().catch(() => ({}));
         alert('Failed to send message: ' + (errJson.message || 'Ensure Token has "gist" scope permission enabled!'));

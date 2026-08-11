@@ -475,6 +475,16 @@ document.addEventListener('focusin', function(e) {
     if (editor) editor.layout();
   });
 
+  // --- PUBLISH BUTTON EVENT LISTENERS ---
+  document.getElementById('header-publish-btn').addEventListener('click', () => {
+    publishScriptToCommunity();
+  });
+
+  document.getElementById('gh-publish-gist').addEventListener('click', () => {
+    ghDropdown.classList.add('hidden');
+    publishScriptToCommunity();
+  });
+  
     // SECURE BACKEND REGISTRY REGISTRATION
   async function registerUserToHub(username) {
     if (!username) return;

@@ -183,7 +183,7 @@
     return null;
   }
 
-  async function fetchGists() {
+    async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">Loading community scripts instantly...</div>';
     try {
       const res = await fetch(`${API_BASE}/api/get-community-feed?t=${Date.now()}`);
@@ -192,41 +192,33 @@
       if (!data.success) throw new Error(data.error);
 
       downloadCountsMap = data.downloadCounts || {};
-      const registeredUsers = data.registeredUsers || ["Testermt", "DrakMaster798"];
+      const posts = data.posts || [];
 
-      const token = getValidToken();
-      const headers = token ? { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } : { 'Accept': 'application/vnd.github.v3+json' };
-
-      let allCommunityScripts = [];
-      for (const username of registeredUsers) {
-        try {
-          for (let page = 1; page <= 10; page++) {
-            const userRes = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`, { headers });
-            if (userRes.ok) {
-              const userGists = await userRes.json();
-              if (!Array.isArray(userGists) || userGists.length === 0) break;
-              const validScripts = userGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
-              allCommunityScripts = allCommunityScripts.concat(validScripts);
-              if (userGists.length < 100) break;
-            } else {
-              break;
-            }
-          }
-        } catch (userErr) {
-          console.warn(`Could not fetch gists for user ${username}:`, userErr);
+      // ✨ Fix: Map stored files array correctly into the format renderFeed expects
+      allCachedScripts = posts.map(p => {
+        const filesObj = {};
+        if (Array.isArray(p.files)) {
+          p.files.forEach(fname => {
+            filesObj[fname] = { filename: fname };
+          });
         }
-      }
-
-      allCommunityScripts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      allCachedScripts = allCommunityScripts;
+        return {
+          id: p.id,
+          description: p.description,
+          created_at: p.createdAt,
+          owner: { login: p.owner, avatar_url: p.avatar },
+          files: filesObj
+        };
+      });
       
       filterAndRenderFeed();
 
     } catch (err) {
       console.error("Feed fetch error:", err);
-      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your backend server[span_1](start_span)[span_1](end_span).</div>`;
+      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your backend server.</div>`;
     }
   }
+
 
   function filterAndRenderFeed() {
     const query = (searchInput.value || '').toLowerCase().trim();

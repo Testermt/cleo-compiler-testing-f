@@ -208,6 +208,46 @@ document.addEventListener('focusin', function(e) {
     </div>
   </div>
 
+  <!-- PUBLISH SCRIPT MODAL -->
+  <div id="publish-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+    <div class="bg-panel border border-hairline rounded-sm max-w-md w-full p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-hairline pb-2.5">
+        <h2 class="font-display text-xs sm:text-sm text-amber font-semibold">Publish Script to Community</h2>
+        <button id="publish-modal-close" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
+      </div>
+
+      <div class="flex flex-col gap-2.5 text-[11.5px]">
+        <div>
+          <label class="block text-gray-400 mb-1">Script Title / Description:</label>
+          <input type="text" id="pub-title-input" placeholder="e.g. Awesome Car Spawner Script" 
+            class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full focus:outline-none focus:border-amber font-mono text-xs" />
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">Source File Name (.txt):</label>
+          <input type="text" id="pub-source-name" value="script.txt" 
+            class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full focus:outline-none focus:border-amber font-mono text-xs" />
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">Compiled Script File (Optional - .cs / .csa / .csi):</label>
+          <div class="flex gap-2">
+            <input type="text" id="pub-compiled-name" placeholder="script.cs" 
+              class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 flex-1 focus:outline-none focus:border-amber font-mono text-xs" />
+            <input type="file" id="pub-compiled-file-input" accept=".cs,.csa,.csi" class="hidden" />
+            <button type="button" id="pub-browse-compiled" class="btn-press px-3 py-2 bg-panel2 border border-hairline text-amber text-[11px] rounded-sm hover:border-amber">Browse...</button>
+          </div>
+          <span id="pub-compiled-status" class="text-[10px] text-gray-500 mt-0.5 block">No compiled file attached</span>
+        </div>
+      </div>
+      
+      <div class="flex justify-end gap-2 pt-2 border-t border-hairline">
+        <button id="pub-modal-cancel" class="px-3 py-1.5 text-gray-400 text-[11px]">Cancel</button>
+        <button id="pub-modal-submit" class="btn-press text-[11px] px-3.5 py-1.5 bg-amber text-ink font-semibold rounded-sm hover:bg-amber/90">
+          Publish Now 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MAIN -->
   <main class="flex-1 max-w-6xl w-full mx-auto px-2 sm:px-4 py-3 flex flex-col gap-3">
 
@@ -354,7 +394,7 @@ document.addEventListener('focusin', function(e) {
 <script>
   const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-testing.onrender.com';
   const UNIQUE_APP_SIGNATURE = "[CLEO-HUB-ID-998877]";
-  const REGISTRY_GIST_ID = "42183afd8d5722544524b1fc6f68ec3a"; // <-- Teri registry Gist ID properly set hai!
+  const REGISTRY_GIST_ID = "42183afd8d5722544524b1fc6f68ec3a";
 
   let openTabs = [
     { id: 'tab-1', name: 'script.txt', content: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'MAIN'\n\n:MAIN_START\nwait 0\nif\n  0256:   player $PLAYER_CHAR defined\njf @MAIN_START\n\n0001: wait 0\n0417: create_pickup_marker_at 0.0 0.0 0.0 color 1\n\n:MAIN_LOOP\nwait 250\njump @MAIN_LOOP\n` }
@@ -475,56 +515,95 @@ document.addEventListener('focusin', function(e) {
     if (editor) editor.layout();
   });
 
-  // --- PUBLISH BUTTON EVENT LISTENERS ---
-  document.getElementById('header-publish-btn').addEventListener('click', () => {
-    publishScriptToCommunity();
+  // --- PUBLISH SCRIPT MODAL & EVENT LISTENERS ---
+  const publishModal = document.getElementById('publish-modal');
+  const pubTitleInput = document.getElementById('pub-title-input');
+  const pubSourceName = document.getElementById('pub-source-name');
+  const pubCompiledName = document.getElementById('pub-compiled-name');
+  const pubCompiledFileInput = document.getElementById('pub-compiled-file-input');
+  const pubBrowseCompiled = document.getElementById('pub-browse-compiled');
+  const pubCompiledStatus = document.getElementById('pub-compiled-status');
+  const pubModalSubmit = document.getElementById('pub-modal-submit');
+  const pubModalCancel = document.getElementById('pub-modal-cancel');
+  const publishModalClose = document.getElementById('publish-modal-close');
+
+  let attachedCompiledContent = null;
+  let attachedCompiledBase64 = false;
+
+  pubBrowseCompiled.addEventListener('click', () => pubCompiledFileInput.click());
+  pubCompiledFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    pubCompiledName.value = file.name;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      attachedCompiledContent = event.target.result.split(',')[1] || event.target.result;
+      attachedCompiledBase64 = true;
+      pubCompiledStatus.textContent = `Attached: ${file.name} (${Math.round(file.size/1024)} KB)`;
+      pubCompiledStatus.className = 'text-[10px] text-good mt-0.5 block';
+    };
+    reader.readAsDataURL(file);
   });
 
+  document.getElementById('header-publish-btn').addEventListener('click', openPublishModal);
   document.getElementById('gh-publish-gist').addEventListener('click', () => {
     ghDropdown.classList.add('hidden');
-    publishScriptToCommunity();
+    openPublishModal();
   });
-  
-    
 
-  // SECURE BACKEND REGISTRY REGISTRATION
-  async function registerUserToHub(username) {
-    if (!username) return;
-    try {
-      console.log("Sending username to backend:", username);
-      const res = await fetch('https://cleo-compiler-testing.onrender.com/api/register-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username })
-      });
-      const data = await res.json();
-      console.log("Backend response received:", data);
-    } catch(e) {
-      console.error("Registry background update failed:", e);
-    }
-  }
-  
-  async function publishScriptToCommunity() {
+  function openPublishModal() {
     const token = localStorage.getItem('gh_token');
     if (!token) {
       ghModal.classList.remove('hidden');
       alert('Please configure your GitHub Token first! Ensure it has "gist" scope permissions.');
       return;
     }
-    if (!editor) return;
-    const code = editor.getValue();
     const activeTab = openTabs.find(t => t.id === activeTabId);
-    const filename = activeTab ? activeTab.name : 'script.txt';
+    pubSourceName.value = activeTab ? activeTab.name : 'script.txt';
+    pubTitleInput.value = '';
+    attachedCompiledContent = null;
+    attachedCompiledBase64 = false;
+    pubCompiledName.value = '';
+    pubCompiledStatus.textContent = 'No compiled file attached';
+    pubCompiledStatus.className = 'text-[10px] text-gray-500 mt-0.5 block';
+    publishModal.classList.remove('hidden');
+  }
 
-    if (!code.trim()) {
-      alert('Editor is empty!');
+  publishModalClose.addEventListener('click', () => publishModal.classList.add('hidden'));
+  pubModalCancel.addEventListener('click', () => publishModal.classList.add('hidden'));
+
+  async function registerUserToHub(username) {
+    if (!username) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/register-user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      });
+      await res.json();
+    } catch(e) {
+      console.error("Registry background update failed:", e);
+    }
+  }
+
+  pubModalSubmit.addEventListener('click', async () => {
+    const token = localStorage.getItem('gh_token');
+    const title = pubTitleInput.value.trim();
+    const sourceFilename = pubSourceName.value.trim() || 'script.txt';
+    const compiledFilename = pubCompiledName.value.trim();
+
+    if (!title) {
+      alert('Please enter a title or description!');
+      return;
+    }
+    if (!editor) return;
+    const sourceCode = editor.getValue();
+    if (!sourceCode.trim()) {
+      alert('Editor source code is empty!');
       return;
     }
 
-    const userTitle = prompt("Enter a title or description for your public community script:", "GTA SA CLEO Script");
-    if (!userTitle) return;
-
-    const finalDescription = `${userTitle} ${UNIQUE_APP_SIGNATURE}`;
+    publishModal.classList.add('hidden');
     logLine('[Community] Publishing script to public GitHub Gist...', 'info');
 
     try {
@@ -539,9 +618,21 @@ document.addEventListener('focusin', function(e) {
       const username = userData.login;
       localStorage.setItem('gh_username', username);
 
-      // ✨ FIX: Yahan token hata diya, ab yeh seedha secure backend ko call karega!
       await registerUserToHub(username);
 
+      const filesPayload = {
+        [sourceFilename]: { content: sourceCode },
+        'comments.json': { content: '[]' }
+      };
+
+      if (compiledFilename && attachedCompiledContent) {
+        filesPayload[compiledFilename] = { 
+          content: attachedCompiledContent,
+          encoding: attachedCompiledBase64 ? 'base64' : 'utf-8'
+        };
+      }
+
+      const finalDescription = `${title} ${UNIQUE_APP_SIGNATURE}`;
       const res = await fetch('https://api.github.com/gists', {
         method: 'POST',
         headers: {
@@ -552,17 +643,14 @@ document.addEventListener('focusin', function(e) {
         body: JSON.stringify({
           description: finalDescription,
           public: true,
-          files: {
-            [filename]: { content: code },
-            'comments.json': { content: '[]' }
-          }
+          files: filesPayload
         })
       });
 
       if (res.ok) {
         const gistData = await res.json();
         logLine(`Successfully published to Community Feed! ID: <span class="text-good">${gistData.id}</span>`, 'success');
-        alert('Script successfully published to Community Hub!');
+        alert('Script successfully published with source/compiled files!');
       } else {
         const errJson = await res.json();
         logLine(`[Gist Error] ${errJson.message}`, 'error');
@@ -572,7 +660,7 @@ document.addEventListener('focusin', function(e) {
       logLine(`[Network Error] ${err.message}`, 'error');
       alert(`Network error: ${err.message}`);
     }
-  }
+  });
 
   const ghConfigBtn = document.getElementById('gh-config-btn');
   const ghDropdown = document.getElementById('gh-dropdown');
@@ -619,15 +707,13 @@ document.addEventListener('focusin', function(e) {
     ghModal.classList.remove('hidden');
   });
 
-    ghDisconnectBtn.addEventListener('click', () => {
+  ghDisconnectBtn.addEventListener('click', () => {
     ghDropdown.classList.add('hidden');
     if (confirm('Are you sure you want to disconnect your GitHub repository and clear your saved token?')) {
       localStorage.removeItem('gh_token');
       localStorage.removeItem('gh_repo');
       localStorage.removeItem('gh_branch');
       localStorage.removeItem('gh_autosave');
-      
-      // 👉 Yahan add karna hai:
       localStorage.removeItem('gh_username');
       localStorage.removeItem('gh_avatar');
 
@@ -639,12 +725,12 @@ document.addEventListener('focusin', function(e) {
       logLine('GitHub repository settings removed and disconnected.', 'warn');
     }
   });
-  
 
   ghModalClose.addEventListener('click', () => ghModal.classList.add('hidden'));
   ghModalCloseBtn.addEventListener('click', () => ghModal.classList.add('hidden'));
   window.addEventListener('click', (e) => {
     if (e.target === ghModal) ghModal.classList.add('hidden');
+    if (e.target === publishModal) publishModal.classList.add('hidden');
     ghDropdown.classList.add('hidden');
   });
 

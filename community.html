@@ -52,24 +52,33 @@
 
   <!-- GTA SA MAIN CHAT AREA -->
   <div class="flex-1 flex flex-col min-w-0 bg-[#0c0f14]">
-    <header class="h-12 gta-header px-3 sm:px-4 flex items-center justify-between shadow-md shrink-0 gap-2">
-      <div class="flex items-center gap-2 font-bold text-gray-200 text-xs sm:text-sm min-w-0">
-        <button id="sidebar-toggle" class="md:hidden text-amber-500 hover:text-white text-base p-1">☰</button>
-        <span class="text-[#e8a33d]">#</span>
-        <span class="truncate text-gray-100 tracking-wide">public-scripts-feed</span>
+        <header class="h-auto sm:h-12 gta-header px-3 sm:px-4 py-2 sm:py-0 flex flex-col sm:flex-row items-center justify-between shadow-md shrink-0 gap-2">
+      <div class="flex items-center justify-between w-full sm:w-auto gap-2 font-bold text-gray-200 text-xs sm:text-sm min-w-0">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <button id="sidebar-toggle" class="md:hidden text-amber-500 hover:text-white text-base p-1">☰</button>
+          <span class="text-[#e8a33d]">#</span>
+          <span class="truncate text-gray-100 tracking-wide">public-scripts</span>
+        </div>
+        <!-- Mobile ke liye buttons right side -->
+        <div class="flex items-center gap-1.5 sm:hidden shrink-0">
+          <button id="refresh-feed-m" onclick="fetchGists()" class="px-2.5 py-1 rounded gta-button text-[10px] font-semibold">🔄</button>
+          <a href="index.html" class="px-2.5 py-1 rounded bg-[#e8a33d] text-black text-[10px] font-bold text-decoration-none shadow">Editor</a>
+        </div>
       </div>
 
-      <!-- ✨ Username Search Bar Added -->
-      <div class="flex items-center gap-2 flex-1 max-w-xs px-2">
-        <input type="text" id="search-username-input" placeholder="Search by username..." 
-          class="w-full bg-[#12161d] border border-[#242b36] rounded px-2.5 py-1 text-xs text-gray-200 focus:outline-none focus:border-[#e8a33d]" />
+      <!-- ✨ Responsive Search Bar -->
+      <div class="w-full sm:flex-1 max-w-sm px-0 sm:px-2">
+        <input type="text" id="search-username-input" placeholder="🔍 Search username or script..." 
+          class="w-full bg-[#12161d] border border-[#242b36] rounded px-2.5 py-1.5 sm:py-1 text-xs text-gray-200 focus:outline-none focus:border-[#e8a33d]" />
       </div>
 
-      <div class="flex items-center gap-1.5 shrink-0">
+      <!-- Desktop Buttons -->
+      <div class="hidden sm:flex items-center gap-1.5 shrink-0">
         <button id="refresh-feed" class="px-3 py-1 rounded gta-button text-[11px] sm:text-xs transition-colors font-semibold">🔄 Refresh</button>
         <a href="index.html" class="px-3 py-1 rounded bg-[#e8a33d] text-black text-[11px] sm:text-xs hover:bg-[#d49233] font-bold text-decoration-none shadow">Editor</a>
       </div>
     </header>
+
 
     <main id="community-feed-grid" class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
       <div class="text-center text-gray-500 py-12 text-xs">Loading community scripts from all users...</div>

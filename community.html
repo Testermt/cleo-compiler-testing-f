@@ -351,22 +351,20 @@
     }
   }
 
+    const API_BASE = 'https://cleo-compiler-testing.onrender.com'; // Apna Render backend URL yahan check kar lein
+
   commentSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const text = commentInput.value.trim();
     if (!text || !activeGistId) return;
-    
-    const token = getValidToken();
-    if (!token) { alert('Configure GitHub Token in main editor settings to reply!'); return; }
 
-    commentSubmitBtn.disabled = true;
-    commentSubmitBtn.textContent = 'Sending...';
+    let username = localStorage.getItem('gh_username');
+    let avatar = localStorage.getItem('gh_avatar') || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
 
-    try {
-      let username = localStorage.getItem('gh_username');
-      let avatar = 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
-
-      if (!username || username === 'Modder') {
+    if (!username) {
+      const token = getValidToken();
+      if (!token) { alert('Please configure your GitHub Token first!'); return; }
+      try {
         const userRes = await fetch('https://api.github.com/user', {
           headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
         });
@@ -379,47 +377,33 @@
         } else {
           username = 'Modder';
         }
-      } else {
-        avatar = localStorage.getItem('gh_avatar') || (activeGistData && activeGistData.owner ? activeGistData.owner.avatar_url : avatar);
-      }
+      } catch(e) { username = 'Modder'; }
+    }
 
-      let comments = [];
-      if (activeGistData && activeGistData.files && activeGistData.files['comments.json']) {
-        try {
-          comments = JSON.parse(activeGistData.files['comments.json'].content || '[]');
-        } catch(err) { comments = []; }
-      }
+    commentSubmitBtn.disabled = true;
+    commentSubmitBtn.textContent = 'Sending...';
 
-      comments.push({
-        user: username,
-        avatar: avatar,
-        body: text,
-        time: Date.now()
-      });
-
-      const patchRes = await fetch(`https://api.github.com/gists/${activeGistId}`, {
-        method: 'PATCH',
-        headers: { 
-          'Authorization': `token ${token}`, 
-          'Content-Type': 'application/json', 
-          'Accept': 'application/vnd.github.v3+json' 
-        },
+    try {
+      // ✨ FIX: Call backend secure endpoint instead of direct GitHub API PATCH
+      const res = await fetch(`${API_BASE}/api/add-comment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          files: {
-            'comments.json': { content: JSON.stringify(comments) }
-          }
+          gistId: activeGistId,
+          username: username,
+          avatar: avatar,
+          body: text
         })
       });
 
-      if (patchRes.ok) {
-        const updatedGist = await patchRes.json();
-        activeGistData = updatedGist;
-        gistsMap[activeGistId] = updatedGist;
+      const data = await res.json();
+      if (res.ok && data.success) {
+        activeGistData = data.gist;
+        gistsMap[activeGistId] = data.gist;
         commentInput.value = '';
-        renderComments(updatedGist);
+        renderComments(data.gist);
       } else {
-        const errJson = await patchRes.json().catch(() => ({}));
-        alert('Failed to send comment: ' + (errJson.message || 'Unknown error'));
+        alert('Failed to send comment: ' + (data.error || 'Unknown error'));
       }
     } catch (err) {
       alert('Network error while sending comment.');
@@ -428,6 +412,7 @@
       commentSubmitBtn.textContent = 'Send';
     }
   });
+
 
   function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
   fetchGists();

@@ -236,8 +236,7 @@
       feedGrid.appendChild(messageCard);
     });
   }
-
-    window.openDetails = async function(gistId) {
+  window.openDetails = async function(gistId) {
     activeGistId = gistId;
     detailModal.classList.remove('hidden');
     detailCodePreview.textContent = 'Loading...';
@@ -247,14 +246,29 @@
     let gistData = gistsMap[gistId];
 
     try {
-      // ✨ FIX: Yahan token headers add kar diye hain taaki single Gist ka content properly fetch ho sake
       const token = getValidToken();
       const headers = token ? { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } : { 'Accept': 'application/vnd.github.v3+json' };
       
+      // 1. Post ka data fetch karo
       const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers });
       if (res.ok) {
         gistData = await res.json();
         gistsMap[gistId] = gistData;
+      }
+
+      // 2. Central Comments Gist se is specific post ke comments fetch karo
+      const centralGistId = "42183afd8d5722544524b1fc6f68ec3a"; // Tumhari Central Comments Gist ID
+      const commentsRes = await fetch(`https://api.github.com/gists/${centralGistId}?t=${Date.now()}`, { headers });
+      if (commentsRes.ok) {
+        const centralData = await commentsRes.json();
+        if (centralData.files && centralData.files['all_comments.json']) {
+          const allMap = JSON.parse(centralData.files['all_comments.json'].content || '{}');
+          const postComments = allMap[gistId] || [];
+          
+          // GistData ke andar comments inject kar do taaki renderComments() sahi se read kare
+          if (!gistData.files) gistData.files = {};
+          gistData.files['comments.json'] = { content: JSON.stringify(postComments) };
+        }
       }
     } catch (err) {
       console.warn("Using cached gist data due to fetch error");
@@ -262,7 +276,7 @@
 
     if (gistData) {
       activeGistData = gistData;
-      const filenames = Object.keys(gistData.files).filter(f => f !== 'comments.json');
+      const filenames = Object.keys(gistData.files).filter(f => f !== 'comments.json' && f !== 'all_comments.json');
       const filename = filenames[0] || 'script.txt';
       const owner = gistData.owner ? gistData.owner.login : 'Anonymous Modder';
       const avatar = gistData.owner ? gistData.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
@@ -325,6 +339,7 @@
       deletePostBtn.textContent = '🗑️ Delete This Post';
     }
   });
+
 
   function renderComments(gistData) {
     try {

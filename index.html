@@ -698,21 +698,22 @@ document.addEventListener('focusin', function(e) {
       await registerUserToHub(username);
 
       // ✨ 1. Agar user ne screenshot select kiya hai, toh use ImgBB API par upload karke direct URL lo
+          // ✨ ImgBB API Upload Logic with your key
       let screenshotUrl = '';
       if (screenshotFile) {
         const formData = new FormData();
         formData.append('image', screenshotFile);
         
-        // Free ImgBB API key (Aap apni free key yahan daal sakte hain ya public key use kar sakte hain)
-        const imgRes = await fetch('https://api.imgbb.com/1/upload?key=YOUR_IMGBB_API_KEY', {
+        const imgRes = await fetch('https://api.imgbb.com/1/upload?key=a46429a08b55c6269177ae286e8f51c6', {
           method: 'POST',
           body: formData
         });
         const imgData = await imgRes.json();
         if (imgData.success) {
-          screenshotUrl = imgData.data.url; // Direct image link (e.g. https://i.ibb.co/...)
+          screenshotUrl = imgData.data.url; // Direct image URL mil jayega!
         }
       }
+
 
       const filesPayload = {
         [sourceFilename]: { content: sourceCode },

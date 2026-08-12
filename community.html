@@ -327,19 +327,60 @@
     });
   }
 
-  window.triggerDownload = function(gistId, filename) {
+    window.triggerDownload = function(gistId, filename) {
     const downloadUrl = `${API_BASE}/api/download-script?gistId=${gistId}&filename=${encodeURIComponent(filename)}`;
-    const a = document.createElement('a');
-    a.href = downloadUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    
+    // ✨ Hidden Iframe ka use karenge taaki page reload / refresh bilkul na ho
+    let iframe = document.getElementById('hidden-download-iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'hidden-download-iframe';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+    iframe.src = downloadUrl;
 
-    setTimeout(() => {
-      fetchGists();
-    }, 2000);
+    // ✨ Page refresh kiye bina sirf us specific card ka download count UI par update karo
+    setTimeout(async () => {
+      try {
+        const res = await fetch(`https://api.github.com/gists/${REGISTRY_GIST_ID}?t=${Date.now()}`);
+        if (res.ok) {
+          const data = await res.json();
+          const countFile = data.files['download_counts.json'];
+          if (countFile) {
+            downloadCountsMap = JSON.parse(countFile.content || '{}');
+            const newCount = downloadCountsMap[gistId] || 0;
+            
+            // UI par turant count update kar do bina poora feed reload kiye
+            if (activeGistId === gistId) {
+              detailDownloadCount.textContent = `Total Downloads: ${newCount}`;
+            }
+            // Feed ke andar bhi count text update kar do
+            fetchGistsSilently();
+          }
+        }
+      } catch(e) {}
+    }, 1500);
   };
+
+  // Background mein feed data sync karne ke liye bina "Loading..." text dikhaye
+  async function fetchGistsSilently() {
+    try {
+      const res = await fetch(`https://api.github.com/gists/${REGISTRY_GIST_ID}?t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        const countFile = data.files['download_counts.json'];
+        if (countFile) {
+          downloadCountsMap = JSON.parse(countFile.content || '{}');
+          // Sirf numbers update karne ke liye existing cached gists render karo
+          if (allCachedScripts.length > 0) {
+            renderFeed(allCachedScripts);
+          }
+        }
+      }
+    } catch(e) {}
+  }
+
 
   window.triggerModalDownload = function() {
     if (activeGistId && activeModalFilename) {

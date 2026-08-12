@@ -242,7 +242,7 @@ document.addEventListener('focusin', function(e) {
           </div>
           <span id="pub-compiled-status" class="text-[10px] text-gray-500 mt-0.5 block">No compiled file attached</span>
         </div>
-        <!-- ✨ SCREENSHOT PREVIEW UPLOAD FIELD ADDED -->
+        <!-- ✨ SCREENSHOT PREVIEW UPLOAD FIELD -->
         <div>
           <label class="block text-gray-400 mb-1">Mod Screenshot (Optional - PNG/JPG):</label>
           <div class="flex gap-2">
@@ -786,7 +786,7 @@ document.addEventListener('focusin', function(e) {
 
   document.getElementById('gh-settings-open').addEventListener('click', () => {
     ghDropdown.classList.add('hidden');
-    ghModal.classList.add('hidden'); // Fixed modal closing bug
+    ghModal.classList.remove('hidden');
   });
 
   ghDisconnectBtn.addEventListener('click', () => {
@@ -1416,7 +1416,7 @@ document.addEventListener('focusin', function(e) {
 
       const token = localStorage.getItem('gh_token');
       const repo = localStorage.getItem('gh_repo');
-      const autosave = localStorage.getItem('gh_autosave'] === 'true';
+      const autosave = localStorage.getItem('gh_autosave') === 'true'; // ✨ Fixed here
 
       if (token && repo) {
         let shouldSave = autosave;

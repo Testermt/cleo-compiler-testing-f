@@ -316,7 +316,7 @@
     }
   };
 
-  window.openDetails = async function(gistId) {
+    window.openDetails = async function(gistId) {
     activeGistId = gistId;
     detailModal.classList.remove('hidden');
     detailCodePreview.textContent = 'Loading...';
@@ -375,8 +375,11 @@
 
       detailLoadLink.href = `index.html?load_gist=${gistId}&file=${encodeURIComponent(filename)}`;
       
-      // ✨ FIX: Details modal ke andar wale Download button ko properly bind kar diya
-      detailDownloadBtn.onclick = () => triggerDownload(gistId, txtFilename);
+      // ✨ FIX: Yahan direct onclick listener attach kar diya hai taaki button click par 100% download ho
+      detailDownloadBtn.onclick = function() {
+        triggerDownload(gistId, txtFilename);
+      };
+
       detailDownloadCount.textContent = `Total Downloads: ${downloadCountsMap[gistId] || 0}`;
       
       renderComments(gistData);
@@ -385,6 +388,7 @@
       detailCommentsList.innerHTML = '<div class="text-red-400 text-xs">Could not load comments.</div>';
     }
   };
+
 
   deletePostBtn.addEventListener('click', async () => {
     if (!activeGistId) return;

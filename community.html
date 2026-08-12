@@ -52,33 +52,32 @@
 
   <!-- GTA SA MAIN CHAT AREA -->
   <div class="flex-1 flex flex-col min-w-0 bg-[#0c0f14]">
-        <header class="h-auto sm:h-12 gta-header px-3 sm:px-4 py-2 sm:py-0 flex flex-col sm:flex-row items-center justify-between shadow-md shrink-0 gap-2">
-      <div class="flex items-center justify-between w-full sm:w-auto gap-2 font-bold text-gray-200 text-xs sm:text-sm min-w-0">
+    <header class="h-auto md:h-12 gta-header px-3 sm:px-4 py-2 md:py-0 flex flex-col md:flex-row items-center justify-between shadow-md shrink-0 gap-2">
+      <div class="flex items-center justify-between w-full md:w-auto gap-2 font-bold text-gray-200 text-xs sm:text-sm min-w-0">
         <div class="flex items-center gap-1.5 min-w-0">
           <button id="sidebar-toggle" class="md:hidden text-amber-500 hover:text-white text-base p-1">☰</button>
           <span class="text-[#e8a33d]">#</span>
           <span class="truncate text-gray-100 tracking-wide">public-scripts</span>
         </div>
-        <!-- Mobile ke liye buttons right side -->
-        <div class="flex items-center gap-1.5 sm:hidden shrink-0">
-          <button id="refresh-feed-m" onclick="fetchGists()" class="px-2.5 py-1 rounded gta-button text-[10px] font-semibold">🔄</button>
+        <!-- Mobile Action Buttons -->
+        <div class="flex items-center gap-1.5 md:hidden shrink-0">
+          <button onclick="fetchGists()" class="px-2.5 py-1 rounded gta-button text-[10px] font-semibold">🔄</button>
           <a href="index.html" class="px-2.5 py-1 rounded bg-[#e8a33d] text-black text-[10px] font-bold text-decoration-none shadow">Editor</a>
         </div>
       </div>
 
-      <!-- ✨ Responsive Search Bar -->
-      <div class="w-full sm:flex-1 max-w-sm px-0 sm:px-2">
+      <!-- Search Bar -->
+      <div class="w-full md:flex-1 max-w-sm px-0 md:px-2">
         <input type="text" id="search-username-input" placeholder="🔍 Search username or script..." 
-          class="w-full bg-[#12161d] border border-[#242b36] rounded px-2.5 py-1.5 sm:py-1 text-xs text-gray-200 focus:outline-none focus:border-[#e8a33d]" />
+          class="w-full bg-[#12161d] border border-[#242b36] rounded px-2.5 py-1.5 md:py-1 text-xs text-gray-200 focus:outline-none focus:border-[#e8a33d]" />
       </div>
 
-      <!-- Desktop Buttons -->
-      <div class="hidden sm:flex items-center gap-1.5 shrink-0">
+      <!-- Desktop Action Buttons -->
+      <div class="hidden md:flex items-center gap-1.5 shrink-0">
         <button id="refresh-feed" class="px-3 py-1 rounded gta-button text-[11px] sm:text-xs transition-colors font-semibold">🔄 Refresh</button>
         <a href="index.html" class="px-3 py-1 rounded bg-[#e8a33d] text-black text-[11px] sm:text-xs hover:bg-[#d49233] font-bold text-decoration-none shadow">Editor</a>
       </div>
     </header>
-
 
     <main id="community-feed-grid" class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
       <div class="text-center text-gray-500 py-12 text-xs">Loading community scripts from all users...</div>
@@ -169,7 +168,7 @@
   let activeGistId = null;
   let activeGistData = null;
   let activeModalFilename = 'script.txt';
-  let allCachedScripts = []; // ✨ Cached scripts array for search filter
+  let allCachedScripts = [];
   const gistsMap = {};
   let downloadCountsMap = {};
 
@@ -231,9 +230,8 @@
       }
 
       allCommunityScripts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      allCachedScripts = allCommunityScripts; // ✨ Cache scripts for search filter
+      allCachedScripts = allCommunityScripts;
       
-      // Apply search query if present, else render all
       filterAndRenderFeed();
 
     } catch (err) {
@@ -277,8 +275,26 @@
       const postDate = new Date(g.created_at);
       const formattedDateTime = postDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + postDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+      // ✨ Screenshot Preview Rendering (.png, .jpg, .jpeg, .webp)
+      const imageFilename = filenames.find(f => /\.(png|jpg|jpeg|webp)$/i.test(f));
+      let screenshotHtml = '';
+      if (imageFilename && g.files[imageFilename]) {
+        const fileObj = g.files[imageFilename];
+        let imgSrc = fileObj.content;
+        if (!imgSrc.startsWith('data:image') && !imgSrc.startsWith('http')) {
+          imgSrc = `data:image/png;base64,${imgSrc}`;
+        }
+        screenshotHtml = `
+          <div class="mb-2.5 rounded overflow-hidden border border-[#242b36] bg-[#080a0e] max-h-48 sm:max-h-60 flex items-center justify-center">
+            <img src="${imgSrc}" class="w-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onclick="openDetails('${g.id}')" />
+          </div>
+        `;
+      }
+
+      // Filter out screenshot from download file buttons list
+      const downloadFilenames = filenames.filter(f => !/\.(png|jpg|jpeg|webp)$/i.test(f));
       let fileButtonsHtml = '';
-      filenames.forEach(fname => {
+      downloadFilenames.forEach(fname => {
         fileButtonsHtml += `
           <div class="flex items-center justify-between gap-2 bg-[#181d26] border border-[#242b36] px-2.5 py-1.5 rounded-md mb-1">
             <span class="text-xs text-[#e8a33d] truncate max-w-[120px] sm:max-w-xs">📄 ${escapeHtml(fname)}</span>
@@ -299,6 +315,7 @@
             <span class="text-[9px] text-gray-500 shrink-0">${formattedDateTime}</span>
           </div>
           <p class="text-gray-300 text-xs mb-2 break-words">${escapeHtml(cleanTitle)}</p>
+          ${screenshotHtml}
           <div class="space-y-1 mb-2">${fileButtonsHtml}</div>
           <div class="flex items-center justify-between text-[10px] text-gray-400 px-1">
             <span>⬇️ Downloads: ${downloads}</span>
@@ -384,8 +401,8 @@
       }
 
       const txtFilename = filenames.find(f => f.endsWith('.txt')) || filenames[0];
-      activeModalFilename = txtFilename || filename;
-      const file = gistData.files[activeModalFilename];
+      activeModalFilename = txtFilename || filenames.find(f => !/\.(png|jpg|jpeg|webp)$/i.test(f)) || filename;
+      const file = gistData.files[txtFilename];
       detailCodePreview.textContent = file ? file.content : 'No text preview available.';
 
       detailLoadLink.href = `index.html?load_gist=${gistId}&file=${encodeURIComponent(filename)}`;
@@ -585,7 +602,7 @@
     } catch (err) {
       currentComments.pop();
       activeGistData.files['comments.json'] = { content: JSON.stringify(currentComments) };
-      renderComments(activeGistData);
+      renderComments(data.gist);
       alert('Network error while sending comment.');
     } finally {
       commentSubmitBtn.disabled = false;

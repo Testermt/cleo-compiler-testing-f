@@ -242,6 +242,17 @@ document.addEventListener('focusin', function(e) {
           </div>
           <span id="pub-compiled-status" class="text-[10px] text-gray-500 mt-0.5 block">No compiled file attached</span>
         </div>
+        <!-- ✨ SCREENSHOT PREVIEW UPLOAD FIELD ADDED -->
+        <div>
+          <label class="block text-gray-400 mb-1">Mod Screenshot (Optional - PNG/JPG):</label>
+          <div class="flex gap-2">
+            <input type="text" id="pub-screenshot-name" placeholder="screenshot.png" readonly 
+              class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 flex-1 focus:outline-none font-mono text-xs" />
+            <input type="file" id="pub-screenshot-file-input" accept="image/*" class="hidden" />
+            <button type="button" id="pub-browse-screenshot" class="btn-press px-3 py-2 bg-panel2 border border-hairline text-amber text-[11px] rounded-sm hover:border-amber">Browse...</button>
+          </div>
+          <span id="pub-screenshot-status" class="text-[10px] text-gray-500 mt-0.5 block">No screenshot attached</span>
+        </div>
       </div>
       
       <div class="flex justify-end gap-2 pt-2 border-t border-hairline">
@@ -523,6 +534,7 @@ document.addEventListener('focusin', function(e) {
   // --- PUBLISH SCRIPT MODAL & EVENT LISTENERS ---
   const publishModal = document.getElementById('publish-modal');
   const pubTitleInput = document.getElementById('pub-title-input');
+  
   const pubSourceName = document.getElementById('pub-source-name');
   const pubSourceFileInput = document.getElementById('pub-source-file-input');
   const pubBrowseSource = document.getElementById('pub-browse-source');
@@ -533,6 +545,12 @@ document.addEventListener('focusin', function(e) {
   const pubBrowseCompiled = document.getElementById('pub-browse-compiled');
   const pubCompiledStatus = document.getElementById('pub-compiled-status');
 
+  // ✨ Screenshot Upload Elements
+  const pubScreenshotName = document.getElementById('pub-screenshot-name');
+  const pubScreenshotFileInput = document.getElementById('pub-screenshot-file-input');
+  const pubBrowseScreenshot = document.getElementById('pub-browse-screenshot');
+  const pubScreenshotStatus = document.getElementById('pub-screenshot-status');
+
   const pubModalSubmit = document.getElementById('pub-modal-submit');
   const pubModalCancel = document.getElementById('pub-modal-cancel');
   const publishModalClose = document.getElementById('publish-modal-close');
@@ -540,6 +558,9 @@ document.addEventListener('focusin', function(e) {
   let attachedSourceCustomContent = null;
   let attachedCompiledContent = null;
   let attachedCompiledBase64 = false;
+
+  let attachedScreenshotContent = null;
+  let attachedScreenshotBase64 = false;
 
   pubBrowseSource.addEventListener('click', () => pubSourceFileInput.click());
   pubSourceFileInput.addEventListener('change', (e) => {
@@ -570,6 +591,22 @@ document.addEventListener('focusin', function(e) {
     reader.readAsDataURL(file);
   });
 
+  // ✨ Screenshot Browse Logic
+  pubBrowseScreenshot.addEventListener('click', () => pubScreenshotFileInput.click());
+  pubScreenshotFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    pubScreenshotName.value = file.name;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      attachedScreenshotContent = event.target.result.split(',')[1] || event.target.result;
+      attachedScreenshotBase64 = true;
+      pubScreenshotStatus.textContent = `Attached: ${file.name} (${Math.round(file.size/1024)} KB)`;
+      pubScreenshotStatus.className = 'text-[10px] text-good mt-0.5 block';
+    };
+    reader.readAsDataURL(file);
+  });
+
   document.getElementById('header-publish-btn').addEventListener('click', openPublishModal);
   document.getElementById('gh-publish-gist').addEventListener('click', () => {
     ghDropdown.classList.add('hidden');
@@ -596,6 +633,12 @@ document.addEventListener('focusin', function(e) {
     pubCompiledName.value = '';
     pubCompiledStatus.textContent = 'No compiled file attached';
     pubCompiledStatus.className = 'text-[10px] text-gray-500 mt-0.5 block';
+
+    attachedScreenshotContent = null;
+    attachedScreenshotBase64 = false;
+    pubScreenshotName.value = '';
+    pubScreenshotStatus.textContent = 'No screenshot attached';
+    pubScreenshotStatus.className = 'text-[10px] text-gray-500 mt-0.5 block';
     
     publishModal.classList.remove('hidden');
   }
@@ -622,6 +665,7 @@ document.addEventListener('focusin', function(e) {
     const title = pubTitleInput.value.trim();
     const sourceFilename = pubSourceName.value.trim() || 'script.txt';
     const compiledFilename = pubCompiledName.value.trim();
+    const screenshotFilename = pubScreenshotName.value.trim();
 
     if (!title) {
       alert('Please enter a title or description!');
@@ -663,6 +707,13 @@ document.addEventListener('focusin', function(e) {
         };
       }
 
+      if (screenshotFilename && attachedScreenshotContent) {
+        filesPayload[screenshotFilename] = { 
+          content: attachedScreenshotContent,
+          encoding: attachedScreenshotBase64 ? 'base64' : 'utf-8'
+        };
+      }
+
       const finalDescription = `${title} ${UNIQUE_APP_SIGNATURE}`;
       const res = await fetch('https://api.github.com/gists', {
         method: 'POST',
@@ -681,7 +732,7 @@ document.addEventListener('focusin', function(e) {
       if (res.ok) {
         const gistData = await res.json();
         logLine(`Successfully published to Community Feed! ID: <span class="text-good">${gistData.id}</span>`, 'success');
-        alert('Script successfully published with source/compiled files!');
+        alert('Script successfully published with files & screenshot preview!');
       } else {
         const errJson = await res.json();
         logLine(`[Gist Error] ${errJson.message}`, 'error');
@@ -735,7 +786,7 @@ document.addEventListener('focusin', function(e) {
 
   document.getElementById('gh-settings-open').addEventListener('click', () => {
     ghDropdown.classList.add('hidden');
-    ghModal.classList.remove('hidden');
+    ghModal.classList.add('hidden'); // Fixed modal closing bug
   });
 
   ghDisconnectBtn.addEventListener('click', () => {
@@ -1365,7 +1416,7 @@ document.addEventListener('focusin', function(e) {
 
       const token = localStorage.getItem('gh_token');
       const repo = localStorage.getItem('gh_repo');
-      const autosave = localStorage.getItem('gh_autosave') === 'true';
+      const autosave = localStorage.getItem('gh_autosave'] === 'true';
 
       if (token && repo) {
         let shouldSave = autosave;

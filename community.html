@@ -202,7 +202,7 @@
   }
 
 
-  function renderFeed(communityScripts) {
+    function renderFeed(communityScripts) {
     if (communityScripts.length === 0) {
       feedGrid.innerHTML = '<div class="text-center text-[#949ba4] py-12 text-xs">No community scripts found yet. Be the first to publish a script from the editor!</div>';
       return;
@@ -217,14 +217,18 @@
       const avatar = g.owner ? g.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
       const cleanTitle = g.description.replace(UNIQUE_APP_SIGNATURE, '').trim() || filename;
 
+      // ✨ Post ki Date & Time formatting
+      const postDate = new Date(g.created_at);
+      const formattedDateTime = postDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + postDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
       const messageCard = document.createElement('div');
       messageCard.className = 'flex gap-3 p-2.5 sm:p-3 rounded-lg hover:bg-[#2b2d31] transition-colors group';
       messageCard.innerHTML = `
         <img src="${avatar}" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full shrink-0 mt-0.5" />
         <div class="flex-1 min-w-0">
-          <div class="flex items-baseline gap-2 mb-0.5">
+          <div class="flex items-baseline justify-between gap-2 mb-0.5">
             <span class="font-bold text-gray-100 text-xs sm:text-sm truncate">${escapeHtml(owner)}</span>
-            <span class="text-[9px] text-[#949ba4] shrink-0">${new Date(g.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            <span class="text-[9px] text-[#949ba4] shrink-0">${formattedDateTime}</span>
           </div>
           <p class="text-gray-300 text-xs mb-2 break-words">${escapeHtml(cleanTitle)}</p>
           <div class="inline-flex flex-wrap items-center gap-2 bg-[#2b2d31] border border-[#1f2023] px-2.5 py-1.5 rounded-md max-w-full">
@@ -236,6 +240,7 @@
       feedGrid.appendChild(messageCard);
     });
   }
+
   window.openDetails = async function(gistId) {
     activeGistId = gistId;
     detailModal.classList.remove('hidden');
@@ -341,7 +346,7 @@
   });
 
 
-      function renderComments(gistData) {
+        function renderComments(gistData) {
     try {
       let comments = [];
       if (gistData && gistData.files && gistData.files['comments.json']) {
@@ -357,18 +362,27 @@
 
       detailCommentsList.innerHTML = '';
       comments.forEach((c, index) => {
-        // ✨ Case-insensitive check taaki username match hone mein kabhi error na aaye
         const commentUser = (c.user || '').trim().toLowerCase();
         const isOwner = currentUsername && commentUser === currentUsername;
         
+        // ✨ Comment ki Date & Time formatting
+        let formattedTime = '';
+        if (c.time) {
+          const cDate = new Date(c.time);
+          formattedTime = cDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + cDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
         const div = document.createElement('div');
-        div.className = 'flex items-start justify-between gap-2 text-xs group py-1';
+        div.className = 'flex items-start justify-between gap-2 text-xs group py-1.5 border-b border-[#2b2d31]/50';
         div.innerHTML = `
           <div class="flex gap-2 items-start min-w-0">
             <img src="${c.avatar || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'}" class="w-5 h-5 rounded-full mt-0.5 shrink-0" />
             <div class="min-w-0">
-              <span class="font-bold text-[#5865f2]">${escapeHtml(c.user)}:</span> 
-              <span class="text-gray-300 break-words">${escapeHtml(c.body)}</span>
+              <div class="flex items-baseline gap-2">
+                <span class="font-bold text-[#5865f2]">${escapeHtml(c.user)}</span>
+                <span class="text-[9px] text-[#949ba4]">${formattedTime}</span>
+              </div>
+              <span class="text-gray-300 break-words block mt-0.5">${escapeHtml(c.body)}</span>
             </div>
           </div>
           ${isOwner ? `<button onclick="deleteComment('${activeGistId}', ${index})" class="text-gray-500 hover:text-red-400 text-[10px] shrink-0 px-1 opacity-60 group-hover:opacity-100 transition-opacity" title="Delete comment">🗑️</button>` : ''}
@@ -380,6 +394,7 @@
       detailCommentsList.innerHTML = '<div class="text-gray-500 text-xs">No replies in this thread yet.</div>';
     }
   }
+
 
   // Delete Comment Function
   window.deleteComment = async function(gistId, commentIndex) {

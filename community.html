@@ -250,7 +250,7 @@
     filterAndRenderFeed();
   });
 
-  function renderFeed(communityScripts) {
+    function renderFeed(communityScripts) {
     if (communityScripts.length === 0) {
       feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">No community scripts found matching your search.</div>';
       return;
@@ -268,23 +268,33 @@
       const postDate = new Date(g.created_at);
       const formattedDateTime = postDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + postDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // Screenshot Preview Rendering (Supports both Direct URL & Base64 Safely)
-      const imageFilename = filenames.find(f => /\.(png|jpg|jpeg|webp)$/i.test(f));
-      let screenshotHtml = '';
-      if (imageFilename && g.files && g.files[imageFilename]) {
-        // Check if direct URL exists in screenshots or file content
-        let imgSrc = (g.screenshots && g.screenshots[imageFilename]) || g.files[imageFilename].content;
-        
-        if (imgSrc && typeof imgSrc === 'string') {
-          if (!imgSrc.startsWith('data:image') && !imgSrc.startsWith('http')) {
-            imgSrc = `data:image/png;base64,${imgSrc}`;
-          }
-          screenshotHtml = `
-            <div class="mb-2.5 rounded overflow-hidden border border-[#242b36] bg-[#080a0e] max-h-48 sm:max-h-60 flex items-center justify-center">
-              <img src="${imgSrc}" class="w-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onclick="openDetails('${g.id}')" />
-            </div>
-          `;
+      // Screenshot Preview Rendering via Direct URL or Screenshots Object
+      let imageFilename = filenames.find(f => /\.(png|jpg|jpeg|webp)$/i.test(f));
+      let imgSrc = '';
+
+      // 1. Pehle check karo agar g.screenshots ke andar direct URL stored hai (jaise ImgBB link)
+      if (g.screenshots && typeof g.screenshots === 'object') {
+        const keys = Object.keys(g.screenshots);
+        if (keys.length > 0 && g.screenshots[keys[0]]) {
+          imgSrc = g.screenshots[keys[0]];
         }
+      }
+
+      // 2. Agar screenshots object se nahi mila, toh filenames se try karo
+      if (!imgSrc && imageFilename && g.files && g.files[imageFilename]) {
+        imgSrc = g.files[imageFilename].content;
+      }
+
+      let screenshotHtml = '';
+      if (imgSrc && typeof imgSrc === 'string') {
+        if (!imgSrc.startsWith('data:image') && !imgSrc.startsWith('http')) {
+          imgSrc = `data:image/png;base64,${imgSrc}`;
+        }
+        screenshotHtml = `
+          <div class="mb-2.5 rounded overflow-hidden border border-[#242b36] bg-[#080a0e] max-h-48 sm:max-h-60 flex items-center justify-center">
+            <img src="${imgSrc}" class="w-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onclick="openDetails('${g.id}')" />
+          </div>
+        `;
       }
 
       // Filter out screenshot from download file buttons list
@@ -322,6 +332,7 @@
       feedGrid.appendChild(messageCard);
     });
   }
+
 
 
   window.triggerDownload = function(gistId, filename) {

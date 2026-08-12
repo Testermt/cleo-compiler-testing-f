@@ -183,7 +183,7 @@
     return null;
   }
 
-      async function fetchGists() {
+        async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">Loading community scripts instantly...</div>';
     try {
       const res = await fetch(`${API_BASE}/api/get-community-feed?t=${Date.now()}`);
@@ -194,7 +194,7 @@
       downloadCountsMap = data.downloadCounts || {};
       const posts = data.posts || [];
 
-      // ✨ Purely Central Index (all_posts.json) se data map karna - No GitHub API limits!
+      // ✨ Foolproof Mapping: Handles both array of strings and object files format safely
       allCachedScripts = posts.map(p => {
         const filesObj = {};
         if (Array.isArray(p.files)) {
@@ -204,12 +204,20 @@
               content: p.screenshots && p.screenshots[fname] ? p.screenshots[fname] : undefined 
             };
           });
+        } else if (p.files && typeof p.files === 'object') {
+          Object.keys(p.files).forEach(fname => {
+            filesObj[fname] = { filename: fname };
+          });
         }
+        
         return {
           id: p.id,
-          description: p.description,
-          created_at: p.createdAt,
-          owner: { login: p.owner, avatar_url: p.avatar },
+          description: p.description || '',
+          created_at: p.createdAt || new Date().toISOString(),
+          owner: { 
+            login: typeof p.owner === 'string' ? p.owner : (p.owner?.login || 'Anonymous'), 
+            avatar_url: p.avatar || p.owner?.avatar_url || '' 
+          },
           files: filesObj
         };
       });

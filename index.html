@@ -729,11 +729,29 @@ document.addEventListener('focusin', function(e) {
         })
       });
 
-      if (res.ok) {
+            if (res.ok) {
         const gistData = await res.json();
+        
+        // ✨ Sync new post to central all_posts.json via backend
+        try {
+          await fetch(`${API_BASE}/api/publish-post`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              gistId: gistData.id,
+              description: finalDescription,
+              owner: username,
+              avatar: userData.avatar_url,
+              createdAt: gistData.created_at,
+              files: Object.keys(gistData.files)
+            })
+          });
+        } catch(e) { console.error("Failed to sync post to central index", e); }
+
         logLine(`Successfully published to Community Feed! ID: <span class="text-good">${gistData.id}</span>`, 'success');
         alert('Script successfully published with files & screenshot preview!');
-      } else {
+      }
+else {
         const errJson = await res.json();
         logLine(`[Gist Error] ${errJson.message}`, 'error');
         alert(`Failed to publish: ${errJson.message}`);

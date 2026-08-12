@@ -186,55 +186,34 @@ Aap apni community.html file ko is pure final code se replace kar lo:
     return null;
   }
 
-  async function fetchGists() {
-    feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">Loading all community user scripts...</div>';
+    async function fetchGists() {
+    feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">Loading community scripts instantly...</div>';
     try {
       const res = await fetch(`${API_BASE}/api/get-community-feed?t=${Date.now()}`);
-      if (!res.ok) throw new Error('Failed to fetch registry from backend');
+      if (!res.ok) throw new Error('Failed to fetch feed from backend');
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      const registeredUsers = data.registeredUsers || [];
       downloadCountsMap = data.downloadCounts || {};
+      const posts = data.posts || [];
 
-      if (registeredUsers.length === 0) {
-        feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">No community users registered yet. Be the first to publish a script!</div>';
-        return;
-      }
-
-      const token = getValidToken();
-      const headers = token ? { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } : { 'Accept': 'application/vnd.github.v3+json' };
-
-      let allCommunityScripts = [];
-      for (const username of registeredUsers) {
-        try {
-          for (let page = 1; page <= 10; page++) {
-            const userRes = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`, { headers });
-            if (userRes.ok) {
-              const userGists = await userRes.json();
-              if (!Array.isArray(userGists) || userGists.length === 0) break;
-              const validScripts = userGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
-              allCommunityScripts = allCommunityScripts.concat(validScripts);
-              if (userGists.length < 100) break;
-            } else {
-              break;
-            }
-          }
-        } catch (userErr) {
-          console.warn(`Could not fetch gists for user ${username}:`, userErr);
-        }
-      }
-
-      allCommunityScripts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      allCachedScripts = allCommunityScripts;
+      // Convert stored posts format to match renderFeed expectations
+      allCachedScripts = posts.map(p => ({
+        id: p.id,
+        description: p.description,
+        created_at: p.createdAt,
+        owner: { login: p.owner, avatar_url: p.avatar },
+        files: (p.files || []).reduce((acc, f) => { acc[f] = { filename: f }; return acc; }, {})
+      }));
       
       filterAndRenderFeed();
 
     } catch (err) {
       console.error("Feed fetch error:", err);
-      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your backend server[span_3](start_span)[span_3](end_span).</div>`;
+      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your backend server.</div>`;
     }
   }
+
 
   function filterAndRenderFeed() {
     const query = (searchInput.value || '').toLowerCase().trim();
@@ -447,11 +426,19 @@ Aap apni community.html file ko is pure final code se replace kar lo:
         }
       });
 
-      if (res.ok || res.status === 204) {
+            if (res.ok || res.status === 204) {
+        // Remove from central index
+        await fetch(`${API_BASE}/api/delete-post`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gistId: activeGistId })
+        }).catch(() => {});
+
         alert('Post successfully deleted!');
         detailModal.classList.add('hidden');
         fetchGists();
-      } else {
+      }
+else {
         const errJson = await res.json().catch(() => ({}));
         alert('Failed to delete: ' + (errJson.message || 'Permission denied'));
       }

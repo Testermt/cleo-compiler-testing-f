@@ -485,22 +485,25 @@ document.addEventListener('focusin', function(e) {
     publishScriptToCommunity();
   });
   
-    // SECURE BACKEND REGISTRY REGISTRATION
+    
+
+  // SECURE BACKEND REGISTRY REGISTRATION
   async function registerUserToHub(username) {
     if (!username) return;
     try {
-      await fetch(`${API_BASE}/api/register-user`, {
+      console.log("Sending username to backend:", username);
+      const res = await fetch('https://cleo-compiler-testing.onrender.com/api/register-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username })
       });
-      console.log("User registered securely via backend.");
+      const data = await res.json();
+      console.log("Backend response received:", data);
     } catch(e) {
-      console.warn("Registry background update failed:", e);
+      console.error("Registry background update failed:", e);
     }
   }
-
-
+  
   async function publishScriptToCommunity() {
     const token = localStorage.getItem('gh_token');
     if (!token) {

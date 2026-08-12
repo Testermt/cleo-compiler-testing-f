@@ -58,6 +58,13 @@
         <span class="text-[#e8a33d]">#</span>
         <span class="truncate text-gray-100 tracking-wide">public-scripts-feed</span>
       </div>
+
+      <!-- ✨ Username Search Bar Added -->
+      <div class="flex items-center gap-2 flex-1 max-w-xs px-2">
+        <input type="text" id="search-username-input" placeholder="Search by username..." 
+          class="w-full bg-[#12161d] border border-[#242b36] rounded px-2.5 py-1 text-xs text-gray-200 focus:outline-none focus:border-[#e8a33d]" />
+      </div>
+
       <div class="flex items-center gap-1.5 shrink-0">
         <button id="refresh-feed" class="px-3 py-1 rounded gta-button text-[11px] sm:text-xs transition-colors font-semibold">🔄 Refresh</button>
         <a href="index.html" class="px-3 py-1 rounded bg-[#e8a33d] text-black text-[11px] sm:text-xs hover:bg-[#d49233] font-bold text-decoration-none shadow">Editor</a>
@@ -91,7 +98,6 @@
         <div class="flex flex-col gap-2">
           <div class="grid grid-cols-2 gap-2">
             <a id="detail-load-link" href="index.html" class="w-full text-center py-2 bg-[#e8a33d] text-black font-bold rounded hover:bg-[#d49233] transition-colors text-xs shadow">📥 Load in Editor</a>
-            <!-- ✨ FIX: Direct onclick trigger added to modal download button -->
             <button id="detail-download-btn" onclick="triggerModalDownload()" class="w-full py-2 bg-[#181d26] border border-[#e8a33d]/50 text-[#e8a33d] font-bold rounded hover:bg-[#242b36] transition-colors text-xs shadow">💾 Download File</button>
           </div>
           <div class="text-[10px] text-gray-400 text-right pr-1" id="detail-download-count">Downloads: 0</div>
@@ -149,10 +155,12 @@
   const detailCommentsList = document.getElementById('detail-comments-list');
   const commentInput = document.getElementById('comment-input');
   const commentSubmitBtn = document.getElementById('comment-submit-btn');
+  const searchInput = document.getElementById('search-username-input');
 
   let activeGistId = null;
   let activeGistData = null;
   let activeModalFilename = 'script.txt';
+  let allCachedScripts = []; // ✨ Cached scripts array for search filter
   const gistsMap = {};
   let downloadCountsMap = {};
 
@@ -214,16 +222,37 @@
       }
 
       allCommunityScripts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      renderFeed(allCommunityScripts);
+      allCachedScripts = allCommunityScripts; // ✨ Cache scripts for search filter
+      
+      // Apply search query if present, else render all
+      filterAndRenderFeed();
 
     } catch (err) {
       feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed.</div>`;
     }
   }
 
+  function filterAndRenderFeed() {
+    const query = (searchInput.value || '').toLowerCase().trim();
+    if (!query) {
+      renderFeed(allCachedScripts);
+      return;
+    }
+    const filtered = allCachedScripts.filter(g => {
+      const owner = (g.owner ? g.owner.login : '').toLowerCase();
+      const title = (g.description || '').toLowerCase();
+      return owner.includes(query) || title.includes(query);
+    });
+    renderFeed(filtered);
+  }
+
+  searchInput.addEventListener('input', () => {
+    filterAndRenderFeed();
+  });
+
   function renderFeed(communityScripts) {
     if (communityScripts.length === 0) {
-      feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">No community scripts found yet. Be the first to publish a script from the editor!</div>';
+      feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">No community scripts found matching your search.</div>';
       return;
     }
 
@@ -272,8 +301,7 @@
     });
   }
 
-    window.triggerDownload = function(gistId, filename) {
-    // Seedha backend ke download route ko call karega, jo server-side master token se count badhayega
+  window.triggerDownload = function(gistId, filename) {
     const downloadUrl = `${API_BASE}/api/download-script?gistId=${gistId}&filename=${encodeURIComponent(filename)}`;
     const a = document.createElement('a');
     a.href = downloadUrl;
@@ -282,12 +310,16 @@
     a.click();
     a.remove();
 
-    // 2 second baad feed ke counts ko auto-refresh karne ke liye
     setTimeout(() => {
       fetchGists();
     }, 2000);
   };
 
+  window.triggerModalDownload = function() {
+    if (activeGistId && activeModalFilename) {
+      triggerDownload(activeGistId, activeModalFilename);
+    }
+  };
 
   window.openDetails = async function(gistId) {
     activeGistId = gistId;
@@ -544,7 +576,7 @@
     } catch (err) {
       currentComments.pop();
       activeGistData.files['comments.json'] = { content: JSON.stringify(currentComments) };
-      renderComments(data.gist);
+      renderComments(activeGistData);
       alert('Network error while sending comment.');
     } finally {
       commentSubmitBtn.disabled = false;

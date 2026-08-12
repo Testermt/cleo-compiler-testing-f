@@ -183,7 +183,7 @@
     return null;
   }
 
-        async function fetchGists() {
+  async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">Loading community scripts instantly...</div>';
     try {
       const res = await fetch(`${API_BASE}/api/get-community-feed?t=${Date.now()}`);
@@ -218,7 +218,8 @@
             login: typeof p.owner === 'string' ? p.owner : (p.owner?.login || 'Anonymous'), 
             avatar_url: p.avatar || p.owner?.avatar_url || '' 
           },
-          files: filesObj
+          files: filesObj,
+          screenshots: p.screenshots || {} // ✨ Screenshot URLs successfully pass honge
         };
       });
       
@@ -229,6 +230,7 @@
       feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your backend server.</div>`;
     }
   }
+
 
 
 

@@ -341,7 +341,7 @@
   });
 
 
-    function renderComments(gistData) {
+      function renderComments(gistData) {
     try {
       let comments = [];
       if (gistData && gistData.files && gistData.files['comments.json']) {
@@ -353,11 +353,13 @@
         return;
       }
 
-      const currentUsername = localStorage.getItem('gh_username') || '';
+      const currentUsername = (localStorage.getItem('gh_username') || '').trim().toLowerCase();
 
       detailCommentsList.innerHTML = '';
       comments.forEach((c, index) => {
-        const isOwner = currentUsername && c.user.toLowerCase() === currentUsername.toLowerCase();
+        // ✨ Case-insensitive check taaki username match hone mein kabhi error na aaye
+        const commentUser = (c.user || '').trim().toLowerCase();
+        const isOwner = currentUsername && commentUser === currentUsername;
         
         const div = document.createElement('div');
         div.className = 'flex items-start justify-between gap-2 text-xs group py-1';

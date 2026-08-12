@@ -237,7 +237,7 @@
     });
   }
 
-  window.openDetails = async function(gistId) {
+    window.openDetails = async function(gistId) {
     activeGistId = gistId;
     detailModal.classList.remove('hidden');
     detailCodePreview.textContent = 'Loading...';
@@ -247,7 +247,11 @@
     let gistData = gistsMap[gistId];
 
     try {
-      const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`);
+      // ✨ FIX: Yahan token headers add kar diye hain taaki single Gist ka content properly fetch ho sake
+      const token = getValidToken();
+      const headers = token ? { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } : { 'Accept': 'application/vnd.github.v3+json' };
+      
+      const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers });
       if (res.ok) {
         gistData = await res.json();
         gistsMap[gistId] = gistData;
@@ -258,7 +262,7 @@
 
     if (gistData) {
       activeGistData = gistData;
-      const filenames = Object.keys(gistData.files).filesKeys || Object.keys(gistData.files).filter(f => f !== 'comments.json');
+      const filenames = Object.keys(gistData.files).filter(f => f !== 'comments.json');
       const filename = filenames[0] || 'script.txt';
       const owner = gistData.owner ? gistData.owner.login : 'Anonymous Modder';
       const avatar = gistData.owner ? gistData.owner.avatar_url : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
@@ -285,6 +289,7 @@
       detailCommentsList.innerHTML = '<div class="text-red-400 text-xs">Could not load comments.</div>';
     }
   };
+
 
   deletePostBtn.addEventListener('click', async () => {
     if (!activeGistId) return;

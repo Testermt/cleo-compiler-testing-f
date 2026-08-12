@@ -1,6 +1,3 @@
-Bhai, aapne bilkul theek pakda! Humari purani approach yehi thi ki backend se ya direct client-side par community_users.json fetch hota tha, aur fir un usernames ki loop chala kar saare gists load kiye ja rahe the. Jo error aaya, wo isliye tha kyunki frontend code mein fetchGists() function ke andar URL ya response parsing mein thodi si mismatch ho gayi thi.
-Maine aapki community.html aur server.js dono files ko ekdam dhiyan se cross-check karke 100% original working state mein set kar diya hai. Isme aapka username-based gist fetching system, server-side secure download count, search bar, aur screenshot preview sab kuch ekdam perfect aur safe tarike se kaam karega.
-Aap apni community.html file ko is pure final code se replace kar lo:
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -186,7 +183,7 @@ Aap apni community.html file ko is pure final code se replace kar lo:
     return null;
   }
 
-    async function fetchGists() {
+  async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">Loading community scripts instantly...</div>';
     try {
       const res = await fetch(`${API_BASE}/api/get-community-feed?t=${Date.now()}`);
@@ -195,25 +192,41 @@ Aap apni community.html file ko is pure final code se replace kar lo:
       if (!data.success) throw new Error(data.error);
 
       downloadCountsMap = data.downloadCounts || {};
-      const posts = data.posts || [];
+      const registeredUsers = data.registeredUsers || ["Testermt", "DrakMaster798"];
 
-      // Convert stored posts format to match renderFeed expectations
-      allCachedScripts = posts.map(p => ({
-        id: p.id,
-        description: p.description,
-        created_at: p.createdAt,
-        owner: { login: p.owner, avatar_url: p.avatar },
-        files: (p.files || []).reduce((acc, f) => { acc[f] = { filename: f }; return acc; }, {})
-      }));
+      const token = getValidToken();
+      const headers = token ? { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } : { 'Accept': 'application/vnd.github.v3+json' };
+
+      let allCommunityScripts = [];
+      for (const username of registeredUsers) {
+        try {
+          for (let page = 1; page <= 10; page++) {
+            const userRes = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`, { headers });
+            if (userRes.ok) {
+              const userGists = await userRes.json();
+              if (!Array.isArray(userGists) || userGists.length === 0) break;
+              const validScripts = userGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
+              allCommunityScripts = allCommunityScripts.concat(validScripts);
+              if (userGists.length < 100) break;
+            } else {
+              break;
+            }
+          }
+        } catch (userErr) {
+          console.warn(`Could not fetch gists for user ${username}:`, userErr);
+        }
+      }
+
+      allCommunityScripts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      allCachedScripts = allCommunityScripts;
       
       filterAndRenderFeed();
 
     } catch (err) {
       console.error("Feed fetch error:", err);
-      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your backend server.</div>`;
+      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your backend server[span_1](start_span)[span_1](end_span).</div>`;
     }
   }
-
 
   function filterAndRenderFeed() {
     const query = (searchInput.value || '').toLowerCase().trim();
@@ -426,8 +439,7 @@ Aap apni community.html file ko is pure final code se replace kar lo:
         }
       });
 
-            if (res.ok || res.status === 204) {
-        // Remove from central index
+      if (res.ok || res.status === 204) {
         await fetch(`${API_BASE}/api/delete-post`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -437,8 +449,7 @@ Aap apni community.html file ko is pure final code se replace kar lo:
         alert('Post successfully deleted!');
         detailModal.classList.add('hidden');
         fetchGists();
-      }
-else {
+      } else {
         const errJson = await res.json().catch(() => ({}));
         alert('Failed to delete: ' + (errJson.message || 'Permission denied'));
       }
@@ -615,4 +626,3 @@ else {
 </script>
 </body>
 </html>
-

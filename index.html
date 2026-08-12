@@ -660,12 +660,14 @@ document.addEventListener('focusin', function(e) {
     }
   }
 
-  pubModalSubmit.addEventListener('click', async () => {
+    pubModalSubmit.addEventListener('click', async () => {
     const token = localStorage.getItem('gh_token');
     const title = pubTitleInput.value.trim();
     const sourceFilename = pubSourceName.value.trim() || 'script.txt';
     const compiledFilename = pubCompiledName.value.trim();
-    const screenshotFilename = pubScreenshotName.value.trim();
+    
+    // ✨ Screenshot File Input element se direct file uthayein
+    const screenshotFile = pubScreenshotFileInput.files[0];
 
     if (!title) {
       alert('Please enter a title or description!');
@@ -679,7 +681,7 @@ document.addEventListener('focusin', function(e) {
     }
 
     publishModal.classList.add('hidden');
-    logLine('[Community] Publishing script to public GitHub Gist...', 'info');
+    logLine('[Community] Publishing script and uploading screenshot...', 'info');
 
     try {
       const userRes = await fetch('https://api.github.com/user', {
@@ -695,6 +697,23 @@ document.addEventListener('focusin', function(e) {
 
       await registerUserToHub(username);
 
+      // ✨ 1. Agar user ne screenshot select kiya hai, toh use ImgBB API par upload karke direct URL lo
+      let screenshotUrl = '';
+      if (screenshotFile) {
+        const formData = new FormData();
+        formData.append('image', screenshotFile);
+        
+        // Free ImgBB API key (Aap apni free key yahan daal sakte hain ya public key use kar sakte hain)
+        const imgRes = await fetch('https://api.imgbb.com/1/upload?key=YOUR_IMGBB_API_KEY', {
+          method: 'POST',
+          body: formData
+        });
+        const imgData = await imgRes.json();
+        if (imgData.success) {
+          screenshotUrl = imgData.data.url; // Direct image link (e.g. https://i.ibb.co/...)
+        }
+      }
+
       const filesPayload = {
         [sourceFilename]: { content: sourceCode },
         'comments.json': { content: '[]' }
@@ -704,13 +723,6 @@ document.addEventListener('focusin', function(e) {
         filesPayload[compiledFilename] = { 
           content: attachedCompiledContent,
           encoding: attachedCompiledBase64 ? 'base64' : 'utf-8'
-        };
-      }
-
-      if (screenshotFilename && attachedScreenshotContent) {
-        filesPayload[screenshotFilename] = { 
-          content: attachedScreenshotContent,
-          encoding: attachedScreenshotBase64 ? 'base64' : 'utf-8'
         };
       }
 
@@ -729,10 +741,10 @@ document.addEventListener('focusin', function(e) {
         })
       });
 
-            if (res.ok) {
+      if (res.ok) {
         const gistData = await res.json();
         
-        // ✨ Sync new post to central all_posts.json via backend
+        // ✨ 2. Backend ko publish request bhejte waqt screenshot URL pass karein (No Base64 heavy data)
         try {
           await fetch(`${API_BASE}/api/publish-post`, {
             method: 'POST',
@@ -743,15 +755,15 @@ document.addEventListener('focusin', function(e) {
               owner: username,
               avatar: userData.avatar_url,
               createdAt: gistData.created_at,
-              files: Object.keys(gistData.files)
+              files: Object.keys(gistData.files),
+              screenshots: screenshotUrl ? { [pubScreenshotName.value]: screenshotUrl } : {}
             })
           });
         } catch(e) { console.error("Failed to sync post to central index", e); }
 
         logLine(`Successfully published to Community Feed! ID: <span class="text-good">${gistData.id}</span>`, 'success');
-        alert('Script successfully published with files & screenshot preview!');
-      }
-else {
+        alert('Script successfully published with image link preview!');
+      } else {
         const errJson = await res.json();
         logLine(`[Gist Error] ${errJson.message}`, 'error');
         alert(`Failed to publish: ${errJson.message}`);
@@ -761,6 +773,7 @@ else {
       alert(`Network error: ${err.message}`);
     }
   });
+
 
   const ghConfigBtn = document.getElementById('gh-config-btn');
   const ghDropdown = document.getElementById('gh-dropdown');

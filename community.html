@@ -268,20 +268,23 @@
       const postDate = new Date(g.created_at);
       const formattedDateTime = postDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + postDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // Screenshot Preview Rendering (.png, .jpg, .jpeg, .webp)
+      // Screenshot Preview Rendering (Supports both Direct URL & Base64 Safely)
       const imageFilename = filenames.find(f => /\.(png|jpg|jpeg|webp)$/i.test(f));
       let screenshotHtml = '';
-      if (imageFilename && g.files[imageFilename]) {
-        const fileObj = g.files[imageFilename];
-        let imgSrc = fileObj.content;
-        if (!imgSrc.startsWith('data:image') && !imgSrc.startsWith('http')) {
-          imgSrc = `data:image/png;base64,${imgSrc}`;
+      if (imageFilename && g.files && g.files[imageFilename]) {
+        // Check if direct URL exists in screenshots or file content
+        let imgSrc = (g.screenshots && g.screenshots[imageFilename]) || g.files[imageFilename].content;
+        
+        if (imgSrc && typeof imgSrc === 'string') {
+          if (!imgSrc.startsWith('data:image') && !imgSrc.startsWith('http')) {
+            imgSrc = `data:image/png;base64,${imgSrc}`;
+          }
+          screenshotHtml = `
+            <div class="mb-2.5 rounded overflow-hidden border border-[#242b36] bg-[#080a0e] max-h-48 sm:max-h-60 flex items-center justify-center">
+              <img src="${imgSrc}" class="w-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onclick="openDetails('${g.id}')" />
+            </div>
+          `;
         }
-        screenshotHtml = `
-          <div class="mb-2.5 rounded overflow-hidden border border-[#242b36] bg-[#080a0e] max-h-48 sm:max-h-60 flex items-center justify-center">
-            <img src="${imgSrc}" class="w-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onclick="openDetails('${g.id}')" />
-          </div>
-        `;
       }
 
       // Filter out screenshot from download file buttons list
@@ -319,6 +322,7 @@
       feedGrid.appendChild(messageCard);
     });
   }
+
 
   window.triggerDownload = function(gistId, filename) {
     const downloadUrl = `${API_BASE}/api/download-script?gistId=${gistId}&filename=${encodeURIComponent(filename)}`;

@@ -272,53 +272,22 @@
     });
   }
 
-  window.triggerDownload = async function(gistId, filename) {
-    let gistData = gistsMap[gistId];
-    if (!gistData || !gistData.files) {
-      alert('Script data not found!');
-      return;
-    }
-
-    const file = gistData.files[filename] || Object.values(gistData.files).find(f => f.filename !== 'comments.json');
-    if (!file || !file.content) {
-      alert('File content missing!');
-      return;
-    }
-
-    const blob = new Blob([file.content], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
+    window.triggerDownload = function(gistId, filename) {
+    // Seedha backend ke download route ko call karega, jo server-side master token se count badhayega
+    const downloadUrl = `${API_BASE}/api/download-script?gistId=${gistId}&filename=${encodeURIComponent(filename)}`;
     const a = document.createElement('a');
-    a.href = url;
+    a.href = downloadUrl;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    window.URL.revokeObjectURL(url);
 
-    try {
-      const res = await fetch(`${API_BASE}/api/increment-download`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gistId })
-      });
-      const data = await res.json();
-      if (data.success) {
-        downloadCountsMap = data.counts;
-        if (activeGistId === gistId) {
-          detailDownloadCount.textContent = `Total Downloads: ${downloadCountsMap[gistId] || 0}`;
-        }
-        renderFeed(Object.values(gistsMap));
-      }
-    } catch(err) {
-      console.error("Failed to increment download count", err);
-    }
+    // 2 second baad feed ke counts ko auto-refresh karne ke liye
+    setTimeout(() => {
+      fetchGists();
+    }, 2000);
   };
 
-  window.triggerModalDownload = function() {
-    if (activeGistId && activeModalFilename) {
-      triggerDownload(activeGistId, activeModalFilename);
-    }
-  };
 
   window.openDetails = async function(gistId) {
     activeGistId = gistId;

@@ -91,7 +91,8 @@
         <div class="flex flex-col gap-2">
           <div class="grid grid-cols-2 gap-2">
             <a id="detail-load-link" href="index.html" class="w-full text-center py-2 bg-[#e8a33d] text-black font-bold rounded hover:bg-[#d49233] transition-colors text-xs shadow">📥 Load in Editor</a>
-            <button id="detail-download-btn" class="w-full py-2 bg-[#181d26] border border-[#e8a33d]/50 text-[#e8a33d] font-bold rounded hover:bg-[#242b36] transition-colors text-xs shadow">💾 Download File</button>
+            <!-- ✨ FIX: Direct onclick trigger added to modal download button -->
+            <button id="detail-download-btn" onclick="triggerModalDownload()" class="w-full py-2 bg-[#181d26] border border-[#e8a33d]/50 text-[#e8a33d] font-bold rounded hover:bg-[#242b36] transition-colors text-xs shadow">💾 Download File</button>
           </div>
           <div class="text-[10px] text-gray-400 text-right pr-1" id="detail-download-count">Downloads: 0</div>
           <!-- DELETE BUTTON (Only visible to the post owner) -->
@@ -151,6 +152,7 @@
 
   let activeGistId = null;
   let activeGistData = null;
+  let activeModalFilename = 'script.txt';
   const gistsMap = {};
   let downloadCountsMap = {};
 
@@ -180,7 +182,6 @@
           if (file) {
             registeredUsers = JSON.parse(file.content || '[]');
           }
-          // Download counts load karo
           const countFile = data.files['download_counts.json'];
           if (countFile) {
             try { downloadCountsMap = JSON.parse(countFile.content || '{}'); } catch(e) { downloadCountsMap = {}; }
@@ -238,7 +239,6 @@
       const postDate = new Date(g.created_at);
       const formattedDateTime = postDate.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + postDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // Har ek attached file ke liye download button render karega (Source + Compiled dono!)
       let fileButtonsHtml = '';
       filenames.forEach(fname => {
         fileButtonsHtml += `
@@ -285,7 +285,6 @@
       return;
     }
 
-    // Trigger Browser Download
     const blob = new Blob([file.content], { type: 'text/plain;charset=utf-8' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -296,7 +295,6 @@
     a.remove();
     window.URL.revokeObjectURL(url);
 
-    // ✨ FIX: Browser download trigger hone ke turant baad count increment hoga (Cancel par nahi)
     try {
       const res = await fetch(`${API_BASE}/api/increment-download`, {
         method: 'POST',
@@ -316,7 +314,13 @@
     }
   };
 
-    window.openDetails = async function(gistId) {
+  window.triggerModalDownload = function() {
+    if (activeGistId && activeModalFilename) {
+      triggerDownload(activeGistId, activeModalFilename);
+    }
+  };
+
+  window.openDetails = async function(gistId) {
     activeGistId = gistId;
     detailModal.classList.remove('hidden');
     detailCodePreview.textContent = 'Loading...';
@@ -370,16 +374,11 @@
       }
 
       const txtFilename = filenames.find(f => f.endsWith('.txt')) || filenames[0];
-      const file = gistData.files[txtFilename];
+      activeModalFilename = txtFilename || filename;
+      const file = gistData.files[activeModalFilename];
       detailCodePreview.textContent = file ? file.content : 'No text preview available.';
 
       detailLoadLink.href = `index.html?load_gist=${gistId}&file=${encodeURIComponent(filename)}`;
-      
-      // ✨ FIX: Yahan direct onclick listener attach kar diya hai taaki button click par 100% download ho
-      detailDownloadBtn.onclick = function() {
-        triggerDownload(gistId, txtFilename);
-      };
-
       detailDownloadCount.textContent = `Total Downloads: ${downloadCountsMap[gistId] || 0}`;
       
       renderComments(gistData);
@@ -388,7 +387,6 @@
       detailCommentsList.innerHTML = '<div class="text-red-400 text-xs">Could not load comments.</div>';
     }
   };
-
 
   deletePostBtn.addEventListener('click', async () => {
     if (!activeGistId) return;
@@ -577,7 +575,7 @@
     } catch (err) {
       currentComments.pop();
       activeGistData.files['comments.json'] = { content: JSON.stringify(currentComments) };
-      renderComments(activeGistData);
+      renderComments(data.gist);
       alert('Network error while sending comment.');
     } finally {
       commentSubmitBtn.disabled = false;

@@ -183,13 +183,14 @@
     return null;
   }
 
-      async function fetchGists() {
+        async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">Loading all community user scripts...</div>';
     try {
       let registeredUsers = [];
       const token = getValidToken();
       const headers = token ? { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } : { 'Accept': 'application/vnd.github.v3+json' };
 
+      // 1. Testermt ki public central Gist se registered users ki list fetch karo[span_3](start_span)[span_3](end_span)
       if (REGISTRY_GIST_ID && !REGISTRY_GIST_ID.includes("YOUR_REGISTRY")) {
         const res = await fetch(`https://api.github.com/gists/${REGISTRY_GIST_ID}?t=${Date.now()}`, { headers });
         if (res.ok) {
@@ -209,30 +210,24 @@
         registeredUsers = ["Testermt", "DrakMaster798"];
       }
 
+      // 2. Har registered user ke usernames ka use karke unke saare gists pagination ke sath fetch karo[span_4](start_span)[span_4](end_span)
       let allCommunityScripts = [];
       for (const username of registeredUsers) {
         try {
-          const res = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&t=${Date.now()}`, { headers });
-          if (res.ok) {
-            const userGists = await res.json();
-            if (Array.isArray(userGists)) {
+          for (let page = 1; page <= 10; page++) {
+            const res = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`, { headers });
+            if (res.ok) {
+              const userGists = await res.json();
+              if (!Array.isArray(userGists) || userGists.length === 0) break;
               const validScripts = userGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
               allCommunityScripts = allCommunityScripts.concat(validScripts);
+              if (userGists.length < 100) break; // Agar 100 se kam gists hain toh agla page check karne ki zaroorat nahi
+            } else {
+              break;
             }
           }
         } catch (userErr) {
           console.warn(`Could not fetch gists for user ${username}:`, userErr);
-        }
-      }
-
-      // Fallback agar direct user gists fetch na ho paye toh public search endpoints use karo
-      if (allCommunityScripts.length === 0) {
-        const searchRes = await fetch(`https://api.github.com/gists?per_page=100&t=${Date.now()}`, { headers });
-        if (searchRes.ok) {
-          const publicGists = await searchRes.json();
-          if (Array.isArray(publicGists)) {
-            allCommunityScripts = publicGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
-          }
         }
       }
 
@@ -243,9 +238,10 @@
 
     } catch (err) {
       console.error("Feed fetch error:", err);
-      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your internet connection or GitHub token settings.</div>`;
+      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your connection.</div>`;
     }
   }
+
 
 
 

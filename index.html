@@ -619,13 +619,18 @@ document.addEventListener('focusin', function(e) {
     ghModal.classList.remove('hidden');
   });
 
-  ghDisconnectBtn.addEventListener('click', () => {
+    ghDisconnectBtn.addEventListener('click', () => {
     ghDropdown.classList.add('hidden');
     if (confirm('Are you sure you want to disconnect your GitHub repository and clear your saved token?')) {
       localStorage.removeItem('gh_token');
       localStorage.removeItem('gh_repo');
       localStorage.removeItem('gh_branch');
       localStorage.removeItem('gh_autosave');
+      
+      // 👉 Yahan add karna hai:
+      localStorage.removeItem('gh_username');
+      localStorage.removeItem('gh_avatar');
+
       ghTokenInput.value = '';
       ghRepoInput.value = '';
       ghBranchInput.value = 'main';
@@ -634,6 +639,7 @@ document.addEventListener('focusin', function(e) {
       logLine('GitHub repository settings removed and disconnected.', 'warn');
     }
   });
+
 
   ghModalClose.addEventListener('click', () => ghModal.classList.add('hidden'));
   ghModalCloseBtn.addEventListener('click', () => ghModal.classList.add('hidden'));

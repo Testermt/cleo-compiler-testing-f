@@ -183,7 +183,7 @@
     return null;
   }
 
-  async function fetchGists() {
+    async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">Loading all community user scripts...</div>';
     try {
       let registeredUsers = [];
@@ -196,7 +196,7 @@
           const data = await res.json();
           const file = data.files['community_users.json'];
           if (file) {
-            registeredUsers = JSON.parse(file.content || '[]');
+            try { registeredUsers = JSON.parse(file.content || '[]'); } catch(e) { registeredUsers = []; }
           }
           const countFile = data.files['download_counts.json'];
           if (countFile) {
@@ -206,22 +206,19 @@
       }
 
       if (registeredUsers.length === 0) {
-        feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">No community users registered yet. Be the first to publish a script!</div>';
-        return;
+        // Fallback agar registry khali ho
+        registeredUsers = ["Testermt", "DrakMaster798"];
       }
 
       let allCommunityScripts = [];
       for (const username of registeredUsers) {
         try {
-          for (let page = 1; page <= 10; page++) {
-            const res = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`, { headers });
-            if (res.ok) {
-              const userGists = await res.json();
-              if (!Array.isArray(userGists) || userGists.length === 0) break;
+          const res = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&t=${Date.now()}`, { headers });
+          if (res.ok) {
+            const userGists = await res.json();
+            if (Array.isArray(userGists)) {
               const validScripts = userGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
               allCommunityScripts = allCommunityScripts.concat(validScripts);
-            } else {
-              break;
             }
           }
         } catch (userErr) {
@@ -235,9 +232,11 @@
       filterAndRenderFeed();
 
     } catch (err) {
-      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed.</div>`;
+      console.error("Feed fetch error:", err);
+      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your internet or rate limits.</div>`;
     }
   }
+
 
   function filterAndRenderFeed() {
     const query = (searchInput.value || '').toLowerCase().trim();

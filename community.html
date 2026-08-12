@@ -150,12 +150,15 @@
     return null;
   }
 
-  async function fetchGists() {
+    async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-[#949ba4] py-12 text-xs">Loading all community user scripts...</div>';
     try {
       let registeredUsers = [];
+      const token = getValidToken(); // Token utha rahe hain agar user logged in hai
+      const headers = token ? { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' } : { 'Accept': 'application/vnd.github.v3+json' };
+
       if (REGISTRY_GIST_ID && !REGISTRY_GIST_ID.includes("YOUR_REGISTRY")) {
-        const res = await fetch(`https://api.github.com/gists/${REGISTRY_GIST_ID}?t=${Date.now()}`);
+        const res = await fetch(`https://api.github.com/gists/${REGISTRY_GIST_ID}?t=${Date.now()}`, { headers });
         if (res.ok) {
           const data = await res.json();
           const file = data.files['community_users.json'];
@@ -170,11 +173,12 @@
         return;
       }
 
-            let allCommunityScripts = [];
+      let allCommunityScripts = [];
       for (const username of registeredUsers) {
         try {
           for (let page = 1; page <= 10; page++) {
-            const res = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`);
+            // Yahan headers add kar diye hain taaki rate-limit ka issue na aaye
+            const res = await fetch(`https://api.github.com/users/${username}/gists?per_page=100&page=${page}&t=${Date.now()}`, { headers });
             if (res.ok) {
               const userGists = await res.json();
               if (!Array.isArray(userGists) || userGists.length === 0) break;
@@ -189,7 +193,6 @@
         }
       }
 
-
       allCommunityScripts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       renderFeed(allCommunityScripts);
 
@@ -197,6 +200,7 @@
       feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed.</div>`;
     }
   }
+
 
   function renderFeed(communityScripts) {
     if (communityScripts.length === 0) {

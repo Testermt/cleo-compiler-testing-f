@@ -413,68 +413,95 @@
     const API_BASE = 'https://cleo-compiler-testing.onrender.com'; // Apna Render backend URL yahan check kar lein
 
     commentSubmitBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const text = commentInput.value.trim();
-    if (!text || !activeGistId) return;
+      e.preventDefault();
+      const text = commentInput.value.trim();
+      if (!text || !activeGistId) return;
 
-    let username = localStorage.getItem('gh_username');
-    let avatar = localStorage.getItem('gh_avatar') || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
+      let username = localStorage.getItem('gh_username');
+      let avatar = localStorage.getItem('gh_avatar') || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
 
-    if (!username) {
-      const token = getValidToken();
-      if (!token) { alert('Please configure your GitHub Token first!'); return; }
-      try {
-        const userRes = await fetch('https://api.github.com/user', {
-          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-        });
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          username = userData.login;
-          avatar = userData.avatar_url;
-          localStorage.setItem('gh_username', username);
-          localStorage.setItem('gh_avatar', avatar);
-        } else {
-          username = 'Modder';
-        }
-      } catch(e) { username = 'Modder'; }
-    }
-
-    commentSubmitBtn.disabled = true;
-    commentSubmitBtn.textContent = 'Sending...';
-
-    try {
-      const res = await fetch(`${API_BASE}/api/add-comment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gistId: activeGistId,
-          username: username,
-          avatar: avatar,
-          body: text
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        activeGistData = data.gist;
-        gistsMap[activeGistId] = data.gist; // ✨ FIX: Map mein bhi updated gist save kar di
-        
-        // ✨ FIX: Cache ke andar bhi comments save kar lo taaki dubara kholne par gayab na ho
-        if (!gistsMap[activeGistId].files) gistsMap[activeGistId].files = {};
-        gistsMap[activeGistId].files['comments.json'] = data.gist.files['comments.json'];
-
-        commentInput.value = '';
-        renderComments(data.gist);
-      } else {
-        alert('Failed to send comment: ' + (data.error || 'Unknown error'));
+      if (!username) {
+        const token = getValidToken();
+        if (!token) { alert('Please configure your GitHub Token first!'); return; }
+        try {
+          const userRes = await fetch('https://api.github.com/user', {
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+          });
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            username = userData.login;
+            avatar = userData.avatar_url;
+            localStorage.setItem('gh_username', username);
+            localStorage.setItem('gh_avatar', avatar);
+          } else {
+            username = 'Modder';
+          }
+        } catch(e) { username = 'Modder'; }
       }
-    } catch (err) {
-      alert('Network error while sending comment.');
-    } finally {
-      commentSubmitBtn.disabled = false;
-      commentSubmitBtn.textContent = 'Send';
-    }
-  });
+
+      const newComment = {
+        user: username,
+        avatar: avatar,
+        body: text,
+        time: Date.now()
+      };
+
+      if (!activeGistData.files) activeGistData.files = {};
+      let currentComments = [];
+      try {
+        currentComments = JSON.parse(activeGistData.files['comments.json']?.content || '[]');
+      } catch(e) { currentComments = []; }
+
+      // 1. Locally add karo taaki fast lage
+      currentComments.push(newComment);
+      activeGistData.files['comments.json'] = { content: JSON.stringify(currentComments) };
+      gistsMap[activeGistId] = activeGistData;
+      renderComments(activeGistData);
+      commentInput.value = '';
+
+      commentSubmitBtn.disabled = true;
+      commentSubmitBtn.textContent = '...';
+
+      // 2. Server par confirm save hone ke liye bhejo
+      try {
+        const res = await fetch(`${API_BASE}/api/add-comment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gistId: activeGistId,
+            username: username,
+            avatar: avatar,
+            body: text
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          // ❌ Agar backend fail hua, toh local addition ko wapas hata do (Rollback)
+          currentComments.pop();
+          activeGistData.files['comments.json'] = { content: JSON.stringify(currentComments) };
+          renderComments(activeGistData);
+          alert('Failed to send comment: ' + (data.error || 'Server error'));
+        } else {
+          // ✅ Success hone par server ka exact data sync kar lo
+          activeGistData = data.gist;
+          gistsMap[activeGistId] = data.gist;
+          if (!gistsMap[activeGistId].files) gistsMap[activeGistId].files = {};
+          gistsMap[activeGistId].files['comments.json'] = data.gist.files['comments.json'];
+          renderComments(data.gist);
+        }
+      } catch (err) {
+        // ❌ Network error hone par bhi rollback kar do
+        currentComments.pop();
+        activeGistData.files['comments.json'] = { content: JSON.stringify(currentComments) };
+        renderComments(activeGistData);
+        alert('Network error while sending comment.');
+      } finally {
+        commentSubmitBtn.disabled = false;
+        commentSubmitBtn.textContent = 'Send';
+      }
+    });
+
 
 
 

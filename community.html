@@ -183,7 +183,7 @@
     return null;
   }
 
-    async function fetchGists() {
+      async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">Loading all community user scripts...</div>';
     try {
       let registeredUsers = [];
@@ -206,7 +206,6 @@
       }
 
       if (registeredUsers.length === 0) {
-        // Fallback agar registry khali ho
         registeredUsers = ["Testermt", "DrakMaster798"];
       }
 
@@ -226,6 +225,17 @@
         }
       }
 
+      // Fallback agar direct user gists fetch na ho paye toh public search endpoints use karo
+      if (allCommunityScripts.length === 0) {
+        const searchRes = await fetch(`https://api.github.com/gists?per_page=100&t=${Date.now()}`, { headers });
+        if (searchRes.ok) {
+          const publicGists = await searchRes.json();
+          if (Array.isArray(publicGists)) {
+            allCommunityScripts = publicGists.filter(g => g.description && g.description.includes(UNIQUE_APP_SIGNATURE));
+          }
+        }
+      }
+
       allCommunityScripts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       allCachedScripts = allCommunityScripts;
       
@@ -233,9 +243,10 @@
 
     } catch (err) {
       console.error("Feed fetch error:", err);
-      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your internet or rate limits.</div>`;
+      feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your internet connection or GitHub token settings.</div>`;
     }
   }
+
 
 
   function filterAndRenderFeed() {

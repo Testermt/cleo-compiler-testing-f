@@ -370,8 +370,12 @@
         deleteContainer.classList.add('hidden');
       }
 
-      const file = gistData.files[filename];
-      detailCodePreview.textContent = file ? file.content : 'No content preview available';
+            // ✨ Sirf source file (.txt) ya jo file .txt se end hoti ho ya pehli file ho uska preview dikhayein
+      const txtFilename = filenames.find(f => f.endsWith('.txt')) || filenames[0];
+      const file = gistData.files[txtFilename];
+      
+      detailCodePreview.textContent = file ? file.content : 'No text preview available for compiled binary.';
+
       detailLoadLink.href = `index.html?load_gist=${gistId}&file=${encodeURIComponent(filename)}`;
       detailDownloadCount.textContent = `Total Downloads: ${downloadCountsMap[gistId] || 0}`;
       

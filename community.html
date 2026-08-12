@@ -368,7 +368,7 @@
 
     const API_BASE = 'https://cleo-compiler-testing.onrender.com'; // Apna Render backend URL yahan check kar lein
 
-  commentSubmitBtn.addEventListener('click', async (e) => {
+    commentSubmitBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const text = commentInput.value.trim();
     if (!text || !activeGistId) return;
@@ -399,7 +399,6 @@
     commentSubmitBtn.textContent = 'Sending...';
 
     try {
-      // ✨ FIX: Call backend secure endpoint instead of direct GitHub API PATCH
       const res = await fetch(`${API_BASE}/api/add-comment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -414,7 +413,12 @@
       const data = await res.json();
       if (res.ok && data.success) {
         activeGistData = data.gist;
-        gistsMap[activeGistId] = data.gist;
+        gistsMap[activeGistId] = data.gist; // ✨ FIX: Map mein bhi updated gist save kar di
+        
+        // ✨ FIX: Cache ke andar bhi comments save kar lo taaki dubara kholne par gayab na ho
+        if (!gistsMap[activeGistId].files) gistsMap[activeGistId].files = {};
+        gistsMap[activeGistId].files['comments.json'] = data.gist.files['comments.json'];
+
         commentInput.value = '';
         renderComments(data.gist);
       } else {
@@ -427,6 +431,7 @@
       commentSubmitBtn.textContent = 'Send';
     }
   });
+
 
 
   function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }

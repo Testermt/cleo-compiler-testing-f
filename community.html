@@ -183,7 +183,7 @@
     return null;
   }
 
-    async function fetchGists() {
+      async function fetchGists() {
     feedGrid.innerHTML = '<div class="text-center text-gray-500 py-12 text-xs">Loading community scripts instantly...</div>';
     try {
       const res = await fetch(`${API_BASE}/api/get-community-feed?t=${Date.now()}`);
@@ -194,12 +194,15 @@
       downloadCountsMap = data.downloadCounts || {};
       const posts = data.posts || [];
 
-      // ✨ Fix: Map stored files array correctly into the format renderFeed expects
+      // ✨ Purely Central Index (all_posts.json) se data map karna - No GitHub API limits!
       allCachedScripts = posts.map(p => {
         const filesObj = {};
         if (Array.isArray(p.files)) {
           p.files.forEach(fname => {
-            filesObj[fname] = { filename: fname };
+            filesObj[fname] = { 
+              filename: fname, 
+              content: p.screenshots && p.screenshots[fname] ? p.screenshots[fname] : undefined 
+            };
           });
         }
         return {
@@ -218,6 +221,7 @@
       feedGrid.innerHTML = `<div class="text-center text-red-400 py-12 text-xs">Failed to fetch community feed. Please check your backend server.</div>`;
     }
   }
+
 
 
   function filterAndRenderFeed() {

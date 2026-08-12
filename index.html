@@ -224,8 +224,13 @@ document.addEventListener('focusin', function(e) {
         </div>
         <div>
           <label class="block text-gray-400 mb-1">Source File Name (.txt):</label>
-          <input type="text" id="pub-source-name" value="script.txt" 
-            class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full focus:outline-none focus:border-amber font-mono text-xs" />
+          <div class="flex gap-2">
+            <input type="text" id="pub-source-name" value="script.txt" 
+              class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 flex-1 focus:outline-none focus:border-amber font-mono text-xs" />
+            <input type="file" id="pub-source-file-input" accept=".txt" class="hidden" />
+            <button type="button" id="pub-browse-source" class="btn-press px-3 py-2 bg-panel2 border border-hairline text-amber text-[11.5px] rounded-sm hover:border-amber shrink-0">Browse...</button>
+          </div>
+          <span id="pub-source-status" class="text-[10px] text-gray-500 mt-0.5 block">Using editor code (or browse to replace)</span>
         </div>
         <div>
           <label class="block text-gray-400 mb-1">Compiled Script File (Optional - .cs / .csa / .csi):</label>
@@ -519,16 +524,36 @@ document.addEventListener('focusin', function(e) {
   const publishModal = document.getElementById('publish-modal');
   const pubTitleInput = document.getElementById('pub-title-input');
   const pubSourceName = document.getElementById('pub-source-name');
+  const pubSourceFileInput = document.getElementById('pub-source-file-input');
+  const pubBrowseSource = document.getElementById('pub-browse-source');
+  const pubSourceStatus = document.getElementById('pub-source-status');
+
   const pubCompiledName = document.getElementById('pub-compiled-name');
   const pubCompiledFileInput = document.getElementById('pub-compiled-file-input');
   const pubBrowseCompiled = document.getElementById('pub-browse-compiled');
   const pubCompiledStatus = document.getElementById('pub-compiled-status');
+
   const pubModalSubmit = document.getElementById('pub-modal-submit');
   const pubModalCancel = document.getElementById('pub-modal-cancel');
   const publishModalClose = document.getElementById('publish-modal-close');
 
+  let attachedSourceCustomContent = null;
   let attachedCompiledContent = null;
   let attachedCompiledBase64 = false;
+
+  pubBrowseSource.addEventListener('click', () => pubSourceFileInput.click());
+  pubSourceFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    pubSourceName.value = file.name;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      attachedSourceCustomContent = event.target.result;
+      pubSourceStatus.textContent = `Attached file: ${file.name} (${Math.round(file.size/1024)} KB)`;
+      pubSourceStatus.className = 'text-[10px] text-good mt-0.5 block';
+    };
+    reader.readAsText(file);
+  });
 
   pubBrowseCompiled.addEventListener('click', () => pubCompiledFileInput.click());
   pubCompiledFileInput.addEventListener('change', (e) => {
@@ -561,11 +586,17 @@ document.addEventListener('focusin', function(e) {
     const activeTab = openTabs.find(t => t.id === activeTabId);
     pubSourceName.value = activeTab ? activeTab.name : 'script.txt';
     pubTitleInput.value = '';
+    
+    attachedSourceCustomContent = null;
+    pubSourceStatus.textContent = 'Using editor code (or browse to replace)';
+    pubSourceStatus.className = 'text-[10px] text-gray-500 mt-0.5 block';
+
     attachedCompiledContent = null;
     attachedCompiledBase64 = false;
     pubCompiledName.value = '';
     pubCompiledStatus.textContent = 'No compiled file attached';
     pubCompiledStatus.className = 'text-[10px] text-gray-500 mt-0.5 block';
+    
     publishModal.classList.remove('hidden');
   }
 
@@ -596,10 +627,10 @@ document.addEventListener('focusin', function(e) {
       alert('Please enter a title or description!');
       return;
     }
-    if (!editor) return;
-    const sourceCode = editor.getValue();
+    
+    const sourceCode = attachedSourceCustomContent !== null ? attachedSourceCustomContent : (editor ? editor.getValue() : '');
     if (!sourceCode.trim()) {
-      alert('Editor source code is empty!');
+      alert('Source code is empty!');
       return;
     }
 

@@ -296,7 +296,7 @@
     a.remove();
     window.URL.revokeObjectURL(url);
 
-    // Increment download count on backend
+    // ✨ FIX: Browser download trigger hone ke turant baad count increment hoga (Cancel par nahi)
     try {
       const res = await fetch(`${API_BASE}/api/increment-download`, {
         method: 'POST',
@@ -307,9 +307,8 @@
       if (data.success) {
         downloadCountsMap = data.counts;
         if (activeGistId === gistId) {
-          detailDownloadCount.textContent = `Downloads: ${downloadCountsMap[gistId] || 0}`;
+          detailDownloadCount.textContent = `Total Downloads: ${downloadCountsMap[gistId] || 0}`;
         }
-        // Update feed view counts dynamically
         renderFeed(Object.values(gistsMap));
       }
     } catch(err) {
@@ -370,13 +369,14 @@
         deleteContainer.classList.add('hidden');
       }
 
-            // ✨ Sirf source file (.txt) ya jo file .txt se end hoti ho ya pehli file ho uska preview dikhayein
       const txtFilename = filenames.find(f => f.endsWith('.txt')) || filenames[0];
       const file = gistData.files[txtFilename];
-      
-      detailCodePreview.textContent = file ? file.content : 'No text preview available for compiled binary.';
+      detailCodePreview.textContent = file ? file.content : 'No text preview available.';
 
       detailLoadLink.href = `index.html?load_gist=${gistId}&file=${encodeURIComponent(filename)}`;
+      
+      // ✨ FIX: Details modal ke andar wale Download button ko properly bind kar diya
+      detailDownloadBtn.onclick = () => triggerDownload(gistId, txtFilename);
       detailDownloadCount.textContent = `Total Downloads: ${downloadCountsMap[gistId] || 0}`;
       
       renderComments(gistData);

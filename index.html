@@ -1,24 +1,7 @@
-<!-- G-->
+<!-- G>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8973LHLFH8"></script>
-<script>
-document.addEventListener('focusin', function(e) {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('.monaco-editor')) {
-    const viewport = document.querySelector('meta[name=viewport]');
-    if (viewport) {
-      viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
-    }
-  }
-});
-
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-8973LHLFH8');
-</script>
 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -267,6 +250,22 @@ document.addEventListener('focusin', function(e) {
     </div>
   </div>
 
+  <!-- GUI ERROR SCREENSHOT POPUP MODAL -->
+  <div id="gui-screenshot-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+    <div class="bg-panel border border-hairline rounded-sm max-w-3xl w-full p-4 flex flex-col gap-3 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-hairline pb-2">
+        <h2 class="font-display text-xs sm:text-sm text-amber font-semibold">Sanny Builder GUI Error Output</h2>
+        <button id="gui-modal-close" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
+      </div>
+      <div class="bg-panel2 border border-hairline rounded-sm overflow-hidden flex items-center justify-center p-2">
+        <img id="gui-screenshot-img" src="" alt="Compiler GUI Output" class="max-w-full max-h-[70vh] object-contain rounded" />
+      </div>
+      <div class="flex justify-end pt-1">
+        <button id="gui-modal-ok" class="btn-press text-[11px] px-4 py-1.5 bg-amber text-ink font-semibold rounded-sm hover:bg-amber/90">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MAIN -->
   <main class="flex-1 max-w-6xl w-full mx-auto px-2 sm:px-4 py-3 flex flex-col gap-3">
 
@@ -313,13 +312,17 @@ document.addEventListener('focusin', function(e) {
     </div>
 
     <!-- Compile & Download Button Row -->
-    <div>
-      <button id="compile-btn" class="btn-press text-xs sm:text-sm py-2.5 px-4 rounded-sm bg-amber text-ink font-bold transition-colors flex items-center justify-center gap-2 w-full disabled:opacity-50 shadow-md">
+    <div class="flex gap-2">
+      <button id="compile-btn" class="btn-press text-xs sm:text-sm py-2.5 px-4 rounded-sm bg-amber text-ink font-bold transition-colors flex items-center justify-center gap-2 flex-1 disabled:opacity-50 shadow-md">
         <svg id="compile-spinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
         </svg>
         <span id="compile-btn-text">Compile &amp; Download</span>
+      </button>
+      <!-- GUI Screen Mode Button -->
+      <button id="compile-gui-btn" class="btn-press text-xs sm:text-sm py-2.5 px-3 rounded-sm bg-panel2 border border-amber/50 text-amber font-bold hover:bg-amber/10 transition-colors shrink-0" title="Check GUI Error Screenshot">
+        📸 GUI Check
       </button>
     </div>
 
@@ -548,7 +551,6 @@ document.addEventListener('focusin', function(e) {
   const pubBrowseCompiled = document.getElementById('pub-browse-compiled');
   const pubCompiledStatus = document.getElementById('pub-compiled-status');
 
-  // ✨ Screenshot Upload Elements
   const pubScreenshotName = document.getElementById('pub-screenshot-name');
   const pubScreenshotFileInput = document.getElementById('pub-screenshot-file-input');
   const pubBrowseScreenshot = document.getElementById('pub-browse-screenshot');
@@ -594,7 +596,6 @@ document.addEventListener('focusin', function(e) {
     reader.readAsDataURL(file);
   });
 
-  // ✨ Screenshot Browse Logic
   pubBrowseScreenshot.addEventListener('click', () => pubScreenshotFileInput.click());
   pubScreenshotFileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -663,13 +664,11 @@ document.addEventListener('focusin', function(e) {
     }
   }
 
-    pubModalSubmit.addEventListener('click', async () => {
+  pubModalSubmit.addEventListener('click', async () => {
     const token = localStorage.getItem('gh_token');
     const title = pubTitleInput.value.trim();
     const sourceFilename = pubSourceName.value.trim() || 'script.txt';
     const compiledFilename = pubCompiledName.value.trim();
-    
-    // ✨ Screenshot File Input element se direct file uthayein
     const screenshotFile = pubScreenshotFileInput.files[0];
 
     if (!title) {
@@ -700,8 +699,6 @@ document.addEventListener('focusin', function(e) {
 
       await registerUserToHub(username);
 
-      // ✨ 1. Agar user ne screenshot select kiya hai, toh use ImgBB API par upload karke direct URL lo
-          // ✨ ImgBB API Upload Logic with your key
       let screenshotUrl = '';
       if (screenshotFile) {
         const formData = new FormData();
@@ -713,10 +710,9 @@ document.addEventListener('focusin', function(e) {
         });
         const imgData = await imgRes.json();
         if (imgData.success) {
-          screenshotUrl = imgData.data.url; // Direct image URL mil jayega!
+          screenshotUrl = imgData.data.url;
         }
       }
-
 
       const filesPayload = {
         [sourceFilename]: { content: sourceCode },
@@ -748,7 +744,6 @@ document.addEventListener('focusin', function(e) {
       if (res.ok) {
         const gistData = await res.json();
         
-        // ✨ 2. Backend ko publish request bhejte waqt screenshot URL pass karein (No Base64 heavy data)
         try {
           await fetch(`${API_BASE}/api/publish-post`, {
             method: 'POST',
@@ -777,7 +772,6 @@ document.addEventListener('focusin', function(e) {
       alert(`Network error: ${err.message}`);
     }
   });
-
 
   const ghConfigBtn = document.getElementById('gh-config-btn');
   const ghDropdown = document.getElementById('gh-dropdown');
@@ -1364,6 +1358,48 @@ document.addEventListener('focusin', function(e) {
     }
   });
 
+  // --- GUI SCREENSHOT MODAL HANDLERS ---
+  const guiModal = document.getElementById('gui-screenshot-modal');
+  const guiScreenshotImg = document.getElementById('gui-screenshot-img');
+  document.getElementById('gui-modal-close').addEventListener('click', () => guiModal.classList.add('hidden'));
+  document.getElementById('gui-modal-ok').addEventListener('click', () => guiModal.classList.add('hidden'));
+  window.addEventListener('click', (e) => { if (e.target === guiModal) guiModal.classList.add('hidden'); });
+
+  async function triggerGuiCompilation(code, filename, game) {
+    logLine('[GUI Mode] Launching Sanny Builder GUI on virtual display...', 'info');
+    try {
+      const response = await fetch(`${API_BASE}/api/compile-gui`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, filename, game })
+      });
+      
+      const data = await response.json();
+      if (data.success && data.gui_screenshot) {
+        guiScreenshotImg.src = data.gui_screenshot;
+        guiModal.classList.remove('hidden');
+        logLine('[GUI Mode] Screenshot captured and loaded successfully.', 'success');
+      } else {
+        logLine(`[GUI Error] ${data.error || 'Failed to capture screen.'}`, 'error');
+      }
+    } catch (err) {
+      logLine(`[GUI Network Error] ${err.message}`, 'error');
+    }
+  }
+
+  document.getElementById('compile-gui-btn').addEventListener('click', () => {
+    if (!editor) return;
+    const code = editor.getValue();
+    const activeTab = openTabs.find(t => t.id === activeTabId);
+    const currentFilename = activeTab ? activeTab.name : 'script.txt';
+    const selectedGame = document.getElementById('gameSelect').value;
+    if (!code.trim()) {
+      logLine('Editor is empty.', 'warn');
+      return;
+    }
+    triggerGuiCompilation(code, currentFilename, selectedGame);
+  });
+
   const compileBtn = document.getElementById('compile-btn');
   const compileBtnText = document.getElementById('compile-btn-text');
   const compileSpinner = document.getElementById('compile-spinner');
@@ -1451,7 +1487,7 @@ document.addEventListener('focusin', function(e) {
 
       const token = localStorage.getItem('gh_token');
       const repo = localStorage.getItem('gh_repo');
-      const autosave = localStorage.getItem('gh_autosave') === 'true'; // ✨ Fixed here
+      const autosave = localStorage.getItem('gh_autosave') === 'true';
 
       if (token && repo) {
         let shouldSave = autosave;

@@ -1,11 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8973LHLFH8"></script>
+<script>
+document.addEventListener('focusin', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('.monaco-editor')) {
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
+    }
+  }
+});
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8973LHLFH8');
+</script>
+
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>GTA SA Online CLEO Compiler</title>
-
-<!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -31,12 +46,10 @@
     },
   };
 </script>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
 <style>
-  html, body { background: #0c0f14; color: #e5e7eb; overflow-x: hidden; font-family: monospace; }
+  html, body { background: #0c0f14; overflow-x: hidden; color: #e5e7eb; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: #12161d; }
   ::-webkit-scrollbar-thumb { background: #242b36; border-radius: 4px; }
@@ -44,6 +57,7 @@
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
   .cursor-blink { animation: blink 1.2s step-end infinite; }
   .hex-addr { font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
+  
   #editor-container { height: 50vh; min-height: 320px; }
   
   .fullscreen-editor { 
@@ -58,6 +72,7 @@
     flex-direction: column; 
   }
   .fullscreen-editor #editor-container { height: calc(100vh - 45px) !important; flex: 1; }
+
   .btn-press:active { transform: translateY(1px); }
   .error-line-highlight { background-color: rgba(224, 90, 78, 0.20) !important; border-left: 3px solid #e05a4e !important; }
 
@@ -91,31 +106,18 @@
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
-        <a href="community.html" class="btn-press w-8 h-8 rounded-sm border border-teal/50 bg-teal/10 text-teal hover:bg-teal/20 transition-colors flex items-center justify-center text-sm font-bold text-decoration-none" title="Community Hub">
-          🌐
-        </a>
+        <a href="community.html" class="btn-press w-8 h-8 rounded-sm border border-teal/50 bg-teal/10 text-teal hover:bg-teal/20 transition-colors flex items-center justify-center text-sm font-bold text-decoration-none" title="Community Hub">🌐</a>
+        <button id="header-publish-btn" class="btn-press w-8 h-8 rounded-sm border border-amber/50 bg-amber/10 text-amber hover:bg-amber/20 transition-colors flex items-center justify-center text-sm" title="Publish Script">🚀</button>
+        <a href="documentation.html" class="btn-style px-2 py-1 border border-hairline text-xs rounded">📖 Docs</a>
+        <button id="opcode-btn" class="btn-press text-[11px] px-3 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Opcodes</button>
 
-        <button id="header-publish-btn" class="btn-press w-8 h-8 rounded-sm border border-amber/50 bg-amber/10 text-amber hover:bg-amber/20 transition-colors flex items-center justify-center text-sm" title="Publish Script">
-          🚀
-        </button>
-        <a href="documentation.html" class="btn-style">📖 Docs</a>
-
-        <button id="opcode-btn" class="btn-press text-[11px] px-3 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors">
-          Opcodes
-        </button>
-
+        <!-- GITHUB SYNC BUTTON -->
         <div class="relative">
-          <button id="gh-config-btn" class="btn-press text-[11px] px-3 py-1.5 rounded-sm border border-hairline bg-panel2 text-gray-200 hover:border-amber/50 transition-colors flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            <span id="gh-btn-text">GitHub</span>
-          </button>
-          
+          <button id="gh-config-btn" class="btn-press text-[11px] px-3 py-1.5 rounded-sm border border-hairline bg-panel2 text-gray-200 hover:border-amber/50 transition-colors flex items-center gap-1.5">GitHub</button>
           <div id="gh-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-panel border border-hairline rounded-sm shadow-xl z-50 py-1 text-[11.5px]" style="display: none;">
-            <div class="px-3 py-1.5 border-b border-hairline text-gray-400 truncate">
-              Repo: <strong id="gh-repo-label" class="text-amber">Not set</strong>
-            </div>
-            <button id="gh-save-source" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors">💾 Save Source (.txt)</button>
-            <button id="gh-save-compiled" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors">☁️ Save Compiled (.cs)</button>
+            <div class="px-3 py-1.5 border-b border-hairline text-gray-400 truncate">Repo: <strong id="gh-repo-label" class="text-amber">Not set</strong></div>
+            <button id="gh-save-source" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 transition-colors">💾 Save Source (.txt)</button>
+            <button id="gh-save-compiled" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 transition-colors">☁️ Save Compiled (.cs)</button>
             <div class="border-t border-hairline my-1"></div>
             <button id="gh-publish-gist" class="w-full text-left px-3 py-2 text-teal hover:bg-panel2 transition-colors font-bold">🚀 Publish to Community</button>
             <div class="border-t border-hairline my-1"></div>
@@ -123,7 +125,6 @@
             <button id="gh-disconnect" class="w-full text-left px-3 py-2 text-bad hover:bg-panel2 transition-colors">🗑️ Disconnect Repo</button>
           </div>
         </div>
-
       </div>
     </div>
   </header>
@@ -135,26 +136,19 @@
         <h2 class="font-display text-xs sm:text-sm text-gray-100 font-semibold">GitHub Private Sync</h2>
         <button id="gh-modal-close" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
       </div>
-      <div class="bg-blue-900/10 border border-blue-500/20 p-2.5 rounded-sm">
-        <p class="text-[10px] text-blue-300 leading-relaxed"><strong>🔒 Privacy:</strong> Token stored in browser local storage.</p>
-      </div>
       <div class="flex flex-col gap-2.5 text-[11.5px]">
         <div>
           <label class="block text-gray-400 mb-1">GitHub PAT Token:</label>
-          <input type="password" id="gh-token-input" placeholder="ghp_xxxxxxxxxxxx" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full focus:outline-none focus:border-amber font-mono text-xs" />
+          <input type="password" id="gh-token-input" placeholder="ghp_xxxxxxxxxxxx" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full font-mono text-xs" />
         </div>
         <div>
           <label class="block text-gray-400 mb-1">Repository Name (owner/repo):</label>
-          <input type="text" id="gh-repo-input" placeholder="e.g. Testermt/CleoSave" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full focus:outline-none focus:border-amber font-mono text-xs" />
-        </div>
-        <div>
-          <label class="block text-gray-400 mb-1">Branch:</label>
-          <input type="text" id="gh-branch-input" value="main" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full focus:outline-none focus:border-amber font-mono text-xs" />
+          <input type="text" id="gh-repo-input" placeholder="e.g. Testermt/CleoSave" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full font-mono text-xs" />
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2 border-t border-hairline">
         <button id="gh-modal-close-btn" class="px-3 py-1.5 text-gray-400 text-[11px]">Cancel</button>
-        <button id="gh-save-config" class="btn-press text-[11px] px-3.5 py-1.5 bg-amber text-ink font-semibold rounded-sm hover:bg-amber/90">Save &amp; Sync</button>
+        <button id="gh-save-config" class="btn-press text-[11px] px-3.5 py-1.5 bg-amber text-ink font-semibold rounded-sm">Save &amp; Sync</button>
       </div>
     </div>
   </div>
@@ -169,12 +163,12 @@
       <div class="flex flex-col gap-2.5 text-[11.5px]">
         <div>
           <label class="block text-gray-400 mb-1">Script Title / Description:</label>
-          <input type="text" id="pub-title-input" placeholder="e.g. Awesome Car Spawner Script" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full focus:outline-none focus:border-amber font-mono text-xs" />
+          <input type="text" id="pub-title-input" placeholder="e.g. Awesome Car Spawner Script" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 w-full font-mono text-xs" />
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2 border-t border-hairline">
         <button id="pub-modal-cancel" class="px-3 py-1.5 text-gray-400 text-[11px]">Cancel</button>
-        <button id="pub-modal-submit" class="btn-press text-[11px] px-3.5 py-1.5 bg-amber text-ink font-semibold rounded-sm hover:bg-amber/90">Publish Now 🚀</button>
+        <button id="pub-modal-submit" class="btn-press text-[11px] px-3.5 py-1.5 bg-amber text-ink font-semibold rounded-sm">Publish Now 🚀</button>
       </div>
     </div>
   </div>
@@ -190,48 +184,140 @@
         <img id="gui-screenshot-img" src="" alt="Compiler GUI Output" class="max-w-full max-h-[70vh] object-contain rounded" />
       </div>
       <div class="flex justify-end pt-1">
-        <button id="gui-modal-ok" class="btn-press text-[11px] px-4 py-1.5 bg-amber text-ink font-semibold rounded-sm hover:bg-amber/90">Close</button>
+        <button id="gui-modal-ok" class="btn-press text-[11px] px-4 py-1.5 bg-amber text-ink font-semibold rounded-sm">Close</button>
       </div>
     </div>
   </div>
 
   <!-- MAIN -->
   <main class="flex-1 max-w-6xl w-full mx-auto px-2 sm:px-4 py-3 flex flex-col gap-3">
-    <div class="bg-amber/10 border border-amber/30 rounded-sm p-2.5 text-[11px] text-amber flex flex-col sm:flex-row items-center justify-between gap-2">
-      <p class="text-center sm:text-left"><strong>Server Notice:</strong> Request Queue System is active to handle traffic spikes.</p>
-    </div>
-
     <!-- Toolbar -->
     <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-2.5 bg-panel p-2.5 sm:p-3 rounded-sm border border-hairline">
-      <select id="gameSelect" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2 py-1 text-[11.5px]">
-        <option value="sa" selected>GTA SA (PC - .cs)</option>
-        <option value="sa_mobile_csa">GTA SA (Mobile - .csa)</option>
-      </select>
-      <button id="compile-btn" class="btn-press py-2 px-4 rounded-sm bg-amber text-ink font-bold">Compile &amp; Download</button>
-      <button id="compile-gui-btn" class="btn-press py-2 px-3 rounded-sm bg-panel2 border border-amber/50 text-amber font-bold">📸 GUI Check</button>
+      <div class="flex items-center gap-2">
+        <select id="gameSelect" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2 py-1 text-[11.5px]">
+          <option value="sa" selected>GTA SA (PC - .cs)</option>
+          <option value="sa_mobile_csa">GTA SA (Mobile - .csa)</option>
+          <option value="sa_mobile_csi">GTA SA (Mobile - .csi)</option>
+          <option value="vc">GTA VC (PC - .cs)</option>
+        </select>
+      </div>
+      <div class="flex gap-1.5">
+        <button id="db-upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300">Custom .db</button>
+        <button id="decompile-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300">Decompile</button>
+        <button id="upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300">Upload</button>
+        <button id="clear-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-400">Clear</button>
+      </div>
     </div>
 
-    <!-- Editor Wrapper -->
+    <!-- Compile & Download Button Row -->
+    <div class="flex gap-2">
+      <button id="compile-btn" class="btn-press text-xs sm:text-sm py-2.5 px-4 rounded-sm bg-amber text-ink font-bold transition-colors flex items-center justify-center gap-2 flex-1 shadow-md">
+        <span id="compile-btn-text">Compile &amp; Download</span>
+      </button>
+      <button id="compile-gui-btn" class="btn-press text-xs sm:text-sm py-2.5 px-3 rounded-sm bg-panel2 border border-amber/50 text-amber font-bold hover:bg-amber/10 transition-colors shrink-0" title="Check GUI Error Screenshot">📸 GUI Check</button>
+    </div>
+
+    <!-- Editor Wrapper with File Tabs -->
     <div id="editor-wrapper-box" class="rounded-sm border border-hairline overflow-hidden shadow-2xl flex flex-col bg-panel">
+      <div class="bg-panel2 border-b border-hairline px-2.5 py-1.5 flex items-center justify-between gap-2 text-[11px] text-gray-400">
+        <div id="file-tabs-container" class="flex items-center gap-1.5 overflow-x-auto flex-1 py-0.5"></div>
+        <button id="editor-menu-btn" class="px-2.5 py-1 rounded bg-panel text-amber font-bold text-sm">⋮</button>
+      </div>
       <div id="editor-container"></div>
+    </div>
+
+    <!-- Console -->
+    <div class="rounded-sm border border-hairline bg-panel flex flex-col">
+      <div class="border-b border-hairline px-3 py-1.5 flex items-center justify-between">
+        <span class="text-[11px] text-gray-500 hex-addr">CONSOLE</span>
+        <button id="console-clear" class="text-[11px] text-gray-600">clear</button>
+      </div>
+      <div id="console-log" class="h-32 overflow-y-auto px-3 py-2 text-[11.5px] leading-relaxed space-y-1">
+        <div class="text-gray-600">&gt; awaiting compile&hellip;</div>
+      </div>
     </div>
   </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs/loader.min.js"></script>
 <script>
   const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-testing.onrender.com';
+  let openTabs = [
+    { id: 'tab-1', name: 'script.txt', content: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'MAIN'\n\n:MAIN_START\nwait 0\nif\n  0256:   player $PLAYER_CHAR defined\njf @MAIN_START\n\n0001: wait 0\n0417: create_pickup_marker_at 0.0 0.0 0.0 color 1\n\n:MAIN_LOOP\nwait 250\njump @MAIN_LOOP\n` }
+  ];
+  let activeTabId = 'tab-1';
   let editor;
+
+  const tabsContainer = document.getElementById('file-tabs-container');
+  function renderTabs() {
+    tabsContainer.innerHTML = '';
+    openTabs.forEach(tab => {
+      const tabEl = document.createElement('div');
+      tabEl.className = `flex items-center gap-1.5 px-2.5 py-1 rounded cursor-pointer text-xs border transition-all shrink-0 ${tab.id === activeTabId ? 'bg-panel border-amber text-amber font-semibold' : 'bg-panel2 border-hairline text-gray-400'}`;
+      tabEl.innerHTML = `<span onclick="switchTab('${tab.id}')" class="truncate max-w-[110px]">${tab.name}</span>`;
+      tabsContainer.appendChild(tabEl);
+    });
+  }
+  function switchTab(id) {
+    const currentTab = openTabs.find(t => t.id === activeTabId);
+    if (currentTab && editor) currentTab.content = editor.getValue();
+    activeTabId = id;
+    const targetTab = openTabs.find(t => t.id === id);
+    if (targetTab && editor) editor.setValue(targetTab.content);
+    renderTabs();
+  }
 
   require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs' } });
   require(['vs/editor/editor.main'], function () {
     editor = monaco.editor.create(document.getElementById('editor-container'), {
-      value: '{$CLEO .cs}\\n\\n0000: NOP\\n',
+      value: openTabs[0].content,
       language: 'cpp',
       theme: 'vs-dark',
-      automaticLayout: true
+      automaticLayout: true,
+      fontSize: 13
     });
+    renderTabs();
   });
 
+  const consoleLog = document.getElementById('console-log');
+  function logLine(text, type = 'info') {
+    const line = document.createElement('div');
+    line.className = type === 'error' ? 'text-bad' : (type === 'success' ? 'text-good' : 'text-gray-400');
+    line.innerHTML = `[${new Date().toLocaleTimeString()}] ${text}`;
+    consoleLog.appendChild(line);
+    consoleLog.scrollTop = consoleLog.scrollHeight;
+  }
+  document.getElementById('console-clear').addEventListener('click', () => consoleLog.innerHTML = '');
+
+  // File Upload Handlers
+  const uploadBtn = document.getElementById('upload-btn');
+  const fileInput = document.getElementById('file-upload-input');
+  uploadBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      editor.setValue(event.target.result);
+      openTabs[0].name = file.name;
+      renderTabs();
+      logLine(`Uploaded file loaded: ${file.name}`, 'success');
+    };
+    reader.readAsText(file);
+    fileInput.value = '';
+  });
+
+  // GitHub modal toggles
+  const ghModal = document.getElementById('gh-modal');
+  document.getElementById('gh-config-btn').addEventListener('click', () => ghModal.style.display = 'flex');
+  document.getElementById('gh-modal-close').addEventListener('click', () => ghModal.style.display = 'none');
+  document.getElementById('gh-modal-close-btn').addEventListener('click', () => ghModal.style.display = 'none');
+
+  const publishModal = document.getElementById('publish-modal');
+  document.getElementById('header-publish-btn').addEventListener('click', () => publishModal.style.display = 'flex');
+  document.getElementById('publish-modal-close').addEventListener('click', () => publishModal.style.display = 'none');
+  document.getElementById('pub-modal-cancel').addEventListener('click', () => publishModal.style.display = 'none');
+
+  // GUI Screenshot Modal Handlers
   const guiModal = document.getElementById('gui-screenshot-modal');
   const guiScreenshotImg = document.getElementById('gui-screenshot-img');
   document.getElementById('gui-modal-close').addEventListener('click', () => guiModal.style.display = 'none');
@@ -240,15 +326,55 @@
   document.getElementById('compile-gui-btn').addEventListener('click', async () => {
     if (!editor) return;
     const code = editor.getValue();
-    const response = await fetch(`${API_BASE}/api/compile-gui`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, filename: 'script.txt', game: 'sa' })
-    });
-    const data = await response.json();
-    if (data.success && data.gui_screenshot) {
-      guiScreenshotImg.src = data.gui_screenshot;
-      guiModal.style.display = 'flex';
+    const game = document.getElementById('gameSelect').value;
+    logLine('Sending GUI compilation request...', 'info');
+    try {
+      const response = await fetch(`${API_BASE}/api/compile-gui`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, filename: 'script.txt', game })
+      });
+      const data = await response.json();
+      if (data.success && data.gui_screenshot) {
+        guiScreenshotImg.src = data.gui_screenshot;
+        guiModal.style.display = 'flex';
+        logLine('GUI screenshot captured successfully!', 'success');
+      } else {
+        logLine(`GUI Error: ${data.error || 'Failed'}`, 'error');
+      }
+    } catch (err) {
+      logLine(`Network error: ${err.message}`, 'error');
+    }
+  });
+
+  document.getElementById('compile-btn').addEventListener('click', async () => {
+    if (!editor) return;
+    const code = editor.getValue();
+    const game = document.getElementById('gameSelect').value;
+    logLine('Compiling and downloading...', 'info');
+    try {
+      const response = await fetch(`${API_BASE}/api/compile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, filename: 'script.txt', game })
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        logLine(`Compilation failed: ${errData.error || 'Unknown error'}`, 'error');
+        return;
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'script.cs';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      logLine('Compilation succeeded and file downloaded!', 'success');
+    } catch (err) {
+      logLine(`Error: ${err.message}`, 'error');
     }
   });
 </script>

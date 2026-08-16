@@ -70,17 +70,18 @@
     consoleLog.scrollTop = consoleLog.scrollHeight;
   }
 
-  document.getElementById('start-session-btn').addEventListener('click', async () => {
+    document.getElementById('start-session-btn').addEventListener('click', async () => {
+    const code = editor ? editor.getValue() : ''; // Editor ka code uthaya
     logLine('Starting persistent Sanny Builder session...', 'info');
     try {
       const res = await fetch(`${API_BASE}/api/gui/session/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game: 'sa' })
+        body: JSON.stringify({ game: 'sa', code }) // Code ko backend bhej diya
       });
       const data = await res.json();
       if (data.success) {
-        logLine('Session started successfully!', 'success');
+        logLine('Session started & code loaded successfully!', 'success');
       } else {
         logLine(`Error: ${data.error}`, 'error');
       }
@@ -88,6 +89,7 @@
       logLine(`Network error: ${err.message}`, 'error');
     }
   });
+
 
   const guiModal = document.getElementById('gui-screenshot-modal');
   const guiScreenshotImg = document.getElementById('gui-screenshot-img');

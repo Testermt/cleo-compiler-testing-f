@@ -17,16 +17,17 @@
     <h1 class="text-sm font-bold text-amber-400">GTA SA CLEO Compiler (GUI Session)</h1>
   </header>
 
-  <!-- GUI SCREENSHOT MODAL -->
-  <div id="gui-screenshot-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3" style="display: none;">
-    <div class="bg-[#12161d] border border-gray-700 rounded p-4 max-w-3xl w-full flex flex-col gap-3">
+  <!-- GUI SCREENSHOT MODAL (Scrollable & Zoomable for Mobile) -->
+  <div id="gui-screenshot-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-2" style="display: none;">
+    <div class="bg-[#12161d] border border-gray-700 rounded p-3 max-w-4xl w-full h-[90vh] flex flex-col gap-2">
       <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-        <h2 class="text-amber-400 text-sm font-bold">Sanny Builder GUI Live Screen</h2>
-        <button id="gui-modal-close" class="text-gray-400 hover:text-white text-lg">&times;</button>
+        <h2 class="text-amber-400 text-xs font-bold">Sanny Builder GUI Full Screen View</h2>
+        <button id="gui-modal-close" class="text-gray-400 hover:text-white text-xl px-2">&times;</button>
       </div>
-      <div class="bg-[#181d26] p-2 flex justify-center rounded">
-        <img id="gui-screenshot-img" src="" alt="GUI Output" class="max-w-full max-h-[70vh] object-contain rounded" />
+      <div class="bg-[#181d26] flex-1 overflow-auto flex justify-center items-center rounded p-1">
+        <img id="gui-screenshot-img" src="" alt="GUI Output" class="max-w-none w-full object-contain rounded" style="min-width: 800px;" />
       </div>
+      <p class="text-[10px] text-gray-400 text-center">Tip: Scroll or pinch to zoom in and check error popups clearly.</p>
     </div>
   </div>
 
@@ -80,7 +81,7 @@
       });
       const data = await res.json();
       if (data.success) {
-        logLine('Session started successfully!', 'success');
+        logLine('Session started & maximized successfully!', 'success');
       } else {
         logLine(`Error: ${data.error}`, 'error');
       }
@@ -93,7 +94,7 @@
   const guiScreenshotImg = document.getElementById('gui-screenshot-img');
   document.getElementById('gui-modal-close').addEventListener('click', () => guiModal.style.display = 'none');
 
-  // GUI Check Button (Only captures screenshot)
+  // GUI Check Button
   document.getElementById('gui-check-btn').addEventListener('click', async () => {
     logLine('Capturing backend live screen...', 'info');
     try {
@@ -112,11 +113,11 @@
     }
   });
 
-  // Refresh File Button (Overwrites file and reloads tab via Ctrl+W & Ctrl+Shift+T)
+  // Refresh File Button
   document.getElementById('refresh-file-btn').addEventListener('click', async () => {
     if (!editor) return;
     const code = editor.getValue();
-    logLine('Refreshing file in Sanny Builder (Ctrl+W & Ctrl+Shift+T)...', 'info');
+    logLine('Refreshing file in Sanny Builder...', 'info');
     try {
       const res = await fetch(`${API_BASE}/api/gui/session/refresh`, {
         method: 'POST',
@@ -125,7 +126,7 @@
       });
       const data = await res.json();
       if (data.success) {
-        logLine('File refreshed successfully in Sanny Builder!', 'success');
+        logLine('File reloaded successfully!', 'success');
       } else {
         logLine(`Refresh Error: ${data.error}`, 'error');
       }
@@ -134,11 +135,11 @@
     }
   });
 
-  // Compile Button (Fast compile via F6 without unnecessary reloading)
+  // Smart Compile Button
   document.getElementById('compile-btn').addEventListener('click', async () => {
     if (!editor) return;
     const code = editor.getValue();
-    logLine('Compiling script (F6)...', 'info');
+    logLine('Compiling script...', 'info');
     try {
       const actionRes = await fetch(`${API_BASE}/api/gui/session/compile`, {
         method: 'POST',
@@ -151,17 +152,12 @@
         return;
       }
 
-      await new Promise(r => setTimeout(r, 1000));
-
-      const ssRes = await fetch(`${API_BASE}/api/gui/session/screenshot`);
-      const ssData = await ssRes.json();
-
-      if (ssData.success && ssData.gui_screenshot) {
-        guiScreenshotImg.src = ssData.gui_screenshot;
+      if (actionData.gui_screenshot) {
+        guiScreenshotImg.src = actionData.gui_screenshot;
         guiModal.style.display = 'flex';
-        logLine('Compiled and screenshot captured successfully!', 'success');
+        logLine(actionData.message, 'success');
       } else {
-        logLine(`Screenshot Error: ${ssData.error}`, 'error');
+        logLine(`Screenshot Error: Failed to load screen`, 'error');
       }
     } catch (err) {
       logLine(`Network error: ${err.message}`, 'error');

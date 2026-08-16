@@ -22,12 +22,19 @@
     <div class="bg-[#12161d] border border-gray-700 rounded p-3 max-w-4xl w-full h-[90vh] flex flex-col gap-2">
       <div class="flex justify-between items-center border-b border-gray-700 pb-2">
         <h2 class="text-amber-400 text-xs font-bold">Sanny Builder GUI Full Screen View</h2>
-        <button id="gui-modal-close" class="text-gray-400 hover:text-white text-xl px-2">&times;</button>
+        <div class="flex items-center gap-2">
+          <div class="flex gap-1">
+            <button onclick="zoomIn()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">Zoom (+)</button>
+            <button onclick="zoomOut()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">Zoom (-)</button>
+            <button onclick="resetZoom()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">Reset</button>
+          </div>
+          <button id="gui-modal-close" class="text-gray-400 hover:text-white text-xl px-2">&times;</button>
+        </div>
       </div>
-      <div class="bg-[#181d26] flex-1 overflow-auto flex justify-center items-center rounded p-1">
-        <img id="gui-screenshot-img" src="" alt="GUI Output" class="max-w-none w-full object-contain rounded" style="min-width: 800px;" />
+      <div id="screenshotScrollContainer" class="bg-[#181d26] flex-1 overflow-auto flex justify-center items-center rounded p-1 relative">
+        <img id="gui-screenshot-img" src="" alt="GUI Output" class="max-w-none rounded transition-all duration-150" style="width: 1280px;" />
       </div>
-      <p class="text-[10px] text-gray-400 text-center">Tip: Scroll or pinch to zoom in and check error popups clearly.</p>
+      <p class="text-[10px] text-gray-400 text-center">Tip: Use Zoom buttons above or scroll/pinch to check error popups clearly with horizontal and vertical scrolling.</p>
     </div>
   </div>
 
@@ -71,6 +78,34 @@
     consoleLog.scrollTop = consoleLog.scrollHeight;
   }
 
+  // Zoom & Scroll Logic for Screenshot Modal
+  let currentScale = 1;
+  const baseWidth = 1280;
+
+  function zoomIn() {
+    currentScale += 0.25;
+    applyZoom();
+  }
+
+  function zoomOut() {
+    if (currentScale > 0.5) {
+      currentScale -= 0.25;
+      applyZoom();
+    }
+  }
+
+  function resetZoom() {
+    currentScale = 1;
+    applyZoom();
+  }
+
+  function applyZoom() {
+    const img = document.getElementById('gui-screenshot-img');
+    if (img) {
+      img.style.width = (baseWidth * currentScale) + 'px';
+    }
+  }
+
   document.getElementById('start-session-btn').addEventListener('click', async () => {
     logLine('Starting persistent Sanny Builder session...', 'info');
     try {
@@ -103,6 +138,7 @@
 
       if (ssData.success && ssData.gui_screenshot) {
         guiScreenshotImg.src = ssData.gui_screenshot;
+        resetZoom();
         guiModal.style.display = 'flex';
         logLine('Live screen captured successfully!', 'success');
       } else {
@@ -154,6 +190,7 @@
 
       if (actionData.gui_screenshot) {
         guiScreenshotImg.src = actionData.gui_screenshot;
+        resetZoom();
         guiModal.style.display = 'flex';
         logLine(actionData.message, 'success');
       } else {

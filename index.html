@@ -14,24 +14,40 @@
 <body class="bg-ink text-gray-200 font-mono min-h-screen flex flex-col">
 
   <header class="border-b border-gray-800 bg-[#12161d] p-3">
-    <h1 class="text-sm font-bold text-amber-400">GTA SA CLEO Compiler (GUI Session)</h1>
+    <h1 class="text-sm font-bold text-amber-400">GTA SA Online CLEO Compiler (GUI Session)</h1>
   </header>
 
-  <!-- GUI SCREENSHOT MODAL -->
-  <div id="gui-screenshot-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3" style="display: none;">
-    <div class="bg-[#12161d] border border-gray-700 rounded p-4 max-w-3xl w-full flex flex-col gap-3">
+  <!-- GUI SCREENSHOT MODAL (Zoom & Scrollable Fixed) -->
+  <div id="gui-screenshot-modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-2" style="display: none;">
+    <div class="bg-[#12161d] border border-gray-700 rounded p-3 max-w-4xl w-full h-[90vh] flex flex-col gap-2">
       <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-        <h2 class="text-amber-400 text-sm font-bold">Sanny Builder GUI Live Screen</h2>
-        <button id="gui-modal-close" class="text-gray-400 hover:text-white text-lg">&times;</button>
+        <h2 class="text-amber-400 text-xs font-bold">Sanny Builder GUI Full Screen View</h2>
+        <div class="flex items-center gap-2">
+          <div class="flex gap-1">
+            <button onclick="zoomIn()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">Zoom (+)</button>
+            <button onclick="zoomOut()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">Zoom (-)</button>
+            <button onclick="resetZoom()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">Reset</button>
+          </div>
+          <button id="gui-modal-close" class="text-gray-400 hover:text-white text-xl px-2">&times;</button>
+        </div>
       </div>
-      <div class="bg-[#181d26] p-2 flex justify-center rounded">
-        <img id="gui-screenshot-img" src="" alt="GUI Output" class="max-w-full max-h-[70vh] object-contain rounded" />
+      <div id="screenshotScrollContainer" class="bg-[#181d26] flex-1 overflow-auto flex justify-center items-center rounded p-1 relative">
+        <img id="gui-screenshot-img" src="" alt="GUI Output" class="max-w-none rounded transition-all duration-150" style="width: 1280px;" />
       </div>
+      <p class="text-[10px] text-gray-400 text-center">Tip: Use Zoom buttons above or scroll to inspect error popups clearly.</p>
     </div>
   </div>
 
   <main class="flex-1 max-w-6xl w-full mx-auto p-3 flex flex-col gap-3">
-    <div class="flex gap-2 flex-wrap">
+    <div class="flex gap-2 flex-wrap items-center">
+      <!-- Game Mode Dropdown -->
+      <select id="game-select" class="py-2 px-2 bg-[#12161d] border border-gray-700 text-amber-400 font-bold rounded text-xs">
+        <option value="sa">GTA San Andreas (SA)</option>
+        <option value="sa_mobile">GTA SA Mobile</option>
+        <option value="vc">GTA Vice City (VC)</option>
+        <option value="gta3">GTA III</option>
+      </select>
+
       <button id="start-session-btn" class="py-2 px-3 bg-teal-600 text-black font-bold rounded text-xs btn-press">Start Session</button>
       <button id="gui-check-btn" class="py-2 px-3 bg-blue-600 text-white font-bold rounded text-xs btn-press">🔍 GUI Check</button>
       <button id="refresh-file-btn" class="py-2 px-3 bg-purple-600 text-white font-bold rounded text-xs btn-press">🔄 Refresh File</button>
@@ -47,7 +63,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs/loader.min.js"></script>
 <script>
-  const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-testing-gzf6.onrender.com';
+  const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-testing.onrender.com';
   let editor;
 
   require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs' } });
@@ -70,17 +86,48 @@
     consoleLog.scrollTop = consoleLog.scrollHeight;
   }
 
+  // Zoom & Scroll Functions
+  let currentScale = 1;
+  const baseWidth = 1280;
+
+  function zoomIn() {
+    currentScale += 0.25;
+    applyZoom();
+  }
+
+  function zoomOut() {
+    if (currentScale > 0.5) {
+      currentScale -= 0.25;
+      applyZoom();
+    }
+  }
+
+  function resetZoom() {
+    currentScale = 1;
+    applyZoom();
+  }
+
+  function applyZoom() {
+    const img = document.getElementById('gui-screenshot-img');
+    if (img) {
+      img.style.width = (baseWidth * currentScale) + 'px';
+    }
+  }
+
+  // Start Session with Editor Code & Game Mode
   document.getElementById('start-session-btn').addEventListener('click', async () => {
-    logLine('Starting persistent Sanny Builder session...', 'info');
+    const code = editor ? editor.getValue() : '';
+    const game = document.getElementById('game-select').value;
+    logLine('Starting persistent Sanny Builder session with your code...', 'info');
     try {
       const res = await fetch(`${API_BASE}/api/gui/session/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game: 'sa' })
+        body: JSON.stringify({ game, code })
       });
       const data = await res.json();
       if (data.success) {
-        logLine('Session started successfully!', 'success');
+        logLine('Session started & code loaded successfully!', 'success');
       } else {
         logLine(`Error: ${data.error}`, 'error');
       }
@@ -93,7 +140,7 @@
   const guiScreenshotImg = document.getElementById('gui-screenshot-img');
   document.getElementById('gui-modal-close').addEventListener('click', () => guiModal.style.display = 'none');
 
-  // GUI Check Button (Only captures screenshot)
+  // GUI Check Button
   document.getElementById('gui-check-btn').addEventListener('click', async () => {
     logLine('Capturing backend live screen...', 'info');
     try {
@@ -102,6 +149,7 @@
 
       if (ssData.success && ssData.gui_screenshot) {
         guiScreenshotImg.src = ssData.gui_screenshot;
+        resetZoom();
         guiModal.style.display = 'flex';
         logLine('Live screen captured successfully!', 'success');
       } else {
@@ -112,11 +160,11 @@
     }
   });
 
-  // Refresh File Button (Overwrites file and reloads tab via Ctrl+W & Ctrl+Shift+T)
+  // Refresh File Button
   document.getElementById('refresh-file-btn').addEventListener('click', async () => {
     if (!editor) return;
     const code = editor.getValue();
-    logLine('Refreshing file in Sanny Builder (Ctrl+W & Ctrl+Shift+T)...', 'info');
+    logLine('Refreshing file in Sanny Builder...', 'info');
     try {
       const res = await fetch(`${API_BASE}/api/gui/session/refresh`, {
         method: 'POST',
@@ -134,7 +182,7 @@
     }
   });
 
-  // Compile Button (Fast compile via F6 without unnecessary reloading)
+  // Compile Button
   document.getElementById('compile-btn').addEventListener('click', async () => {
     if (!editor) return;
     const code = editor.getValue();
@@ -151,17 +199,13 @@
         return;
       }
 
-      await new Promise(r => setTimeout(r, 1000));
-
-      const ssRes = await fetch(`${API_BASE}/api/gui/session/screenshot`);
-      const ssData = await ssRes.json();
-
-      if (ssData.success && ssData.gui_screenshot) {
-        guiScreenshotImg.src = ssData.gui_screenshot;
+      if (actionData.gui_screenshot) {
+        guiScreenshotImg.src = actionData.gui_screenshot;
+        resetZoom();
         guiModal.style.display = 'flex';
-        logLine('Compiled and screenshot captured successfully!', 'success');
+        logLine(actionData.message, 'success');
       } else {
-        logLine(`Screenshot Error: ${ssData.error}`, 'error');
+        logLine(`Screenshot Error: Failed to load screen`, 'error');
       }
     } catch (err) {
       logLine(`Network error: ${err.message}`, 'error');

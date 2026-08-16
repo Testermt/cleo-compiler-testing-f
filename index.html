@@ -43,6 +43,7 @@
           <option value="gta3">GTA III</option>
         </select>
       </div>
+      <button id="check-status-btn" class="py-2.5 px-3 bg-[#181d26] border border-gray-700 text-gray-300 font-bold rounded text-xs btn-press">🔍 Check Status</button>
       <button id="compile-btn" class="py-2.5 px-4 bg-amber-500 text-black font-bold rounded text-xs btn-press" disabled>⚡ Compile (F6)</button>
       <button id="decompile-btn" class="py-2.5 px-4 bg-teal-500 text-black font-bold rounded text-xs btn-press" disabled>⚙️ Decompile (F5)</button>
     </div>
@@ -95,11 +96,8 @@
       });
       const data = await res.json();
       if (data.success) {
-        logLine('Sanny Builder session is ready!', 'success');
-        statusSpan.textContent = '🟢 Session Ready';
-        statusSpan.className = 'text-[11px] text-green-400 font-bold';
-        compileBtn.disabled = false;
-        decompileBtn.disabled = false;
+        logLine('Sanny Builder session initiated. Click "Check Status" to verify.', 'success');
+        statusSpan.textContent = '⚡ Initialized';
       } else {
         logLine(`Session Error: ${data.error}`, 'error');
         statusSpan.textContent = '🔴 Failed';
@@ -107,6 +105,26 @@
     } catch (err) {
       logLine(`Network error: ${err.message}`, 'error');
       statusSpan.textContent = '🔴 Error';
+    }
+  });
+
+  // Check Status Button Click Handler
+  document.getElementById('check-status-btn').addEventListener('click', async () => {
+    logLine('Checking Sanny Builder boot status...', 'info');
+    try {
+      const res = await fetch(`${API_BASE}/api/gui/session/status`);
+      const data = await res.json();
+      if (data.success && data.booted) {
+        logLine(data.message, 'success');
+        document.getElementById('session-status').textContent = '🟢 Session Ready';
+        document.getElementById('session-status').className = 'text-[11px] text-green-400 font-bold';
+        document.getElementById('compile-btn').disabled = false;
+        document.getElementById('decompile-btn').disabled = false;
+      } else {
+        logLine(data.message || 'Sanny Builder is still loading...', 'error');
+      }
+    } catch (err) {
+      logLine(`Network error: ${err.message}`, 'error');
     }
   });
 

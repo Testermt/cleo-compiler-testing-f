@@ -32,8 +32,8 @@
 
   <main class="flex-1 max-w-6xl w-full mx-auto p-3 flex flex-col gap-3">
     <div class="flex gap-2">
-      <button id="start-session-btn" class="py-2 px-3 bg-teal-600 text-black font-bold rounded text-xs"> Start Session</button>
-      <button id="compile-gui-btn" class="py-2.5 px-4 bg-amber-500 text-black font-bold rounded text-xs flex-1"> GUI Check &amp; Compile</button>
+      <button id="start-session-btn" class="py-2 px-3 bg-teal-600 text-black font-bold rounded text-xs btn-press">  Start Session</button>
+      <button id="compile-gui-btn" class="py-2.5 px-4 bg-amber-500 text-black font-bold rounded text-xs flex-1 btn-press">  GUI Check &amp; Compile</button>
     </div>
 
     <div id="editor-container" class="rounded border border-gray-800"></div>
@@ -45,7 +45,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs/loader.min.js"></script>
 <script>
-  const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-testing.onrender.com';
+  const API_BASE = 'https://cleo-compiler-testing.onrender.com';
   let editor;
 
   require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs' } });
@@ -107,7 +107,7 @@
         return;
       }
 
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 1000));
 
       const ssRes = await fetch(`${API_BASE}/api/gui/session/screenshot`);
       const ssData = await ssRes.json();

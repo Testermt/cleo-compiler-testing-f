@@ -31,9 +31,11 @@
   </div>
 
   <main class="flex-1 max-w-6xl w-full mx-auto p-3 flex flex-col gap-3">
-    <div class="flex gap-2">
-      <button id="start-session-btn" class="py-2 px-3 bg-teal-600 text-black font-bold rounded text-xs btn-press">  Start Session</button>
-      <button id="compile-gui-btn" class="py-2.5 px-4 bg-amber-500 text-black font-bold rounded text-xs flex-1 btn-press">  GUI Check &amp; Compile</button>
+    <div class="flex gap-2 flex-wrap">
+      <button id="start-session-btn" class="py-2 px-3 bg-teal-600 text-black font-bold rounded text-xs btn-press">Start Session</button>
+      <button id="gui-check-btn" class="py-2 px-3 bg-blue-600 text-white font-bold rounded text-xs btn-press">🔍 GUI Check</button>
+      <button id="refresh-file-btn" class="py-2 px-3 bg-purple-600 text-white font-bold rounded text-xs btn-press">🔄 Refresh File</button>
+      <button id="compile-btn" class="py-2.5 px-4 bg-amber-500 text-black font-bold rounded text-xs flex-1 btn-press">⚡ Compile (F6)</button>
     </div>
 
     <div id="editor-container" class="rounded border border-gray-800"></div>
@@ -91,23 +93,65 @@
   const guiScreenshotImg = document.getElementById('gui-screenshot-img');
   document.getElementById('gui-modal-close').addEventListener('click', () => guiModal.style.display = 'none');
 
-  document.getElementById('compile-gui-btn').addEventListener('click', async () => {
+  // GUI Check Button (Only captures screenshot)
+  document.getElementById('gui-check-btn').addEventListener('click', async () => {
+    logLine('Capturing backend live screen...', 'info');
+    try {
+      const ssRes = await fetch(`${API_BASE}/api/gui/session/screenshot`);
+      const ssData = await ssRes.json();
+
+      if (ssData.success && ssData.gui_screenshot) {
+        guiScreenshotImg.src = ssData.gui_screenshot;
+        guiModal.style.display = 'flex';
+        logLine('Live screen captured successfully!', 'success');
+      } else {
+        logLine(`Screenshot Error: ${ssData.error}`, 'error');
+      }
+    } catch (err) {
+      logLine(`Network error: ${err.message}`, 'error');
+    }
+  });
+
+  // Refresh File Button (Overwrites file and reloads tab via Ctrl+W & Ctrl+Shift+T)
+  document.getElementById('refresh-file-btn').addEventListener('click', async () => {
     if (!editor) return;
     const code = editor.getValue();
-    logLine('Updating script, reloading tab, & triggering F6 compile...', 'info');
+    logLine('Refreshing file in Sanny Builder (Ctrl+W & Ctrl+Shift+T)...', 'info');
     try {
-      const actionRes = await fetch(`${API_BASE}/api/gui/session/action`, {
+      const res = await fetch(`${API_BASE}/api/gui/session/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      if (data.success) {
+        logLine('File refreshed successfully in Sanny Builder!', 'success');
+      } else {
+        logLine(`Refresh Error: ${data.error}`, 'error');
+      }
+    } catch (err) {
+      logLine(`Network error: ${err.message}`, 'error');
+    }
+  });
+
+  // Compile Button (Fast compile via F6 without unnecessary reloading)
+  document.getElementById('compile-btn').addEventListener('click', async () => {
+    if (!editor) return;
+    const code = editor.getValue();
+    logLine('Compiling script (F6)...', 'info');
+    try {
+      const actionRes = await fetch(`${API_BASE}/api/gui/session/compile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, keys: 'F6' })
       });
       const actionData = await actionRes.json();
       if (!actionData.success) {
-        logLine(`Action Error: ${actionData.error}`, 'error');
+        logLine(`Compile Error: ${actionData.error}`, 'error');
         return;
       }
 
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 1000));
 
       const ssRes = await fetch(`${API_BASE}/api/gui/session/screenshot`);
       const ssData = await ssRes.json();
@@ -115,7 +159,7 @@
       if (ssData.success && ssData.gui_screenshot) {
         guiScreenshotImg.src = ssData.gui_screenshot;
         guiModal.style.display = 'flex';
-        logLine('Live GUI screenshot captured successfully!', 'success');
+        logLine('Compiled and screenshot captured successfully!', 'success');
       } else {
         logLine(`Screenshot Error: ${ssData.error}`, 'error');
       }

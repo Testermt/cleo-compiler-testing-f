@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>GTA SA Online CLEO Compiler</title>
+<title>GTA SA Online CLI CLEO Compiler</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   html, body { background: #0c0f14; overflow-x: hidden; color: #e5e7eb; }
@@ -13,51 +13,36 @@
 </head>
 <body class="bg-ink text-gray-200 font-mono min-h-screen flex flex-col">
 
-  <header class="border-b border-gray-800 bg-[#12161d] p-3">
-    <h1 class="text-sm font-bold text-amber-400">GTA SA Online CLEO Compiler (GUI Session)</h1>
+  <header class="border-b border-gray-800 bg-[#12161d] p-3 flex justify-between items-center">
+    <h1 class="text-sm font-bold text-amber-400">GTA SA Online CLEO Compiler (CLI Engine)</h1>
+    <span class="text-[10px] bg-teal-900 text-teal-300 px-2 py-0.5 rounded">Deep Syntax Checking Active</span>
   </header>
-
-  <!-- GUI SCREENSHOT MODAL (Zoom & Scrollable Fixed) -->
-  <div id="gui-screenshot-modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-2" style="display: none;">
-    <div class="bg-[#12161d] border border-gray-700 rounded p-3 max-w-4xl w-full h-[90vh] flex flex-col gap-2">
-      <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-        <h2 class="text-amber-400 text-xs font-bold">Sanny Builder GUI Full Screen View</h2>
-        <div class="flex items-center gap-2">
-          <div class="flex gap-1">
-            <button onclick="zoomIn()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">Zoom (+)</button>
-            <button onclick="zoomOut()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">Zoom (-)</button>
-            <button onclick="resetZoom()" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">Reset</button>
-          </div>
-          <button id="gui-modal-close" class="text-gray-400 hover:text-white text-xl px-2">&times;</button>
-        </div>
-      </div>
-      <div id="screenshotScrollContainer" class="bg-[#181d26] flex-1 overflow-auto flex justify-center items-center rounded p-1 relative">
-        <img id="gui-screenshot-img" src="" alt="GUI Output" class="max-w-none rounded transition-all duration-150" style="width: 1280px;" />
-      </div>
-      <p class="text-[10px] text-gray-400 text-center">Tip: Use Zoom buttons above or scroll to inspect error popups clearly.</p>
-    </div>
-  </div>
 
   <main class="flex-1 max-w-6xl w-full mx-auto p-3 flex flex-col gap-3">
     <div class="flex gap-2 flex-wrap items-center">
       <!-- Game Mode Dropdown -->
       <select id="game-select" class="py-2 px-2 bg-[#12161d] border border-gray-700 text-amber-400 font-bold rounded text-xs">
-        <option value="sa">GTA San Andreas (SA)</option>
         <option value="sa_mobile">GTA SA Mobile</option>
+        <option value="sa">GTA San Andreas (SA)</option>
         <option value="vc">GTA Vice City (VC)</option>
         <option value="gta3">GTA III</option>
       </select>
 
-      <button id="start-session-btn" class="py-2 px-3 bg-teal-600 text-black font-bold rounded text-xs btn-press">Start Session</button>
-      <button id="gui-check-btn" class="py-2 px-3 bg-blue-600 text-white font-bold rounded text-xs btn-press">🔍 GUI Check</button>
-      <button id="refresh-file-btn" class="py-2 px-3 bg-purple-600 text-white font-bold rounded text-xs btn-press">🔄 Refresh File</button>
-      <button id="compile-btn" class="py-2.5 px-4 bg-amber-500 text-black font-bold rounded text-xs flex-1 btn-press">⚡ Compile (F6)</button>
+      <button id="compile-btn" class="py-2.5 px-4 bg-amber-500 text-black font-bold rounded text-xs flex-1 btn-press flex items-center justify-center gap-1">
+        <span>⚡ Compile & Check Syntax</span>
+      </button>
+      <button id="clear-console-btn" class="py-2.5 px-3 bg-gray-700 text-white font-bold rounded text-xs btn-press">Clear Log</button>
     </div>
 
+    <!-- Monaco Editor Container -->
     <div id="editor-container" class="rounded border border-gray-800"></div>
 
-    <div id="console-log" class="h-32 bg-[#12161d] border border-gray-800 rounded p-2 text-xs overflow-y-auto text-gray-400">
-      <div>&gt; Ready. Click 'Start Session' first...</div>
+    <!-- Console Output Log -->
+    <div class="flex flex-col gap-1">
+      <div class="text-[11px] text-gray-400 font-bold px-1">COMPILER CONSOLE & DEEP ERROR LOGS</div>
+      <div id="console-log" class="h-40 bg-[#12161d] border border-gray-800 rounded p-2 text-xs overflow-y-auto text-gray-400 flex flex-col gap-1">
+        <div>&gt; System Ready. Engine initialized with setting.ini rules via CLI.</div>
+      </div>
     </div>
   </main>
 
@@ -80,134 +65,60 @@
   const consoleLog = document.getElementById('console-log');
   function logLine(text, type = 'info') {
     const line = document.createElement('div');
-    line.className = type === 'error' ? 'text-red-400' : (type === 'success' ? 'text-green-400' : 'text-gray-300');
+    line.className = type === 'error' ? 'text-red-400 font-bold' : (type === 'success' ? 'text-green-400' : 'text-gray-300');
     line.innerHTML = `[${new Date().toLocaleTimeString()}] ${text}`;
     consoleLog.appendChild(line);
     consoleLog.scrollTop = consoleLog.scrollHeight;
   }
 
-  // Zoom & Scroll Functions
-    // Frontend script ke andar baseWidth ko 540 kar do
-  let currentScale = 1;
-  const baseWidth = 540; // Portrait mobile width ke sath match karne ke liye
-
-
-  function zoomIn() {
-    currentScale += 0.25;
-    applyZoom();
-  }
-
-  function zoomOut() {
-    if (currentScale > 0.5) {
-      currentScale -= 0.25;
-      applyZoom();
-    }
-  }
-
-  function resetZoom() {
-    currentScale = 1;
-    applyZoom();
-  }
-
-  function applyZoom() {
-    const img = document.getElementById('gui-screenshot-img');
-    if (img) {
-      img.style.width = (baseWidth * currentScale) + 'px';
-    }
-  }
-
-  // Start Session with Editor Code & Game Mode
-  document.getElementById('start-session-btn').addEventListener('click', async () => {
-    const code = editor ? editor.getValue() : '';
-    const game = document.getElementById('game-select').value;
-    logLine('Starting persistent Sanny Builder session with your code...', 'info');
-    try {
-      const res = await fetch(`${API_BASE}/api/gui/session/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game, code })
-      });
-      const data = await res.json();
-      if (data.success) {
-        logLine('Session started & code loaded successfully!', 'success');
-      } else {
-        logLine(`Error: ${data.error}`, 'error');
-      }
-    } catch (err) {
-      logLine(`Network error: ${err.message}`, 'error');
-    }
+  document.getElementById('clear-console-btn').addEventListener('click', () => {
+    consoleLog.innerHTML = '<div>&gt; Console cleared.</div>';
   });
 
-  const guiModal = document.getElementById('gui-screenshot-modal');
-  const guiScreenshotImg = document.getElementById('gui-screenshot-img');
-  document.getElementById('gui-modal-close').addEventListener('click', () => guiModal.style.display = 'none');
-
-  // GUI Check Button
-  document.getElementById('gui-check-btn').addEventListener('click', async () => {
-    logLine('Capturing backend live screen...', 'info');
-    try {
-      const ssRes = await fetch(`${API_BASE}/api/gui/session/screenshot`);
-      const ssData = await ssRes.json();
-
-      if (ssData.success && ssData.gui_screenshot) {
-        guiScreenshotImg.src = ssData.gui_screenshot;
-        resetZoom();
-        guiModal.style.display = 'flex';
-        logLine('Live screen captured successfully!', 'success');
-      } else {
-        logLine(`Screenshot Error: ${ssData.error}`, 'error');
-      }
-    } catch (err) {
-      logLine(`Network error: ${err.message}`, 'error');
-    }
-  });
-
-  // Refresh File Button
-  document.getElementById('refresh-file-btn').addEventListener('click', async () => {
-    if (!editor) return;
-    const code = editor.getValue();
-    logLine('Refreshing file in Sanny Builder...', 'info');
-    try {
-      const res = await fetch(`${API_BASE}/api/gui/session/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
-      });
-      const data = await res.json();
-      if (data.success) {
-        logLine('File refreshed successfully in Sanny Builder!', 'success');
-      } else {
-        logLine(`Refresh Error: ${data.error}`, 'error');
-      }
-    } catch (err) {
-      logLine(`Network error: ${err.message}`, 'error');
-    }
-  });
-
-  // Compile Button
+  // Compile Button Click Handler
   document.getElementById('compile-btn').addEventListener('click', async () => {
     if (!editor) return;
     const code = editor.getValue();
-    logLine('Compiling script (F6)...', 'info');
+    const game = document.getElementById('game-select').value;
+
+    logLine('Sending code to CLI compiler with all setting.ini rules...', 'info');
+
     try {
-      const actionRes = await fetch(`${API_BASE}/api/gui/session/compile`, {
+      const res = await fetch(`${API_BASE}/api/cli/compile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, keys: 'F6' })
+        body: JSON.stringify({ code, game })
       });
-      const actionData = await actionRes.json();
-      if (!actionData.success) {
-        logLine(`Compile Error: ${actionData.error}`, 'error');
-        return;
+      const data = await res.json();
+
+      if (data.console) {
+        data.console.split('\n').forEach(line => {
+          if (line.trim()) logLine(line, data.success ? 'info' : 'error');
+        });
       }
 
-      if (actionData.gui_screenshot) {
-        guiScreenshotImg.src = actionData.gui_screenshot;
-        resetZoom();
-        guiModal.style.display = 'flex';
-        logLine(actionData.message, 'success');
+      if (data.success && data.compiled_file_base64) {
+        logLine(data.message, 'success');
+
+        // Auto trigger download for compiled .cs file
+        const byteCharacters = atob(data.compiled_file_base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+        
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = 'script.cs';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        logLine('Compiled .cs file downloaded automatically!', 'success');
       } else {
-        logLine(`Screenshot Error: Failed to load screen`, 'error');
+        logLine(data.error || 'Compilation failed.', 'error');
       }
     } catch (err) {
       logLine(`Network error: ${err.message}`, 'error');

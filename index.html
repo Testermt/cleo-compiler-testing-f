@@ -3,46 +3,50 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>GTA SA Online CLEO Compiler - Live GUI</title>
+<title>GTA SA Online CLEO Compiler</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   html, body { background: #0c0f14; overflow-x: hidden; color: #e5e7eb; }
-  #editor-container { height: 40vh; min-height: 250px; }
-  #vnc-screen-container { width: 100%; height: 45vh; min-height: 300px; background: #000; display: flex; align-items: center; justify-content: center; position: relative; }
+  #editor-container { height: 50vh; min-height: 320px; }
   .btn-press:active { transform: translateY(1px); }
 </style>
 </head>
 <body class="bg-ink text-gray-200 font-mono min-h-screen flex flex-col">
 
   <header class="border-b border-gray-800 bg-[#12161d] p-3">
-    <h1 class="text-sm font-bold text-amber-400">GTA SA CLEO Compiler (Live GUI Stream)</h1>
+    <h1 class="text-sm font-bold text-amber-400">GTA SA CLEO Compiler (GUI Session)</h1>
   </header>
+
+  <!-- GUI SCREENSHOT MODAL -->
+  <div id="gui-screenshot-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3" style="display: none;">
+    <div class="bg-[#12161d] border border-gray-700 rounded p-4 max-w-3xl w-full flex flex-col gap-3">
+      <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+        <h2 class="text-amber-400 text-sm font-bold">Sanny Builder GUI Live Screen</h2>
+        <button id="gui-modal-close" class="text-gray-400 hover:text-white text-lg">&times;</button>
+      </div>
+      <div class="bg-[#181d26] p-2 flex justify-center rounded">
+        <img id="gui-screenshot-img" src="" alt="GUI Output" class="max-w-full max-h-[70vh] object-contain rounded" />
+      </div>
+    </div>
+  </div>
 
   <main class="flex-1 max-w-6xl w-full mx-auto p-3 flex flex-col gap-3">
     <div class="flex gap-2">
-      <button id="start-session-btn" class="py-2 px-3 bg-teal-600 text-black font-bold rounded text-xs"> Start Live Stream</button>
-      <button id="compile-gui-btn" class="py-2.5 px-4 bg-amber-500 text-black font-bold rounded text-xs flex-1"> Trigger Compile (F6)</button>
-    </div>
-
-    <!-- Live VNC Stream Canvas Container -->
-    <div id="vnc-screen-container" class="rounded border border-gray-800">
-      <div id="vnc-canvas-target" style="width: 100%; height: 100%;"></div>
+      <button id="start-session-btn" class="py-2 px-3 bg-teal-600 text-black font-bold rounded text-xs"> Start Session</button>
+      <button id="compile-gui-btn" class="py-2.5 px-4 bg-amber-500 text-black font-bold rounded text-xs flex-1"> GUI Check &amp; Compile</button>
     </div>
 
     <div id="editor-container" class="rounded border border-gray-800"></div>
 
-    <div id="console-log" class="h-24 bg-[#12161d] border border-gray-800 rounded p-2 text-xs overflow-y-auto text-gray-400">
-      <div>&gt; Click 'Start Live Stream' to boot Sanny Builder UI...</div>
+    <div id="console-log" class="h-32 bg-[#12161d] border border-gray-800 rounded p-2 text-xs overflow-y-auto text-gray-400">
+      <div>&gt; Ready. Click 'Start Session' first...</div>
     </div>
   </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs/loader.min.js"></script>
-<script type="module">
-  import RFB from 'https://cdn.jsdelivr.net/npm/@novnc/novnc@1.4.0/dist/rfb.js';
-
+<script>
   const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-testing.onrender.com';
   let editor;
-  let rfb = null;
 
   require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs' } });
   require(['vs/editor/editor.main'], function () {
@@ -65,7 +69,7 @@
   }
 
   document.getElementById('start-session-btn').addEventListener('click', async () => {
-    logLine('Booting Sanny Builder and starting VNC stream...', 'info');
+    logLine('Starting persistent Sanny Builder session...', 'info');
     try {
       const res = await fetch(`${API_BASE}/api/gui/session/start`, {
         method: 'POST',
@@ -74,20 +78,7 @@
       });
       const data = await res.json();
       if (data.success) {
-        logLine('Session started! Connecting live stream...', 'success');
-        
-        // Connect via noVNC WebSocket (Port 6080 on your backend domain)
-        const host = new URL(API_BASE).hostname;
-        const wsUrl = `wss://${host}:6080/websockify`;
-        
-        if (rfb) {
-          rfb.disconnect();
-        }
-        
-        const target = document.getElementById('vnc-canvas-target');
-        rfb = new RFB(target, wsUrl, { credentials: { password: '' } });
-        rfb.scaleWithWindow = true;
-        rfb.resizeSession = true;
+        logLine('Session started successfully!', 'success');
       } else {
         logLine(`Error: ${data.error}`, 'error');
       }
@@ -96,10 +87,14 @@
     }
   });
 
+  const guiModal = document.getElementById('gui-screenshot-modal');
+  const guiScreenshotImg = document.getElementById('gui-screenshot-img');
+  document.getElementById('gui-modal-close').addEventListener('click', () => guiModal.style.display = 'none');
+
   document.getElementById('compile-gui-btn').addEventListener('click', async () => {
     if (!editor) return;
     const code = editor.getValue();
-    logLine('Updating code & triggering F6...', 'info');
+    logLine('Updating script & triggering F6 compile...', 'info');
     try {
       const actionRes = await fetch(`${API_BASE}/api/gui/session/action`, {
         method: 'POST',
@@ -107,10 +102,22 @@
         body: JSON.stringify({ code, keys: 'F6' })
       });
       const actionData = await actionRes.json();
-      if (actionData.success) {
-        logLine('F6 triggered! Check the live stream window above for errors.', 'success');
-      } else {
+      if (!actionData.success) {
         logLine(`Action Error: ${actionData.error}`, 'error');
+        return;
+      }
+
+      await new Promise(r => setTimeout(r, 1500));
+
+      const ssRes = await fetch(`${API_BASE}/api/gui/session/screenshot`);
+      const ssData = await ssRes.json();
+
+      if (ssData.success && ssData.gui_screenshot) {
+        guiScreenshotImg.src = ssData.gui_screenshot;
+        guiModal.style.display = 'flex';
+        logLine('Live GUI screenshot captured successfully!', 'success');
+      } else {
+        logLine(`Screenshot Error: ${ssData.error}`, 'error');
       }
     } catch (err) {
       logLine(`Network error: ${err.message}`, 'error');

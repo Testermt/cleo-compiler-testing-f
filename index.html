@@ -87,8 +87,10 @@
   }
 
   // Zoom & Scroll Functions
+    // Frontend script ke andar baseWidth ko 540 kar do
   let currentScale = 1;
-  const baseWidth = 1280;
+  const baseWidth = 540; // Portrait mobile width ke sath match karne ke liye
+
 
   function zoomIn() {
     currentScale += 0.25;

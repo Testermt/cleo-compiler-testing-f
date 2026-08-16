@@ -107,7 +107,7 @@
         return;
       }
 
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 1200));
 
       const ssRes = await fetch(`${API_BASE}/api/gui/session/screenshot`);
       const ssData = await ssRes.json();

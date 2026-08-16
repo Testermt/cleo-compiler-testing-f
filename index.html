@@ -328,33 +328,26 @@ document.addEventListener('focusin', function(e) {
     if (!editor) return;
     const code = editor.getValue();
     const game = document.getElementById('gameSelect').value;
-    logLine('Initiating GUI session & fetching screenshot...', 'info');
+    logLine('Running GUI compilation & capturing screenshot...', 'info');
     try {
-      const startRes = await fetch(`${API_BASE}/api/gui/start`, {
+      const response = await fetch(`${API_BASE}/api/compile-gui`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, filename: 'script.txt', game })
       });
-      const startData = await startRes.json();
-      if (!startData.success) {
-        logLine(`GUI Start Error: ${startData.error || 'Failed'}`, 'error');
-        return;
-      }
-
-      const ssRes = await fetch(`${API_BASE}/api/gui/screenshot`);
-      const ssData = await ssRes.json();
-
-      if (ssData.success && ssData.gui_screenshot) {
-        guiScreenshotImg.src = ssData.gui_screenshot;
+      const data = await response.json();
+      if (data.success && data.gui_screenshot) {
+        guiScreenshotImg.src = data.gui_screenshot;
         guiModal.style.display = 'flex';
-        logLine('Live GUI screenshot captured successfully!', 'success');
+        logLine('GUI screenshot captured successfully!', 'success');
       } else {
-        logLine(`GUI Screenshot Error: ${ssData.error || 'Failed'}`, 'error');
+        logLine(`GUI Error: ${data.error || 'Failed'}`, 'error');
       }
     } catch (err) {
       logLine(`Network error: ${err.message}`, 'error');
     }
   });
+
 
   document.getElementById('compile-btn').addEventListener('click', async () => {
     if (!editor) return;

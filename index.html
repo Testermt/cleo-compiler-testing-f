@@ -110,31 +110,28 @@
 
   // Check Status Button Click Handler
     // Check Status Button Click Handler (Shows Live Screenshot)
+    // Check Status Handler (Instant Screen Modal Preview)
   document.getElementById('check-status-btn').addEventListener('click', async () => {
-    logLine('Checking Sanny Builder boot status & capturing screen...', 'info');
+    logLine('Capturing current backend screen...', 'info');
     try {
       const res = await fetch(`${API_BASE}/api/gui/session/status`);
       const data = await res.json();
-      if (data.success && data.booted) {
-        logLine(data.message, 'success');
-        document.getElementById('session-status').textContent = '🟢 Session Ready';
-        document.getElementById('session-status').className = 'text-[11px] text-green-400 font-bold';
+      if (data.success && data.gui_screenshot) {
+        guiScreenshotImg.src = data.gui_screenshot;
+        guiModal.style.display = 'flex';
+        logLine('Live screen preview loaded!', 'success');
+        
+        // Enable compile & decompile buttons
         document.getElementById('compile-btn').disabled = false;
         document.getElementById('decompile-btn').disabled = false;
-
-        // Open modal and show live screenshot
-        if (data.gui_screenshot) {
-          guiScreenshotImg.src = data.gui_screenshot;
-          guiModal.style.display = 'flex';
-          logLine('Live preview screenshot displayed successfully!', 'success');
-        }
       } else {
-        logLine(data.message || 'Sanny Builder is still loading...', 'error');
+        logLine(`Capture status: ${data.error || 'Waiting for display...'}`, 'error');
       }
     } catch (err) {
       logLine(`Network error: ${err.message}`, 'error');
     }
   });
+
 
 
   const guiModal = document.getElementById('gui-screenshot-modal');

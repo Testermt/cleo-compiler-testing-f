@@ -177,7 +177,7 @@ document.addEventListener('focusin', function(e) {
   <div id="gui-screenshot-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3" style="display: none;">
     <div class="bg-panel border border-hairline rounded-sm max-w-3xl w-full p-4 flex flex-col gap-3 shadow-2xl">
       <div class="flex items-center justify-between border-b border-hairline pb-2">
-        <h2 class="font-display text-xs sm:text-sm text-amber font-semibold">Sanny Builder GUI Error Output</h2>
+        <h2 class="font-display text-xs sm:text-sm text-amber font-semibold">Sanny Builder GUI Live Screen</h2>
         <button id="gui-modal-close" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
       </div>
       <div class="bg-panel2 border border-hairline rounded-sm overflow-hidden flex items-center justify-center p-2">
@@ -214,7 +214,7 @@ document.addEventListener('focusin', function(e) {
       <button id="compile-btn" class="btn-press text-xs sm:text-sm py-2.5 px-4 rounded-sm bg-amber text-ink font-bold transition-colors flex items-center justify-center gap-2 flex-1 shadow-md">
         <span id="compile-btn-text">Compile &amp; Download</span>
       </button>
-      <button id="compile-gui-btn" class="btn-press text-xs sm:text-sm py-2.5 px-3 rounded-sm bg-panel2 border border-amber/50 text-amber font-bold hover:bg-amber/10 transition-colors shrink-0" title="Check GUI Error Screenshot">📸 GUI Check</button>
+      <button id="compile-gui-btn" class="btn-press text-xs sm:text-sm py-2.5 px-3 rounded-sm bg-panel2 border border-amber/50 text-amber font-bold hover:bg-amber/10 transition-colors shrink-0" title="Check GUI Live Screenshot">📸 GUI Check</button>
     </div>
 
     <!-- Editor Wrapper with File Tabs -->
@@ -323,24 +323,33 @@ document.addEventListener('focusin', function(e) {
   document.getElementById('gui-modal-close').addEventListener('click', () => guiModal.style.display = 'none');
   document.getElementById('gui-modal-ok').addEventListener('click', () => guiModal.style.display = 'none');
 
+  // FIXED GUI CHECK HANDLER: Uses time-less session start & screenshot fetch endpoints
   document.getElementById('compile-gui-btn').addEventListener('click', async () => {
     if (!editor) return;
     const code = editor.getValue();
     const game = document.getElementById('gameSelect').value;
-    logLine('Sending GUI compilation request...', 'info');
+    logLine('Initiating GUI session & fetching screenshot...', 'info');
     try {
-      const response = await fetch(`${API_BASE}/api/compile-gui`, {
+      const startRes = await fetch(`${API_BASE}/api/gui/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, filename: 'script.txt', game })
       });
-      const data = await response.json();
-      if (data.success && data.gui_screenshot) {
-        guiScreenshotImg.src = data.gui_screenshot;
+      const startData = await startRes.json();
+      if (!startData.success) {
+        logLine(`GUI Start Error: ${startData.error || 'Failed'}`, 'error');
+        return;
+      }
+
+      const ssRes = await fetch(`${API_BASE}/api/gui/screenshot`);
+      const ssData = await ssRes.json();
+
+      if (ssData.success && ssData.gui_screenshot) {
+        guiScreenshotImg.src = ssData.gui_screenshot;
         guiModal.style.display = 'flex';
-        logLine('GUI screenshot captured successfully!', 'success');
+        logLine('Live GUI screenshot captured successfully!', 'success');
       } else {
-        logLine(`GUI Error: ${data.error || 'Failed'}`, 'error');
+        logLine(`GUI Screenshot Error: ${ssData.error || 'Failed'}`, 'error');
       }
     } catch (err) {
       logLine(`Network error: ${err.message}`, 'error');

@@ -1,6 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8973LHLFH8"></script>
+<script>
+document.addEventListener('focusin', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('.monaco-editor')) {
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
+    }
+  }
+});
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8973LHLFH8');
+</script>
 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -100,8 +116,7 @@
         <button id="header-publish-btn" class="btn-press w-8 h-8 rounded-sm border border-amber/50 bg-amber/10 text-amber hover:bg-amber/20 transition-colors flex items-center justify-center text-sm" title="Publish Script">
           🚀
         </button>
-<!-- Baki buttons ke sath Docs ka button add karein -->
-<a href="documentation.html" class="btn-style">📖 Docs</a>
+        <a href="documentation.html" class="btn-press text-[11px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">📖 Docs</a>
 
         <!-- OPCODES BUTTON -->
         <button id="opcode-btn"
@@ -117,7 +132,6 @@
             <span id="gh-btn-text">GitHub</span>
           </button>
           
-          <!-- GITHUB DROPDOWN MENU -->
           <div id="gh-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-panel border border-hairline rounded-sm shadow-xl z-50 py-1 text-[11.5px]">
             <div class="px-3 py-1.5 border-b border-hairline text-gray-400 truncate">
               Repo: <strong id="gh-repo-label" class="text-amber">Not set</strong>
@@ -249,6 +263,80 @@
     </div>
   </div>
 
+  <!-- ⚙️ COMPILER CONFIG SETTINGS MODAL -->
+  <div id="compiler-settings-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+    <div class="bg-panel border border-hairline rounded-sm max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="border-b border-hairline px-4 py-3 flex items-center justify-between">
+        <h2 class="font-display text-sm text-amber font-semibold">⚙️ settings.ini (Compiler Config)</h2>
+        <button id="compiler-modal-close" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
+      </div>
+      <div class="overflow-y-auto px-4 py-3 text-[11.5px] flex flex-col gap-2.5 text-gray-300">
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Check Local Variables</span>
+          <input type="checkbox" id="comp-checklocal" class="accent-amber w-4 h-4" checked />
+        </label>
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Strict If Validation</span>
+          <input type="checkbox" id="comp-strictif" class="accent-amber w-4 h-4" checked />
+        </label>
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Add Extra Info</span>
+          <input type="checkbox" id="comp-extrainfo" class="accent-amber w-4 h-4" checked />
+        </label>
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Show IMG Warning</span>
+          <input type="checkbox" id="comp-imgwarning" class="accent-amber w-4 h-4" checked />
+        </label>
+      </div>
+      <div class="flex justify-end gap-2 p-3 border-t border-hairline bg-panel2">
+        <button id="compiler-modal-save" class="btn-press text-[11.5px] px-4 py-1.5 bg-amber text-ink font-semibold rounded-sm hover:opacity-90">Save Compiler Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⚙️ DECOMPILER CONFIG SETTINGS MODAL -->
+  <div id="decompile-settings-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+    <div class="bg-panel border border-hairline rounded-sm max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="border-b border-hairline px-4 py-3 flex items-center justify-between">
+        <h2 class="font-display text-sm text-teal font-semibold">⚙️ settings.ini (Decompiler Config)</h2>
+        <button id="decompile-modal-close" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
+      </div>
+      <div class="overflow-y-auto px-4 py-3 text-[11.5px] flex flex-col gap-2.5 text-gray-300">
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Overwrite Output File</span>
+          <input type="checkbox" id="opt-overwrite" class="accent-teal w-4 h-4" />
+        </label>
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Use If-And-Or Logic</span>
+          <input type="checkbox" id="opt-useifandor" class="accent-teal w-4 h-4" checked />
+        </label>
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Decompiler Syntax Format</span>
+          <input type="checkbox" id="opt-syntax" class="accent-teal w-4 h-4" checked />
+        </label>
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Insert Original Mission Names</span>
+          <input type="checkbox" id="opt-originalmissionnames" class="accent-teal w-4 h-4" checked />
+        </label>
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Clean Labels Format</span>
+          <input type="checkbox" id="opt-labelsformat" class="accent-teal w-4 h-4" checked />
+        </label>
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Use Custom Labels</span>
+          <input type="checkbox" id="opt-customlabels" class="accent-teal w-4 h-4" checked />
+        </label>
+        <label class="flex items-center justify-between p-1.5 bg-panel2 rounded-sm cursor-pointer hover:bg-hairline">
+          <span>Use Custom Variables</span>
+          <input type="checkbox" id="opt-customvariables" class="accent-teal w-4 h-4" checked />
+        </label>
+      </div>
+      <div class="flex justify-end gap-2 p-3 border-t border-hairline bg-panel2">
+        <button id="decompile-modal-save" class="btn-press text-[11.5px] px-4 py-1.5 bg-teal text-ink font-semibold rounded-sm hover:opacity-90">Save Decompiler Settings</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MAIN -->
   <main class="flex-1 max-w-6xl w-full mx-auto px-2 sm:px-4 py-3 flex flex-col gap-3">
 
@@ -299,6 +387,8 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-1.5">
+        <button id="compiler-settings-btn" class="btn-press text-[11.5px] px-2 py-1.5 rounded-sm border border-hairline text-amber hover:bg-amber/10 transition-colors" title="Compiler Config">⚙️ Comp.Config</button>
+        <button id="decompile-settings-btn" class="btn-press text-[11.5px] px-2 py-1.5 rounded-sm border border-hairline text-teal hover:bg-teal/10 transition-colors" title="Decompiler Config">⚙️ Decomp.Config</button>
         <button id="db-upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Custom .db</button>
         <button id="decompile-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Decompile</button>
         <button id="upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Upload</button>
@@ -416,7 +506,65 @@
   let activeTabId = 'tab-1';
   let editor;
 
+  // ==========================================
+  // LOCALSTORAGE SETTINGS PERSISTENCE
+  // ==========================================
+  function saveCompilerSettings() {
+    const settings = {
+      checkLocal: document.getElementById('comp-checklocal').checked,
+      strictIf: document.getElementById('comp-strictif').checked,
+      extraInfo: document.getElementById('comp-extrainfo').checked,
+      imgWarning: document.getElementById('comp-imgwarning').checked
+    };
+    localStorage.setItem('compiler_settings', JSON.stringify(settings));
+  }
+
+  function loadCompilerSettings() {
+    const saved = localStorage.getItem('compiler_settings');
+    if (saved) {
+      try {
+        const s = JSON.parse(saved);
+        if (s.checkLocal !== undefined) document.getElementById('comp-checklocal').checked = s.checkLocal;
+        if (s.strictIf !== undefined) document.getElementById('comp-strictif').checked = s.strictIf;
+        if (s.extraInfo !== undefined) document.getElementById('comp-extrainfo').checked = s.extraInfo;
+        if (s.imgWarning !== undefined) document.getElementById('comp-imgwarning').checked = s.imgWarning;
+      } catch (e) {}
+    }
+  }
+
+  function saveDecompilerSettings() {
+    const settings = {
+      overwrite: document.getElementById('opt-overwrite').checked,
+      useIfAndOr: document.getElementById('opt-useifandor').checked,
+      syntax: document.getElementById('opt-syntax').checked,
+      origNames: document.getElementById('opt-originalmissionnames').checked,
+      labelsFormat: document.getElementById('opt-labelsformat').checked,
+      customLabels: document.getElementById('opt-customlabels').checked,
+      customVars: document.getElementById('opt-customvariables').checked
+    };
+    localStorage.setItem('decompiler_settings', JSON.stringify(settings));
+  }
+
+  function loadDecompilerSettings() {
+    const saved = localStorage.getItem('decompiler_settings');
+    if (saved) {
+      try {
+        const s = JSON.parse(saved);
+        if (s.overwrite !== undefined) document.getElementById('opt-overwrite').checked = s.overwrite;
+        if (s.useIfAndOr !== undefined) document.getElementById('opt-useifandor').checked = s.useIfAndOr;
+        if (s.syntax !== undefined) document.getElementById('opt-syntax').checked = s.syntax;
+        if (s.origNames !== undefined) document.getElementById('opt-originalmissionnames').checked = s.origNames;
+        if (s.labelsFormat !== undefined) document.getElementById('opt-labelsformat').checked = s.labelsFormat;
+        if (s.customLabels !== undefined) document.getElementById('opt-customlabels').checked = s.customLabels;
+        if (s.customVars !== undefined) document.getElementById('opt-customvariables').checked = s.customVars;
+      } catch (e) {}
+    }
+  }
+
   window.addEventListener('DOMContentLoaded', async () => {
+    loadCompilerSettings();
+    loadDecompilerSettings();
+
     const params = new URLSearchParams(window.location.search);
     const gistId = params.get('load_gist');
     const filename = params.get('file');
@@ -435,6 +583,25 @@
         }
       } catch(e) { logLine('Failed to load community script.', 'error'); }
     }
+  });
+
+  // Modal UI Logic
+  const compModal = document.getElementById('compiler-settings-modal');
+  document.getElementById('compiler-settings-btn').addEventListener('click', () => compModal.classList.remove('hidden'));
+  document.getElementById('compiler-modal-close').addEventListener('click', () => compModal.classList.add('hidden'));
+  document.getElementById('compiler-modal-save').addEventListener('click', () => {
+    saveCompilerSettings();
+    compModal.classList.add('hidden');
+    logLine('Compiler settings saved & updated.', 'success');
+  });
+
+  const decModal = document.getElementById('decompile-settings-modal');
+  document.getElementById('decompile-settings-btn').addEventListener('click', () => decModal.classList.remove('hidden'));
+  document.getElementById('decompile-modal-close').addEventListener('click', () => decModal.classList.add('hidden'));
+  document.getElementById('decompile-modal-save').addEventListener('click', () => {
+    saveDecompilerSettings();
+    decModal.classList.add('hidden');
+    logLine('Decompiler settings saved & updated.', 'success');
   });
 
   const tabsContainer = document.getElementById('file-tabs-container');
@@ -658,13 +825,12 @@
     }
   }
 
-    pubModalSubmit.addEventListener('click', async () => {
+  pubModalSubmit.addEventListener('click', async () => {
     const token = localStorage.getItem('gh_token');
     const title = pubTitleInput.value.trim();
     const sourceFilename = pubSourceName.value.trim() || 'script.txt';
     const compiledFilename = pubCompiledName.value.trim();
     
-    // ✨ Screenshot File Input element se direct file uthayein
     const screenshotFile = pubScreenshotFileInput.files[0];
 
     if (!title) {
@@ -695,7 +861,6 @@
 
       await registerUserToHub(username);
 
-      // ✨ 1. Agar user ne screenshot select kiya hai, toh use ImgBB API par upload karke direct URL lo
       let screenshotUrl = '';
       if (screenshotFile) {
         const formData = new FormData();
@@ -707,10 +872,9 @@
         });
         const imgData = await imgRes.json();
         if (imgData.success) {
-          screenshotUrl = imgData.data.url; // Direct image URL mil jayega!
+          screenshotUrl = imgData.data.url;
         }
       }
-
 
       const filesPayload = {
         [sourceFilename]: { content: sourceCode },
@@ -742,7 +906,6 @@
       if (res.ok) {
         const gistData = await res.json();
         
-        // ✨ 2. Backend ko publish request bhejte waqt screenshot URL pass karein (No Base64 heavy data)
         try {
           await fetch(`${API_BASE}/api/publish-post`, {
             method: 'POST',
@@ -771,7 +934,6 @@
       alert(`Network error: ${err.message}`);
     }
   });
-
 
   const ghConfigBtn = document.getElementById('gh-config-btn');
   const ghDropdown = document.getElementById('gh-dropdown');
@@ -947,7 +1109,7 @@
         alert('Authorization failed! Please make sure your token has "repo" scope permissions enabled.');
         return false;
       } else {
-        const errJson = await createRes.json();
+        const errJson = await checkRes.json();
         logLine(`[GitHub Error] Status ${checkRes.status}: ${errJson.message || 'API error'}`, 'error');
         alert(`GitHub API Error: ${errJson.message || 'Unknown error'}`);
         return false;
@@ -1124,7 +1286,7 @@
     fileInput.value = '';
   });
 
-  // DECOMPILE SCRIPT
+  // DECOMPILE SCRIPT WITH CONFIG
   const decompileBtn = document.getElementById('decompile-btn');
   const decompileInput = document.getElementById('decompile-upload-input');
 
@@ -1147,10 +1309,19 @@
     const debugBits = `${codeOffsets}${ignoreUnknown}${varCounter}${constantIndexes}${skipScmHeader}${skipExtraInfo}${sb3Compat}`;
     const customFlags = document.getElementById('custom-flags-input').value;
 
+    const decompilerConfig = {
+      overwriteOutputFile: document.getElementById('opt-overwrite').checked ? 1 : 0,
+      useIfAndOr: document.getElementById('opt-useifandor').checked ? 1 : 0,
+      syntax: document.getElementById('opt-syntax').checked ? 1 : 0,
+      insertOriginalMissionNames: document.getElementById('opt-originalmissionnames').checked ? 1 : 0,
+      labelsFormat: document.getElementById('opt-labelsformat').checked ? 1 : 0,
+      customLabels: document.getElementById('opt-customlabels').checked ? 1 : 0,
+      customVariables: document.getElementById('opt-customvariables').checked ? 1 : 0,
+    };
+
     logLine(`Reading file <span class="text-amber">${escapeHtml(file.name)}</span> for decompilation…`, 'info');
     logLine(`[Queue] Request sent to server queue, waiting for processing…`, 'warn');
 
-    // ✨ Decompile Timer Start
     decompileBtn.disabled = true;
     let startTime = Date.now();
     let timerInterval = setInterval(() => {
@@ -1171,6 +1342,7 @@
             game: selectedGame,
             useSource,
             debugBits,
+            decompilerConfig,
             customFlags
           }),
         });
@@ -1264,12 +1436,10 @@
     }
   }
 
-    function setEditorErrorMarker(lineNum, message) {
+  function setEditorErrorMarker(lineNum, message) {
     if (editor && window.monaco && lineNum && typeof lineNum === 'number') {
       const model = editor.getModel();
       const maxLines = model.getLineCount();
-      
-      // ✨ Yahan +1 hata diya hai kyunki backend (server.js) pehle hi adjust kar chuka hai
       const adjustedLine = lineNum; 
       const safeLine = Math.max(1, Math.min(Math.floor(adjustedLine), maxLines));
 
@@ -1288,7 +1458,6 @@
       editor.setPosition({ lineNumber: safeLine, column: 1 });
     }
   }
-
 
   require(['vs/editor/editor.main'], function () {
     monaco.languages.register({ id: 'cleo' });
@@ -1378,6 +1547,7 @@
     }
   });
 
+  // COMPILE SCRIPT WITH CONFIG
   const compileBtn = document.getElementById('compile-btn');
   const compileBtnText = document.getElementById('compile-btn-text');
   const compileSpinner = document.getElementById('compile-spinner');
@@ -1392,6 +1562,13 @@
     const checkConditions = document.getElementById('check-conditions-cb').checked;
     const noSplash = document.getElementById('no-splash-cb').checked;
     const customFlags = document.getElementById('custom-flags-input').value;
+
+    const compilerConfig = {
+      checkLocalVariables: document.getElementById('comp-checklocal').checked ? 1 : 0,
+      strictIfValidation: document.getElementById('comp-strictif').checked ? 1 : 0,
+      addExtraInfo: document.getElementById('comp-extrainfo').checked ? 1 : 0,
+      showImgWarning: document.getElementById('comp-imgwarning').checked ? 1 : 0,
+    };
 
     if (!code.trim()) {
       logLine('Editor is empty.', 'warn');
@@ -1413,7 +1590,6 @@
     compileBtn.disabled = true;
     compileSpinner.classList.remove('hidden');
 
-    // ✨ Compile Real-time Timer Start
     let startTime = Date.now();
     let timerInterval = setInterval(() => {
       let seconds = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -1434,6 +1610,7 @@
           caseSensitive, 
           checkConditions, 
           noSplash, 
+          compilerConfig,
           customFlags, 
           customDbBase64: uploadedDbBase64 
         }),

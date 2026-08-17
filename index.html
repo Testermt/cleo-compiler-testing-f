@@ -1,23 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8973LHLFH8"></script>
-<script>
-document.addEventListener('focusin', function(e) {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('.monaco-editor')) {
-    const viewport = document.querySelector('meta[name=viewport]');
-    if (viewport) {
-      viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
-    }
-  }
-});
-
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-8973LHLFH8');
-</script>
 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -1281,12 +1264,13 @@ document.addEventListener('focusin', function(e) {
     }
   }
 
-  function setEditorErrorMarker(lineNum, message) {
+    function setEditorErrorMarker(lineNum, message) {
     if (editor && window.monaco && lineNum && typeof lineNum === 'number') {
       const model = editor.getModel();
       const maxLines = model.getLineCount();
-      // Fixed line offset: compile.log line number is off by -1, so we adjust by +1
-      const adjustedLine = lineNum + 1;
+      
+      // ✨ Yahan +1 hata diya hai kyunki backend (server.js) pehle hi adjust kar chuka hai
+      const adjustedLine = lineNum; 
       const safeLine = Math.max(1, Math.min(Math.floor(adjustedLine), maxLines));
 
       monaco.editor.setModelMarkers(model, 'cleo-compiler', [{
@@ -1304,6 +1288,7 @@ document.addEventListener('focusin', function(e) {
       editor.setPosition({ lineNumber: safeLine, column: 1 });
     }
   }
+
 
   require(['vs/editor/editor.main'], function () {
     monaco.languages.register({ id: 'cleo' });

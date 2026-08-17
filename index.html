@@ -343,6 +343,7 @@ document.addEventListener('focusin', function(e) {
           <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber"><input type="checkbox" id="check-conditions-cb" class="accent-amber rounded-sm" checked><span>--check-conditions</span></label>
           <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber"><input type="checkbox" id="no-splash-cb" class="accent-amber rounded-sm" checked><span>--no-splash</span></label>
           <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber"><input type="checkbox" id="case-sensitive-cb" class="accent-amber rounded-sm"><span>--case-sensitive</span></label>
+          <label class="flex items-center gap-1.5 cursor-pointer hover:text-amber"><input type="checkbox" id="frontend-linter-cb" class="accent-amber rounded-sm"><span>Frontend Linter</span></label>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 pt-1 border-t border-hairline/60">
@@ -712,7 +713,6 @@ document.addEventListener('focusin', function(e) {
       await registerUserToHub(username);
 
       // ✨ 1. Agar user ne screenshot select kiya hai, toh use ImgBB API par upload karke direct URL lo
-          // ✨ ImgBB API Upload Logic with your key
       let screenshotUrl = '';
       if (screenshotFile) {
         const formData = new FormData();
@@ -964,7 +964,7 @@ document.addEventListener('focusin', function(e) {
         alert('Authorization failed! Please make sure your token has "repo" scope permissions enabled.');
         return false;
       } else {
-        const errJson = await checkRes.json();
+        const errJson = await createRes.json();
         logLine(`[GitHub Error] Status ${checkRes.status}: ${errJson.message || 'API error'}`, 'error');
         alert(`GitHub API Error: ${errJson.message || 'Unknown error'}`);
         return false;
@@ -1167,6 +1167,14 @@ document.addEventListener('focusin', function(e) {
     logLine(`Reading file <span class="text-amber">${escapeHtml(file.name)}</span> for decompilation…`, 'info');
     logLine(`[Queue] Request sent to server queue, waiting for processing…`, 'warn');
 
+    // ✨ Decompile Timer Start
+    decompileBtn.disabled = true;
+    let startTime = Date.now();
+    let timerInterval = setInterval(() => {
+      let seconds = ((Date.now() - startTime) / 1000).toFixed(1);
+      decompileBtn.textContent = `Decompiling… (${seconds}s)`;
+    }, 100);
+
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64Data = event.target.result.split(',')[1] || event.target.result;
@@ -1202,6 +1210,9 @@ document.addEventListener('focusin', function(e) {
       } catch (err) {
         logLine(`Error: ${escapeHtml(err.message)}`, 'error');
       } finally {
+        clearInterval(timerInterval);
+        decompileBtn.disabled = false;
+        decompileBtn.textContent = 'Decompile';
         decompileInput.value = '';
       }
     };
@@ -1274,7 +1285,9 @@ document.addEventListener('focusin', function(e) {
     if (editor && window.monaco && lineNum && typeof lineNum === 'number') {
       const model = editor.getModel();
       const maxLines = model.getLineCount();
-      const safeLine = Math.max(1, Math.min(Math.floor(lineNum), maxLines));
+      // Fixed line offset: compile.log line number is off by -1, so we adjust by +1
+      const adjustedLine = lineNum + 1;
+      const safeLine = Math.max(1, Math.min(Math.floor(adjustedLine), maxLines));
 
       monaco.editor.setModelMarkers(model, 'cleo-compiler', [{
         startLineNumber: safeLine, startColumn: 1, endLineNumber: safeLine, endColumn: model.getLineMaxColumn(safeLine),
@@ -1355,8 +1368,13 @@ document.addEventListener('focusin', function(e) {
     editor.onDidChangeModelContent(() => {
       clearTimeout(lintTimeout);
       lintTimeout = setTimeout(() => {
-        const markers = validateCleoSyntax(editor.getValue());
-        monaco.editor.setModelMarkers(editor.getModel(), 'cleo-gui-linter', markers);
+        const useFrontendLinter = document.getElementById('frontend-linter-cb')?.checked;
+        if (useFrontendLinter) {
+          const markers = validateCleoSyntax(editor.getValue());
+          monaco.editor.setModelMarkers(editor.getModel(), 'cleo-gui-linter', markers);
+        } else {
+          monaco.editor.setModelMarkers(editor.getModel(), 'cleo-gui-linter', []);
+        }
       }, 300);
     });
 
@@ -1395,18 +1413,28 @@ document.addEventListener('focusin', function(e) {
       return;
     }
 
-    const linterErrors = validateCleoSyntax(code);
-    if (linterErrors.length > 0) {
-      const firstErr = linterErrors[0];
-      logLine(`GUI Linter Error: Line ${firstErr.startLineNumber} — ${escapeHtml(firstErr.message)}`, 'error');
-      setEditorErrorMarker(firstErr.startLineNumber, firstErr.message);
-      return;
+    const useFrontendLinter = document.getElementById('frontend-linter-cb').checked;
+    if (useFrontendLinter) {
+      const linterErrors = validateCleoSyntax(code);
+      if (linterErrors.length > 0) {
+        const firstErr = linterErrors[0];
+        logLine(`GUI Linter Error: Line ${firstErr.startLineNumber} — ${escapeHtml(firstErr.message)}`, 'error');
+        setEditorErrorMarker(firstErr.startLineNumber, firstErr.message);
+        return;
+      }
     }
 
     clearEditorErrorMarkers();
     compileBtn.disabled = true;
     compileSpinner.classList.remove('hidden');
-    compileBtnText.textContent = 'Compiling…';
+
+    // ✨ Compile Real-time Timer Start
+    let startTime = Date.now();
+    let timerInterval = setInterval(() => {
+      let seconds = ((Date.now() - startTime) / 1000).toFixed(1);
+      compileBtnText.textContent = `Compiling… (${seconds}s)`;
+    }, 100);
+
     logLine(`Sending script to compiler (${selectedGame})…`, 'info');
     logLine(`[Queue] Request sent to server queue, waiting for processing…`, 'warn');
 
@@ -1462,7 +1490,7 @@ document.addEventListener('focusin', function(e) {
 
       const token = localStorage.getItem('gh_token');
       const repo = localStorage.getItem('gh_repo');
-      const autosave = localStorage.getItem('gh_autosave') === 'true'; // ✨ Fixed here
+      const autosave = localStorage.getItem('gh_autosave') === 'true';
 
       if (token && repo) {
         let shouldSave = autosave;
@@ -1482,6 +1510,7 @@ document.addEventListener('focusin', function(e) {
     } catch (err) {
       logLine(`Network error: ${escapeHtml(err.message)}`, 'error');
     } finally {
+      clearInterval(timerInterval);
       compileBtn.disabled = false;
       compileSpinner.classList.add('hidden');
       compileBtnText.textContent = 'Compile & Download';
@@ -1508,4 +1537,3 @@ document.addEventListener('focusin', function(e) {
 </script>
 </body>
 </html>
-

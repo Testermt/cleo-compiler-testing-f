@@ -209,28 +209,33 @@
           <div id="errorModalMsg" class="bg-panel2 text-bad border border-bad/30 rounded-sm p-2.5 font-mono text-xs max-h-32 overflow-y-auto"></div>
         </div>
 
-        <!-- ✨ AI Fix Assistant Box (Under Development) -->
-        <div>
-          <label class="block text-gray-400 mb-1 flex items-center justify-between">
-            <span>🤖 AI Fix Assistant:</span>
-            <span class="text-[9.5px] bg-amber/10 text-amber border border-amber/30 px-1.5 py-0.5 rounded">Under Development</span>
-          </label>
-          <div class="bg-panel2 text-gray-300 border border-hairline rounded-sm p-3 font-sans text-xs flex flex-col gap-2">
-            <p class="text-gray-400 leading-relaxed">
-              Our upcoming AI assistant will automatically analyze this error, pinpoint the faulty logic in your script, and provide instant code solutions.
-            </p>
-            <div class="flex items-center gap-1.5 text-[11px] text-teal font-mono">
-              <span>✨ Coming Soon in future updates</span>
-            </div>
-          </div>
+  
+
+      <!-- ✨ Active AI Fix Assistant Box -->
+      <div>
+        <label class="block text-gray-400 mb-1 flex items-center justify-between">
+          <span>🤖 AI Fix Assistant:</span>
+          <span class="text-[9.5px] bg-teal/10 text-teal border border-teal/30 px-1.5 py-0.5 rounded">Active</span>
+        </label>
+        <div class="bg-panel2 text-gray-300 border border-hairline rounded-sm p-3 font-sans text-xs flex flex-col gap-2.5">
+          <p class="text-gray-400 leading-relaxed">
+            Click the button below to let AI automatically analyze this error and fix the faulty code in your editor.
+          </p>
+          <button id="aiFixErrorBtn" class="btn-press py-2 px-3 bg-teal text-ink font-semibold rounded-sm hover:opacity-90 flex items-center justify-center gap-1.5 text-xs">
+            <span>✨ Fix this Error with AI</span>
+          </button>
+          <!-- AI Fix Output Area -->
+          <div id="aiFixOutputBox" class="hidden bg-ink text-gray-300 border border-hairline rounded-sm p-2.5 font-mono text-xs max-h-36 overflow-y-auto select-text whitespace-pre-wrap"></div>
         </div>
       </div>
-      
-      <div class="flex justify-end pt-2 border-t border-hairline">
-        <button onclick="closeErrorModal()" class="btn-press text-[11px] px-4 py-1.5 bg-panel2 border border-hairline text-gray-300 hover:text-gray-100 rounded-sm">Close</button>
-      </div>
+    </div>
+    
+    <div class="flex justify-between items-center pt-2 border-t border-hairline">
+      <button id="aiFixInsertBtn" class="btn-press text-[11px] px-3.5 py-1.5 bg-panel2 border border-hairline text-teal hover:border-teal rounded-sm hidden">📥 Insert Fixed Code to New Tab</button>
+      <button onclick="closeErrorModal()" class="btn-press text-[11px] px-4 py-1.5 bg-panel2 border border-hairline text-gray-300 hover:text-gray-100 rounded-sm">Close</button>
     </div>
   </div>
+</div>
 
 
 
@@ -449,15 +454,15 @@
   <span>🤖 AI Script Assistant</span>
 </button>
 
-<!-- ✨ AI Assistant Modal with Optional File Context -->
+<!-- ✨ AI Assistant Modal with API Key Input -->
 <div id="aiModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
-  <div class="bg-panel border border-amber/40 rounded-sm max-w-xl w-full p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xl max-h-[90vh]">
+  <div class="bg-panel border border-amber/40 rounded-sm max-w-xl w-full p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xl max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between border-b border-hairline pb-2.5">
       <h2 class="font-display text-xs sm:text-sm text-amber font-semibold">🤖 CLEO AI Script & Opcode Assistant</h2>
       <button id="aiModalClose" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
     </div>
     
-    <div class="flex flex-col gap-2.5 text-[11.5px] flex-1 overflow-hidden">
+    <div class="flex flex-col gap-2.5 text-[11.5px] flex-1">
       <div>
         <label class="block text-gray-400 mb-1">What do you want to create? (e.g. Car spawner, Teleport script):</label>
         <div class="flex gap-2">
@@ -467,7 +472,7 @@
         </div>
       </div>
 
-      <!-- ✨ Optional Reference File Upload for AI -->
+      <!-- Optional Reference File Upload for AI -->
       <div>
         <label class="block text-gray-400 mb-1">Optional Reference File (Script / Config):</label>
         <div class="flex gap-2">
@@ -479,10 +484,21 @@
         <span id="aiFileStatus" class="text-[10px] text-gray-500 mt-0.5 block">Upload a file to give custom context to AI (optional)</span>
       </div>
 
+      <!-- ✨ User Custom API Key Input Field -->
+      <div class="border-t border-hairline pt-2.5">
+        <label class="block text-gray-400 mb-1">Your Custom AI API Key (Gemini / OpenAI):</label>
+        <div class="flex gap-2">
+          <input type="password" id="userApiKeyInput" placeholder="Paste your API key here (saved locally)" 
+            class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-1.5 flex-1 focus:outline-none focus:border-amber font-mono text-xs" />
+          <button type="button" id="saveApiKeyBtn" class="btn-press px-3 py-1.5 bg-panel2 border border-hairline text-amber text-[11.5px] rounded-sm hover:border-amber shrink-0">Save Key</button>
+        </div>
+        <span id="apiKeyStatus" class="text-[10px] text-gray-500 mt-0.5 block">Stored securely in your browser's localStorage.</span>
+      </div>
+
       <!-- AI Response Output Box -->
-      <div class="flex flex-col flex-1 overflow-hidden">
+      <div class="flex flex-col flex-1">
         <label class="block text-gray-400 mb-1">Generated Script & Explanation:</label>
-        <div id="aiOutputBox" class="bg-panel2 text-gray-300 border border-hairline rounded-sm p-3 font-mono text-xs overflow-y-auto flex-1 select-text whitespace-pre-wrap max-h-48">
+        <div id="aiOutputBox" class="bg-panel2 text-gray-300 border border-hairline rounded-sm p-3 font-mono text-xs overflow-y-auto select-text whitespace-pre-wrap max-h-40">
           Awaiting your prompt... Ask me to generate any CLEO script!
         </div>
       </div>
@@ -2177,6 +2193,96 @@ if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compi
   }
 
 
+let lastFixedCode = "";
+let currentCapturedError = "";
+
+// Error modal khulte hi error store kar lena
+function showErrorModal(errorText, cmdText, isDecompile = false) {
+  const titleEl = document.getElementById('errorModalTitle');
+  const errTypeTitle = isDecompile ? 'Decompilation Error' : 'Compilation Error';
+  if (titleEl) {
+    titleEl.textContent = `❌ ${errTypeTitle}`;
+  }
+
+  currentCapturedError = errorText || 'Unknown error occurred.';
+  let formattedError = currentCapturedError;
+
+  formattedError = formattedError.replace(/[A-Z]:\\[^:\n]+\\([^\\]+\.(txt|cs|csa|csi)):(\d+)/gi, (match, filename, ext, lineNum) => {
+    return `${filename}:${parseInt(lineNum, 10) + 1}`;
+  });
+
+  document.getElementById('errorModalMsg').textContent = formattedError;
+  document.getElementById('aiFixOutputBox').classList.add('hidden');
+  document.getElementById('aiFixInsertBtn').classList.add('hidden');
+  document.getElementById('errorModal').classList.remove('hidden');
+
+  logLine(`[${errTypeTitle}] ${escapeHtml(formattedError)}`, 'error');
+}
+
+// ✨ AI Fix Button Event Listener
+document.getElementById('aiFixErrorBtn').addEventListener('click', async () => {
+  const fixOutputBox = document.getElementById('aiFixOutputBox');
+  const fixInsertBtn = document.getElementById('aiFixInsertBtn');
+  const currentCode = editor ? editor.getValue() : '';
+  const selectedGame = document.getElementById('gameSelect') ? document.getElementById('gameSelect').value : 'sa_mobile';
+  const customApiKey = localStorage.getItem('user_custom_ai_key') || '';
+
+  if (!currentCode.trim()) {
+    alert('Editor is empty!');
+    return;
+  }
+
+  fixOutputBox.classList.remove('hidden');
+  fixOutputBox.textContent = "🤖 AI is analyzing your script and fixing the error...";
+  fixInsertBtn.classList.add('hidden');
+
+  try {
+    const response = await fetch(`${API_BASE}/api/ai-fix`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Api-Key': customApiKey
+      },
+      body: JSON.stringify({ 
+        code: currentCode, 
+        error: currentCapturedError, 
+        game: selectedGame 
+      })
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+      fixOutputBox.textContent = data.explanation + "\n\n--- FIXED SCRIPT ---\n" + data.code;
+      lastFixedCode = data.code;
+      fixInsertBtn.classList.remove('hidden');
+    } else {
+      fixOutputBox.textContent = "Error: " + (data.error || "Failed to fix script.");
+    }
+  } catch (err) {
+    fixOutputBox.textContent = "Network Error: Could not connect to AI server.";
+  }
+});
+
+// Insert Fixed Code into New Tab
+document.getElementById('aiFixInsertBtn').addEventListener('click', () => {
+  if (typeof editor !== 'undefined' && lastFixedCode) {
+    const currentTab = openTabs.find(t => t.id === activeTabId);
+    if (currentTab) currentTab.content = editor.getValue();
+
+    const newId = 'tab-' + Date.now();
+    const newName = `fixed_script_${openTabs.length + 1}.txt`;
+
+    openTabs.push({ 
+      id: newId, 
+      name: newName, 
+      content: lastFixedCode 
+    });
+
+    switchTab(newId);
+    document.getElementById('errorModal').classList.add('hidden');
+    logLine(`AI fixed script opened in new tab: <span class="text-amber">${newName}</span>`, 'success');
+  }
+});
 
   
 </script>

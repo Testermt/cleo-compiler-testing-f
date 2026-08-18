@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-8973LHLFH8"></script>
 <script>
 document.addEventListener('focusin', function(e) {
@@ -91,7 +90,6 @@ document.addEventListener('focusin', function(e) {
   <input type="file" id="decompile-upload-input" accept=".cs,.csa,.csi" class="hidden" />
   <input type="file" id="db-upload-input" accept=".db" class="hidden" />
 
-  <!-- HEADER -->
   <header class="border-b border-hairline bg-panel/95 backdrop-blur sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-3 py-2.5 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
@@ -107,24 +105,20 @@ document.addEventListener('focusin', function(e) {
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
-        <!-- COMMUNITY BUTTON -->
         <a href="community.html" class="btn-press w-8 h-8 rounded-sm border border-teal/50 bg-teal/10 text-teal hover:bg-teal/20 transition-colors flex items-center justify-center text-sm font-bold text-decoration-none" title="Community Hub">
           🌐
         </a>
 
-        <!-- PUBLISH BUTTON -->
         <button id="header-publish-btn" class="btn-press w-8 h-8 rounded-sm border border-amber/50 bg-amber/10 text-amber hover:bg-amber/20 transition-colors flex items-center justify-center text-sm" title="Publish Script">
           🚀
         </button>
         <a href="documentation.html" class="btn-press text-[11px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">📖 Docs</a>
 
-        <!-- OPCODES BUTTON -->
         <button id="opcode-btn"
           class="btn-press text-[11px] px-3 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber hover:border-amber/50 transition-colors">
           Opcodes
         </button>
 
-        <!-- GITHUB SYNC BUTTON -->
         <div class="relative">
           <button id="gh-config-btn"
             class="btn-press text-[11px] px-3 py-1.5 rounded-sm border border-hairline bg-panel2 text-gray-200 hover:border-amber/50 transition-colors flex items-center gap-1.5">
@@ -160,7 +154,30 @@ document.addEventListener('focusin', function(e) {
     </div>
   </header>
 
-  <!-- GITHUB CONFIG MODAL -->
+  <div id="errorModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+    <div class="bg-panel border border-bad/40 rounded-sm max-w-lg w-full p-4 sm:p-5 flex flex-col gap-3 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-hairline pb-2.5">
+        <h2 class="font-display text-xs sm:text-sm text-bad font-semibold">❌ Compilation / Decompilation Error</h2>
+        <button onclick="closeErrorModal()" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
+      </div>
+      
+      <div class="flex flex-col gap-2 text-[11.5px]">
+        <div>
+          <label class="block text-gray-400 mb-1">Error Message / Suggestion:</label>
+          <div id="errorModalMsg" class="bg-panel2 text-bad border border-bad/30 rounded-sm p-2.5 font-mono text-xs max-h-32 overflow-y-auto"></div>
+        </div>
+        <div>
+          <label class="block text-gray-400 mb-1">Executed Command String (`cmdStr`):</label>
+          <textarea id="errorModalCmd" readonly class="bg-panel2 text-amber border border-hairline rounded-sm p-2.5 w-full font-mono text-xs h-24 focus:outline-none resize-none"></textarea>
+        </div>
+      </div>
+      
+      <div class="flex justify-end pt-2 border-t border-hairline">
+        <button onclick="closeErrorModal()" class="btn-press text-[11px] px-4 py-1.5 bg-panel2 border border-hairline text-gray-300 hover:text-gray-100 rounded-sm">Close</button>
+      </div>
+    </div>
+  </div>
+
   <div id="gh-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
     <div class="bg-panel border border-hairline rounded-sm max-w-md w-full p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xl">
       <div class="flex items-center justify-between border-b border-hairline pb-2.5">
@@ -207,7 +224,6 @@ document.addEventListener('focusin', function(e) {
     </div>
   </div>
 
-  <!-- PUBLISH SCRIPT MODAL -->
   <div id="publish-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
     <div class="bg-panel border border-hairline rounded-sm max-w-md w-full p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xl">
       <div class="flex items-center justify-between border-b border-hairline pb-2.5">
@@ -241,7 +257,6 @@ document.addEventListener('focusin', function(e) {
           </div>
           <span id="pub-compiled-status" class="text-[10px] text-gray-500 mt-0.5 block">No compiled file attached</span>
         </div>
-        <!-- ✨ SCREENSHOT PREVIEW UPLOAD FIELD -->
         <div>
           <label class="block text-gray-400 mb-1">Mod Screenshot (Optional - PNG/JPG):</label>
           <div class="flex gap-2">
@@ -263,7 +278,6 @@ document.addEventListener('focusin', function(e) {
     </div>
   </div>
 
-  <!-- ⚙️ COMPILER CONFIG SETTINGS MODAL -->
   <div id="compiler-settings-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
     <div class="bg-panel border border-hairline rounded-sm max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl">
       <div class="border-b border-hairline px-4 py-3 flex items-center justify-between">
@@ -294,7 +308,6 @@ document.addEventListener('focusin', function(e) {
     </div>
   </div>
 
-  <!-- ⚙️ DECOMPILER CONFIG SETTINGS MODAL -->
   <div id="decompile-settings-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
     <div class="bg-panel border border-hairline rounded-sm max-w-md w-full max-h-[85vh] flex flex-col shadow-2xl">
       <div class="border-b border-hairline px-4 py-3 flex items-center justify-between">
@@ -337,11 +350,9 @@ document.addEventListener('focusin', function(e) {
     </div>
   </div>
 
-  <!-- MAIN -->
   <main class="flex-1 max-w-6xl w-full mx-auto px-2 sm:px-4 py-3 flex flex-col gap-3">
 
-    <!-- KO-FI SUPPORT BANNER -->
-<div class="max-w-6xl mx-auto px-2 sm:px-4 my-2">
+    <div class="max-w-6xl mx-auto px-2 sm:px-4 my-2">
   <div class="bg-amber/10 border border-amber/30 rounded-sm p-3.5 text-[12px] text-amber text-center flex flex-col items-center justify-center gap-2.5 shadow-md">
     <p class="leading-relaxed">
       <strong>☕ Support ModderHub:</strong> Enjoying the GTA SA Online CLEO Compiler? Consider buying a coffee to help keep the server and tools running fast for mobile modders worldwide!
@@ -360,14 +371,12 @@ document.addEventListener('focusin', function(e) {
 
 
 <script>
-  // Agar front-end GitHub Pages par hai aur backend Render par, toh backend ka poora URL use karein:
   const BACKEND_URL = "https://cleo-compiler-testing-gzf6.onrender.com";
 
   function fetchDebugScreenshot() {
     const modal = document.getElementById('debugModal');
     const img = document.getElementById('debugScreenshotImg');
     
-    // Cache-busting ke liye ?t=Timestamp lagana zaroori hai taaki purana screenshot cache na ho
     img.src = `${BACKEND_URL}/api/take-screenshot?t=${Date.now()}`;
     modal.style.display = 'flex';
   }
@@ -377,7 +386,6 @@ document.addEventListener('focusin', function(e) {
   }
 </script>
 
-    <!-- Toolbar -->
     <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-2.5 bg-panel p-2.5 sm:p-3 rounded-sm border border-hairline">
       <div class="flex flex-wrap items-center gap-2 text-[11.5px] text-gray-400">
         <div class="flex items-center gap-1.5 flex-1 sm:flex-initial">
@@ -415,7 +423,6 @@ document.addEventListener('focusin', function(e) {
       </div>
     </div>
 
-    <!-- Compile & Download Button Row -->
     <div>
       <button id="compile-btn" class="btn-press text-xs sm:text-sm py-2.5 px-4 rounded-sm bg-amber text-ink font-bold transition-colors flex items-center justify-center gap-2 w-full disabled:opacity-50 shadow-md">
         <svg id="compile-spinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -426,7 +433,6 @@ document.addEventListener('focusin', function(e) {
       </button>
     </div>
 
-    <!-- Advanced CLI Flags Bar -->
     <details class="bg-panel2/60 border border-hairline rounded-sm px-3.5 py-2.5 text-[11.5px]">
       <summary class="cursor-pointer text-amber font-semibold select-none flex items-center gap-2">⚙️ Advanced Compiler &amp; Decompiler Flags</summary>
       <div class="pt-3 flex flex-col gap-2.5 border-t border-hairline/60 mt-2 text-gray-400">
@@ -458,13 +464,10 @@ document.addEventListener('focusin', function(e) {
       </div>
     </details>
 
-    <!-- Editor Wrapper with File Tabs & Vertical 3-Dot Menu -->
     <div id="editor-wrapper-box" class="rounded-sm border border-hairline overflow-hidden shadow-2xl shadow-black/40 flex flex-col bg-panel">
-      <!-- TABS & 3-DOT MENU BAR -->
       <div class="bg-panel2 border-b border-hairline px-2.5 py-1.5 flex items-center justify-between gap-2 text-[11px] text-gray-400 relative">
         <div id="file-tabs-container" class="flex items-center gap-1.5 overflow-x-auto flex-1 py-0.5"></div>
         
-        <!-- VERTICAL 3-DOT MENU BUTTON & DROPDOWN -->
         <div class="relative shrink-0">
           <button id="editor-menu-btn" class="px-2.5 py-1 rounded bg-panel hover:bg-hairline text-amber font-bold text-sm tracking-widest transition-colors" title="Editor Menu">⋮</button>
           
@@ -480,7 +483,6 @@ document.addEventListener('focusin', function(e) {
       <div id="editor-container"></div>
     </div>
 
-    <!-- Console -->
     <div class="rounded-sm border border-hairline bg-panel flex flex-col">
       <div class="border-b border-hairline px-3 py-1.5 flex items-center justify-between">
         <span class="text-[11px] text-gray-500 hex-addr">CONSOLE</span>
@@ -492,7 +494,6 @@ document.addEventListener('focusin', function(e) {
     </div>
   </main>
 
-  <!-- OPCODE MODAL -->
   <div id="opcode-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
     <div class="bg-panel border border-hairline rounded-sm max-w-2xl w-full max-h-[80vh] flex flex-col">
       <div class="border-b border-hairline px-4 py-3 flex items-center justify-between">
@@ -524,6 +525,17 @@ document.addEventListener('focusin', function(e) {
   ];
   let activeTabId = 'tab-1';
   let editor;
+
+  // Error Modal Control Functions
+  function showErrorModal(errorText, cmdText) {
+    document.getElementById('errorModalMsg').textContent = errorText || 'Unknown error occurred.';
+    document.getElementById('errorModalCmd').value = cmdText || 'No command string available.';
+    document.getElementById('errorModal').classList.remove('hidden');
+  }
+
+  function closeErrorModal() {
+    document.getElementById('errorModal').classList.add('hidden');
+  }
 
   // ==========================================
   // LOCALSTORAGE SETTINGS PERSISTENCE
@@ -729,7 +741,6 @@ document.addEventListener('focusin', function(e) {
   const pubBrowseCompiled = document.getElementById('pub-browse-compiled');
   const pubCompiledStatus = document.getElementById('pub-compiled-status');
 
-  // ✨ Screenshot Upload Elements
   const pubScreenshotName = document.getElementById('pub-screenshot-name');
   const pubScreenshotFileInput = document.getElementById('pub-screenshot-file-input');
   const pubBrowseScreenshot = document.getElementById('pub-browse-screenshot');
@@ -775,7 +786,6 @@ document.addEventListener('focusin', function(e) {
     reader.readAsDataURL(file);
   });
 
-  // ✨ Screenshot Browse Logic
   pubBrowseScreenshot.addEventListener('click', () => pubScreenshotFileInput.click());
   pubScreenshotFileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -1023,6 +1033,8 @@ document.addEventListener('focusin', function(e) {
   window.addEventListener('click', (e) => {
     if (e.target === ghModal) ghModal.classList.add('hidden');
     if (e.target === publishModal) publishModal.classList.add('hidden');
+    const errorModalEl = document.getElementById('errorModal');
+    if (e.target === errorModalEl) errorModalEl.classList.add('hidden');
     ghDropdown.classList.add('hidden');
   });
 
@@ -1305,7 +1317,7 @@ document.addEventListener('focusin', function(e) {
     fileInput.value = '';
   });
 
-  // DECOMPILE SCRIPT WITH CONFIG
+  // DECOMPILE SCRIPT WITH CONFIG & ERROR MODAL INTEGRATION
   const decompileBtn = document.getElementById('decompile-btn');
   const decompileInput = document.getElementById('decompile-upload-input');
 
@@ -1366,11 +1378,16 @@ document.addEventListener('focusin', function(e) {
           }),
         });
         const data = await response.json();
+        const executedCmd = data.cmd || 'No command generated';
+        
         if (data.cmd) {
           logLine(`Command: <span class="text-amber">${escapeHtml(data.cmd)}</span>`, 'warn');
         }
         if (!response.ok || !data.success) {
-          logLine(`Decompilation failed: ${escapeHtml(data.error || 'Unknown error')}`, 'error');
+          const errorMsg = data.error || 'Unknown decompilation error.';
+          logLine(`Decompilation failed: ${escapeHtml(errorMsg)}`, 'error');
+          // ✨ Trigger Error Modal for Decompilation Errors / Timeouts
+          showErrorModal(errorMsg, executedCmd);
           return;
         }
         if (editor && data.code) {
@@ -1383,6 +1400,7 @@ document.addEventListener('focusin', function(e) {
         }
       } catch (err) {
         logLine(`Error: ${escapeHtml(err.message)}`, 'error');
+        showErrorModal(err.message, 'Network / Request Failed');
       } finally {
         clearInterval(timerInterval);
         decompileBtn.disabled = false;
@@ -1566,7 +1584,7 @@ document.addEventListener('focusin', function(e) {
     }
   });
 
-  // COMPILE SCRIPT WITH CONFIG
+  // COMPILE SCRIPT WITH CONFIG & ERROR MODAL INTEGRATION
   const compileBtn = document.getElementById('compile-btn');
   const compileBtnText = document.getElementById('compile-btn-text');
   const compileSpinner = document.getElementById('compile-spinner');
@@ -1601,6 +1619,7 @@ document.addEventListener('focusin', function(e) {
         const firstErr = linterErrors[0];
         logLine(`GUI Linter Error: Line ${firstErr.startLineNumber} — ${escapeHtml(firstErr.message)}`, 'error');
         setEditorErrorMarker(firstErr.startLineNumber, firstErr.message);
+        showErrorModal(`GUI Linter Error: Line ${firstErr.startLineNumber} — ${firstErr.message}`, 'Frontend Linter Validation');
         return;
       }
     }
@@ -1640,11 +1659,17 @@ document.addEventListener('focusin', function(e) {
 
       if (!response.ok || contentType.includes('application/json')) {
         const data = await response.json().catch(() => ({}));
+        const executedCmd = data.cmd || cmdHeader || 'No command generated';
+        
         if (data.cmd || cmdHeader) {
-          logLine(`Command: <span class="text-amber">${escapeHtml(data.cmd || cmdHeader)}</span>`, 'warn');
+          logLine(`Command: <span class="text-amber">${escapeHtml(executedCmd)}</span>`, 'warn');
         }
         const message = data.error || `Compilation failed (HTTP ${response.status}).`;
         logLine(escapeHtml(message), 'error');
+        
+        // ✨ Trigger Error Modal for Compilation Errors
+        showErrorModal(message, executedCmd);
+
         if (data.line && typeof data.line === 'number') {
           setEditorErrorMarker(data.line, message);
         }
@@ -1690,6 +1715,7 @@ document.addEventListener('focusin', function(e) {
 
     } catch (err) {
       logLine(`Network error: ${escapeHtml(err.message)}`, 'error');
+      showErrorModal(err.message, 'Network / Request Failed');
     } finally {
       clearInterval(timerInterval);
       compileBtn.disabled = false;

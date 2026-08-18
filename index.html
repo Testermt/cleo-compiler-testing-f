@@ -51,7 +51,22 @@
     user-select: text !important;
   }
 
+        html, body { 
+    background: #0c0f14; 
+    overflow-x: hidden; 
+    overscroll-behavior-y: none; 
+    height: 100%;
+    position: fixed;
+    width: 100%;
+  }
+  
+  body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 
+
+  
   
   /* Fullscreen IDE Mode */
   .fullscreen-editor { 
@@ -394,7 +409,13 @@
   function closeDebugModal() {
     document.getElementById('debugModal').style.display = 'none';
   }
+  
+      
+
+  
 </script>
+
+
 
     <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-2.5 bg-panel p-2.5 sm:p-3 rounded-sm border border-hairline">
       <div class="flex flex-wrap items-center gap-2 text-[11.5px] text-gray-400">
@@ -778,8 +799,18 @@
     if (editor) editor.trigger('keyboard', 'redo', null);
   });
 
+        // ⛶ Fullscreen Toggle with URL Bar Hidden
   document.getElementById('fullscreen-dropdown').addEventListener('click', () => {
     editorDropdown.classList.add('hidden');
+    
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {});
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+
     editorBox.classList.toggle('fullscreen-editor');
     if (editorBox.classList.contains('fullscreen-editor')) {
       fullscreenText.textContent = '🗗 Exit Fullscreen';
@@ -790,6 +821,8 @@
     }
     if (editor) editor.layout();
   });
+
+
 
   // 🔗 Share Code (Copy code to clipboard)
   document.getElementById('share-tab-dropdown').addEventListener('click', () => {

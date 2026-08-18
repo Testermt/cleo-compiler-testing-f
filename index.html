@@ -211,7 +211,7 @@
 
   
 
-      <!-- ✨ Active AI Fix Assistant Box -->
+            <!-- ✨ Active AI Fix Assistant Box -->
       <div>
         <label class="block text-gray-400 mb-1 flex items-center justify-between">
           <span>🤖 AI Fix Assistant:</span>
@@ -221,6 +221,18 @@
           <p class="text-gray-400 leading-relaxed">
             Click the button below to let AI automatically analyze this error and fix the faulty code in your editor.
           </p>
+
+          <!-- ✨ AI Fix Model Selector Dropdown -->
+          <div>
+            <label class="block text-gray-400 mb-1 text-[11px]">Select AI Model for Fix:</label>
+            <select id="aiFixModelSelect" class="bg-ink text-gray-200 border border-hairline rounded-sm px-2 py-1.5 w-full focus:outline-none focus:border-amber font-mono text-xs">
+              <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+            </select>
+          </div>
+
           <button id="aiFixErrorBtn" class="btn-press py-2 px-3 bg-teal text-ink font-semibold rounded-sm hover:opacity-90 flex items-center justify-center gap-1.5 text-xs">
             <span>✨ Fix this Error with AI</span>
           </button>
@@ -228,7 +240,7 @@
           <div id="aiFixOutputBox" class="hidden bg-ink text-gray-300 border border-hairline rounded-sm p-2.5 font-mono text-xs max-h-36 overflow-y-auto select-text whitespace-pre-wrap"></div>
         </div>
       </div>
-    </div>
+
     
     <div class="flex justify-between items-center pt-2 border-t border-hairline">
       <button id="aiFixInsertBtn" class="btn-press text-[11px] px-3.5 py-1.5 bg-panel2 border border-hairline text-teal hover:border-teal rounded-sm hidden">📥 Insert Fixed Code to New Tab</button>
@@ -454,7 +466,7 @@
   <span>🤖 AI Script Assistant</span>
 </button>
 
-<!-- ✨ AI Assistant Modal with API Key Input -->
+<!-- ✨ AI Assistant Modal with API Key Input & Model Selector -->
 <div id="aiModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
   <div class="bg-panel border border-amber/40 rounded-sm max-w-xl w-full p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xl max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between border-b border-hairline pb-2.5">
@@ -493,6 +505,17 @@
           <button type="button" id="saveApiKeyBtn" class="btn-press px-3 py-1.5 bg-panel2 border border-hairline text-amber text-[11.5px] rounded-sm hover:border-amber shrink-0">Save Key</button>
         </div>
         <span id="apiKeyStatus" class="text-[10px] text-gray-500 mt-0.5 block">Stored securely in your browser's localStorage.</span>
+      </div>
+
+      <!-- ✨ AI Model Selector Dropdown -->
+      <div>
+        <label class="block text-gray-400 mb-1">Select AI Model:</label>
+        <select id="aiModelSelect" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-1.5 w-full focus:outline-none focus:border-amber font-mono text-xs">
+          <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+          <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+          <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+        </select>
       </div>
 
       <!-- AI Response Output Box -->
@@ -2124,40 +2147,47 @@ if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compi
   // Generate Script via AI & Game Data Context (with Optional File)
   if (aiGenerateBtn) {
     aiGenerateBtn.addEventListener('click', async () => {
-      const prompt = aiPromptInput.value.trim();
-      const selectedGame = document.getElementById('gameSelect') ? document.getElementById('gameSelect').value : 'GTA SA (Mobile - .csi)';
+  const prompt = aiPromptInput.value.trim();
+  const selectedGame = document.getElementById('gameSelect') ? document.getElementById('gameSelect').value : 'sa_mobile';
+  const customApiKey = localStorage.getItem('user_custom_ai_key') || '';
+  const selectedAiModel = document.getElementById('aiModelSelect') ? document.getElementById('aiModelSelect').value : 'gemini-2.5-flash';
 
-      if (!prompt) {
-        alert('Please enter what you want to create!');
-        return;
-      }
+  if (!prompt) {
+    alert('Please enter what you want to create!');
+    return;
+  }
 
-      aiOutputBox.textContent = "🤖 AI is reading game files and your reference script...";
-      aiInsertBtn.classList.add('hidden');
+  aiOutputBox.textContent = "🤖 AI is reading game files and generating your script...";
+  aiInsertBtn.classList.add('hidden');
 
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/ai-assist`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            prompt, 
-            game: selectedGame, 
-            optionalContext: optionalFileContent 
-          })
-        });
-        
-        const data = await response.json();
-        if (data.success) {
-          aiOutputBox.textContent = data.explanation + "\n\n--- GENERATED SCRIPT ---\n" + data.code;
-          lastGeneratedCode = data.code;
-          aiInsertBtn.classList.remove('hidden');
-        } else {
-          aiOutputBox.textContent = "Error: " + (data.error || "Failed to generate script.");
-        }
-      } catch (err) {
-        aiOutputBox.textContent = "Network Error: Could not connect to backend AI server. Make sure your Render backend is active.";
-      }
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/ai-assist`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Api-Key': customApiKey 
+      },
+      body: JSON.stringify({ 
+        prompt, 
+        game: selectedGame, 
+        optionalContext: optionalFileContent,
+        model: selectedAiModel // ✨ Selected model pass kar diya
+      })
     });
+    
+    const data = await response.json();
+    if (data.success) {
+      aiOutputBox.textContent = data.explanation + "\n\n--- GENERATED SCRIPT ---\n" + data.code;
+      lastGeneratedCode = data.code;
+      aiInsertBtn.classList.remove('hidden');
+    } else {
+      aiOutputBox.textContent = "Error: " + (data.error || "Failed to generate script.");
+    }
+  } catch (err) {
+    aiOutputBox.textContent = "Network Error: Could not connect to backend AI server.";
+  }
+});
+
   }
 
   // Insert Generated Code into Monaco Editor as a New Tab
@@ -2219,13 +2249,14 @@ function showErrorModal(errorText, cmdText, isDecompile = false) {
   logLine(`[${errTypeTitle}] ${escapeHtml(formattedError)}`, 'error');
 }
 
-// ✨ AI Fix Button Event Listener
+// ✨ AI Fix Button Event Listener with Model Selection
 document.getElementById('aiFixErrorBtn').addEventListener('click', async () => {
   const fixOutputBox = document.getElementById('aiFixOutputBox');
   const fixInsertBtn = document.getElementById('aiFixInsertBtn');
   const currentCode = editor ? editor.getValue() : '';
   const selectedGame = document.getElementById('gameSelect') ? document.getElementById('gameSelect').value : 'sa_mobile';
   const customApiKey = localStorage.getItem('user_custom_ai_key') || '';
+  const selectedFixModel = document.getElementById('aiFixModelSelect') ? document.getElementById('aiFixModelSelect').value : 'gemini-2.0-flash'; // ✨ Dropdown se model utha liya
 
   if (!currentCode.trim()) {
     alert('Editor is empty!');
@@ -2246,7 +2277,8 @@ document.getElementById('aiFixErrorBtn').addEventListener('click', async () => {
       body: JSON.stringify({ 
         code: currentCode, 
         error: currentCapturedError, 
-        game: selectedGame 
+        game: selectedGame,
+        model: selectedFixModel // ✨ Backend par model pass kar diya
       })
     });
     
@@ -2283,6 +2315,7 @@ document.getElementById('aiFixInsertBtn').addEventListener('click', () => {
     logLine(`AI fixed script opened in new tab: <span class="text-amber">${newName}</span>`, 'success');
   }
 });
+
 
   
 </script>

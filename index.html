@@ -68,6 +68,10 @@
     #editor-container { height: 46vh; min-height: 280px; }
     .monaco-editor { font-size: 14px !important; }
   }
+  * ✨ Ise yahan style tag ke andhar last mein daal do */
+  #console-wrapper {
+    display: none !important;
+  }
 </style>
 </head>
 <body class="bg-ink text-gray-200 font-mono min-h-screen flex flex-col">
@@ -484,15 +488,16 @@
       <div id="editor-container"></div>
     </div>
 
-    <div class="rounded-sm border border-hairline bg-panel flex flex-col">
-      <div class="border-b border-hairline px-3 py-1.5 flex items-center justify-between">
-        <span class="text-[11px] text-gray-500 hex-addr">CONSOLE</span>
-        <button id="console-clear" class="text-[11px] text-gray-600 hover:text-gray-300 transition-colors">clear</button>
-      </div>
-      <div id="console-log" class="h-32 overflow-y-auto px-3 py-2 text-[11.5px] leading-relaxed space-y-1">
-        <div class="text-gray-600">&gt; awaiting compile&hellip; <span class="cursor-blink">_</span></div>
-      </div>
-    </div>
+    <div id="console-wrapper" class="rounded-sm border border-hairline bg-panel flex flex-col">
+  <div class="border-b border-hairline px-3 py-1.5 flex items-center justify-between">
+    <span class="text-[11px] text-gray-500 hex-addr">CONSOLE</span>
+    <button id="console-clear" class="text-[11px] text-gray-600 hover:text-gray-300 transition-colors">clear</button>
+  </div>
+  <div id="console-log" class="h-32 overflow-y-auto px-3 py-2 text-[11.5px] leading-relaxed space-y-1">
+    <div class="text-gray-600">&gt; awaiting compile&hellip; <span class="cursor-blink">_</span></div>
+  </div>
+</div>
+
   </main>
 
   <div id="opcode-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">

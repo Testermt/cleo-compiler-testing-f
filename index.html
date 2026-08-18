@@ -406,11 +406,12 @@
   }
 </script>
 
-    <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-2.5 bg-panel p-2.5 sm:p-3 rounded-sm border border-hairline">
-      <div class="flex flex-wrap items-center gap-2 text-[11.5px] text-gray-400">
-        <div class="flex items-center gap-1.5 flex-1 sm:flex-initial">
+      <!-- Toolbar with Tools & Config Dropdown Tab -->
+    <div class="flex items-center justify-between bg-panel p-2.5 sm:p-3 rounded-sm border border-hairline relative">
+      <div class="flex flex-wrap items-center gap-2 text-[11.5px] text-gray-400 flex-1 min-w-0">
+        <div class="flex items-center gap-1.5 min-w-0">
           <span class="hex-addr text-gray-500 text-[10px]">GAME</span>
-          <select id="gameSelect" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2 py-1 text-[11.5px] focus:outline-none focus:border-amber w-full sm:w-auto">
+          <select id="gameSelect" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2 py-1 text-[11.5px] focus:outline-none focus:border-amber truncate">
             <option value="sa" selected>GTA SA (PC - .cs)</option>
             <option value="sa_mobile_csa">GTA SA (Mobile - .csa)</option>
             <option value="sa_mobile_csi">GTA SA (Mobile - .csi)</option>
@@ -422,9 +423,9 @@
             <option value="gta3_mobile_csi">GTA III (Mobile - .csi)</option>
           </select>
         </div>
-        <div class="flex items-center gap-1.5 flex-1 sm:flex-initial">
+        <div class="flex items-center gap-1.5 min-w-0 hidden sm:flex">
           <label for="templateSelect" class="hex-addr text-gray-500 text-[10px]">TEMPLATE</label>
-          <select id="templateSelect" class="bg-panel2 text-amber border border-hairline rounded-sm px-2 py-1 text-[11.5px] focus:outline-none focus:border-amber w-full sm:w-auto">
+          <select id="templateSelect" class="bg-panel2 text-amber border border-hairline rounded-sm px-2 py-1 text-[11.5px] focus:outline-none focus:border-amber">
             <option value="default" selected>Select...</option>
             <option value="spawner">Car Spawner</option>
             <option value="teleport">Teleport</option>
@@ -433,15 +434,29 @@
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-1.5">
-        <button id="compiler-settings-btn" class="btn-press text-[11.5px] px-2 py-1.5 rounded-sm border border-hairline text-amber hover:bg-amber/10 transition-colors" title="Compiler Config">⚙️ Comp.Config</button>
-        <button id="decompile-settings-btn" class="btn-press text-[11.5px] px-2 py-1.5 rounded-sm border border-hairline text-teal hover:bg-teal/10 transition-colors" title="Decompiler Config">⚙️ Decomp.Config</button>
-        <button id="db-upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Custom .db</button>
-        <button id="decompile-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Decompile</button>
-        <button id="upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Upload</button>
-        <button id="clear-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-400 hover:text-gray-100 transition-colors">Clear</button>
+      <!-- 🛠️ TOOLS & CONFIG TAB BUTTON -->
+      <div class="relative shrink-0">
+        <button id="tools-menu-btn" class="btn-press text-[11.5px] px-3 py-1.5 rounded-sm border border-amber/50 bg-amber/10 text-amber font-semibold hover:bg-amber/20 transition-colors flex items-center gap-1.5">
+          <span>🛠️ Tools &amp; Config</span>
+          <span class="text-xs">▾</span>
+        </button>
+
+        <!-- TOOLS DROPDOWN MENU -->
+        <div id="tools-dropdown" class="hidden absolute right-0 mt-2 w-52 bg-panel border border-hairline rounded-sm shadow-2xl z-50 py-1.5 text-[11.5px]">
+          <div class="px-3 py-1 border-b border-hairline text-[10px] text-gray-500 hex-addr">COMPILER &amp; UTILS</div>
+          <button id="compiler-settings-btn" class="w-full text-left px-3.5 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2">⚙️ Compiler Config</button>
+          <button id="decompile-settings-btn" class="w-full text-left px-3.5 py-2 text-gray-300 hover:bg-panel2 hover:text-teal transition-colors flex items-center gap-2">⚙️ Decompiler Config</button>
+          <button id="db-upload-btn" class="w-full text-left px-3.5 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2">📂 Upload Custom .db</button>
+          
+          <div class="border-t border-hairline my-1"></div>
+          <div class="px-3 py-1 border-b border-hairline text-[10px] text-gray-500 hex-addr">SCRIPT ACTIONS</div>
+          <button id="decompile-btn" class="w-full text-left px-3.5 py-2 text-gray-300 hover:bg-panel2 hover:text-teal transition-colors flex items-center gap-2">⚡ Decompile Script</button>
+          <button id="upload-btn" class="w-full text-left px-3.5 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2">📤 Upload Source File</button>
+          <button id="clear-btn" class="w-full text-left px-3.5 py-2 text-bad hover:bg-panel2 transition-colors flex items-center gap-2">🗑️ Clear Editor</button>
+        </div>
       </div>
     </div>
+
 
     <div>
       <button id="compile-btn" class="btn-press text-xs sm:text-sm py-2.5 px-4 rounded-sm bg-amber text-ink font-bold transition-colors flex items-center justify-center gap-2 w-full disabled:opacity-50 shadow-md">
@@ -1782,6 +1797,26 @@
     div.textContent = str;
     return div.innerHTML;
   }
+  
+    // 🛠️ Tools & Config Dropdown Toggle Logic
+  const toolsMenuBtn = document.getElementById('tools-menu-btn');
+  const toolsDropdown = document.getElementById('tools-dropdown');
+
+  toolsMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toolsDropdown.classList.toggle('hidden');
+  });
+
+  window.addEventListener('click', () => {
+    if (!toolsDropdown.classList.contains('hidden')) {
+      toolsDropdown.classList.add('hidden');
+    }
+  });
+
+  // Modals open hone par dropdown close karne ke liye
+  document.getElementById('compiler-settings-btn').addEventListener('click', () => toolsDropdown.classList.add('hidden'));
+  document.getElementById('decompile-settings-btn').addEventListener('click', () => toolsDropdown.classList.add('hidden'));
+  
 </script>
 </body>
 </html>

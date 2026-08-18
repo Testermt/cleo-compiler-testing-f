@@ -154,10 +154,10 @@ document.addEventListener('focusin', function(e) {
     </div>
   </header>
 
-  <div id="errorModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+    <div id="errorModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
     <div class="bg-panel border border-bad/40 rounded-sm max-w-lg w-full p-4 sm:p-5 flex flex-col gap-3 shadow-2xl">
       <div class="flex items-center justify-between border-b border-hairline pb-2.5">
-        <h2 class="font-display text-xs sm:text-sm text-bad font-semibold">❌ Compilation / Decompilation Error</h2>
+        <h2 id="errorModalTitle" class="font-display text-xs sm:text-sm text-bad font-semibold">❌ Compilation Error</h2>
         <button onclick="closeErrorModal()" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
       </div>
       
@@ -177,6 +177,7 @@ document.addEventListener('focusin', function(e) {
       </div>
     </div>
   </div>
+
 
   <div id="gh-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
     <div class="bg-panel border border-hairline rounded-sm max-w-md w-full p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xl">
@@ -527,8 +528,20 @@ document.addEventListener('focusin', function(e) {
   let editor;
 
   // Error Modal Control Functions
-  function showErrorModal(errorText, cmdText) {
-    document.getElementById('errorModalMsg').textContent = errorText || 'Unknown error occurred.';
+    // ✨ Updated Modal Function with Dynamic Title & Line Number +1 Offset Fix
+  function showErrorModal(errorText, cmdText, isDecompile = false) {
+    const titleEl = document.getElementById('errorModalTitle');
+    if (titleEl) {
+      titleEl.textContent = isDecompile ? '❌ Decompilation Error' : '❌ Compilation Error';
+    }
+
+    // ✨ Regex to find line number after filename (e.g. script.txt:12 -> script.txt:13)
+    let formattedError = errorText || 'Unknown error occurred.';
+    formattedError = formattedError.replace(/(\.txt|\.cs|\.csa|\.csi):(\d+)/gi, (match, filename, lineNum) => {
+      return `${filename}:${parseInt(lineNum, 10) + 1}`;
+    });
+
+    document.getElementById('errorModalMsg').textContent = formattedError;
     document.getElementById('errorModalCmd').value = cmdText || 'No command string available.';
     document.getElementById('errorModal').classList.remove('hidden');
   }
@@ -1387,7 +1400,7 @@ document.addEventListener('focusin', function(e) {
           const errorMsg = data.error || 'Unknown decompilation error.';
           logLine(`Decompilation failed: ${escapeHtml(errorMsg)}`, 'error');
           // ✨ Trigger Error Modal for Decompilation Errors / Timeouts
-          showErrorModal(errorMsg, executedCmd);
+          showErrorModal(errorMsg, executedCmd, true);
           return;
         }
         if (editor && data.code) {
@@ -1668,7 +1681,7 @@ document.addEventListener('focusin', function(e) {
         logLine(escapeHtml(message), 'error');
         
         // ✨ Trigger Error Modal for Compilation Errors
-        showErrorModal(message, executedCmd);
+        showErrorModal(message, executedCmd,false);
 
         if (data.line && typeof data.line === 'number') {
           setEditorErrorMarker(data.line, message);

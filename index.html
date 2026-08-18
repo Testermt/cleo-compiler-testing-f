@@ -426,8 +426,62 @@
 
 
 
+<script>
+  const BACKEND_URL = "https://cleo-compiler-testing-gzf6.onrender.com";
 
+  function fetchDebugScreenshot() {
+    const modal = document.getElementById('debugModal');
+    const img = document.getElementById('debugScreenshotImg');
+    
+    img.src = `${BACKEND_URL}/api/take-screenshot?t=${Date.now()}`;
+    modal.style.display = 'flex';
+  }
 
+  function closeDebugModal() {
+    document.getElementById('debugModal').style.display = 'none';
+  }
+  
+    
+</script>
+
+<!-- ✨ AI Assistant Trigger Button (Header ya Main Toolbar mein daal sakta hai) -->
+<button id="ai-assistant-btn" class="btn-press text-[11px] px-3 py-1.5 rounded-sm border border-amber/50 bg-amber/10 text-amber hover:bg-amber/20 transition-colors flex items-center gap-1.5">
+  <span>🤖 AI Script Assistant</span>
+</button>
+
+<!-- ✨ AI Assistant Modal -->
+<div id="aiModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
+  <div class="bg-panel border border-amber/40 rounded-sm max-w-xl w-full p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xl max-h-[90vh]">
+    <div class="flex items-center justify-between border-b border-hairline pb-2.5">
+      <h2 class="font-display text-xs sm:text-sm text-amber font-semibold">🤖 CLEO AI Script & Opcode Assistant</h2>
+      <button id="aiModalClose" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
+    </div>
+    
+    <div class="flex flex-col gap-2.5 text-[11.5px] flex-1 overflow-hidden">
+      <div>
+        <label class="block text-gray-400 mb-1">What do you want to create? (e.g. Car spawner, Teleport script):</label>
+        <div class="flex gap-2">
+          <input type="text" id="aiPromptInput" placeholder="e.g. Create a car spawner script for Infernus" 
+            class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-2 flex-1 focus:outline-none focus:border-amber font-mono text-xs" />
+          <button id="aiGenerateBtn" class="btn-press px-4 py-2 bg-amber text-ink font-semibold rounded-sm hover:opacity-90 shrink-0">Generate 🚀</button>
+        </div>
+      </div>
+
+      <!-- AI Response Output Box -->
+      <div class="flex flex-col flex-1 overflow-hidden">
+        <label class="block text-gray-400 mb-1">Generated Script & Explanation:</label>
+        <div id="aiOutputBox" class="bg-panel2 text-gray-300 border border-hairline rounded-sm p-3 font-mono text-xs overflow-y-auto flex-1 select-text whitespace-pre-wrap max-h-64">
+          Awaiting your prompt... Ask me to generate any CLEO script!
+        </div>
+      </div>
+    </div>
+    
+    <div class="flex justify-between items-center pt-2 border-t border-hairline">
+      <button id="aiInsertBtn" class="btn-press text-[11px] px-3.5 py-1.5 bg-panel2 border border-hairline text-teal hover:border-teal rounded-sm hidden">📥 Insert into Editor</button>
+      <button id="aiModalCloseBtn" class="btn-press text-[11px] px-4 py-1.5 bg-panel2 border border-hairline text-gray-300 hover:text-gray-100 rounded-sm">Close</button>
+    </div>
+  </div>
+</div>
 
 
     <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-2.5 bg-panel p-2.5 sm:p-3 rounded-sm border border-hairline">
@@ -1990,6 +2044,80 @@ if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compi
     return div.innerHTML;
   }
   
+ 
+  // DOM Elements
+  const aiModal = document.getElementById('aiModal');
+  const aiTriggerBtn = document.getElementById('ai-assistant-btn');
+  const aiModalClose = document.getElementById('aiModalClose');
+  const aiModalCloseBtn = document.getElementById('aiModalCloseBtn');
+  const aiGenerateBtn = document.getElementById('aiGenerateBtn');
+  const aiInsertBtn = document.getElementById('aiInsertBtn');
+  const aiPromptInput = document.getElementById('aiPromptInput');
+  const aiOutputBox = document.getElementById('aiOutputBox');
+
+  let lastGeneratedCode = "";
+
+  // Modal Open / Close Handlers
+  if (aiTriggerBtn) {
+    aiTriggerBtn.addEventListener('click', () => aiModal.classList.remove('hidden'));
+  }
+  if (aiModalClose) {
+    aiModalClose.addEventListener('click', () => aiModal.classList.add('hidden'));
+  }
+  if (aiModalCloseBtn) {
+    aiModalCloseBtn.addEventListener('click', () => aiModal.classList.add('hidden'));
+  }
+
+  // Generate Script via AI & Game Data Context
+  if (aiGenerateBtn) {
+    aiGenerateBtn.addEventListener('click', async () => {
+      const prompt = aiPromptInput.value.trim();
+      const selectedGame = document.getElementById('gameSelect') ? document.getElementById('gameSelect').value : 'GTA SA (Mobile - .csi)';
+
+      if (!prompt) {
+        alert('Please enter what you want to create!');
+        return;
+      }
+
+      aiOutputBox.textContent = "🤖 AI is reading game files and generating your script...";
+      aiInsertBtn.classList.add('hidden');
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/ai-assist`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, game: selectedGame })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          aiOutputBox.textContent = data.explanation + "\n\n--- GENERATED SCRIPT ---\n" + data.code;
+          lastGeneratedCode = data.code;
+          aiInsertBtn.classList.remove('hidden');
+        } else {
+          aiOutputBox.textContent = "Error: " + (data.error || "Failed to generate script.");
+        }
+      } catch (err) {
+        aiOutputBox.textContent = "Network Error: Could not connect to backend AI server. Make sure your Render backend is active.";
+      }
+    });
+  }
+
+  // Insert Generated Code into Monaco Editor
+  if (aiInsertBtn) {
+    aiInsertBtn.addEventListener('click', () => {
+      if (typeof editor !== 'undefined' && lastGeneratedCode) {
+        editor.setValue(lastGeneratedCode);
+        aiModal.classList.add('hidden');
+        if (typeof logLine === 'function') {
+          logLine('AI generated script inserted into editor successfully!', 'success');
+        }
+      } else {
+        alert('Editor instance not found!');
+      }
+    });
+  }
+
   
 </script>
 </body>

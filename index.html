@@ -845,17 +845,52 @@
 
 
   // 🔗 Share Code (Copy code to clipboard)
+    // 🔗 Share Code (Mobile Friendly Fallback Fix)
   document.getElementById('share-tab-dropdown').addEventListener('click', () => {
     editorDropdown.classList.add('hidden');
     if (!editor) return;
     const code = editor.getValue();
-    navigator.clipboard.writeText(code).then(() => {
-      logLine('Script code copied to clipboard successfully!', 'success');
-      alert('Code copied to clipboard!');
-    }).catch(err => {
-      alert('Failed to copy code.');
-    });
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(() => {
+        logLine('Script code copied to clipboard successfully!', 'success');
+        alert('Code copied to clipboard!');
+      }).catch(err => {
+        fallbackCopyTextToClipboard(code);
+      });
+    } else {
+      fallbackCopyTextToClipboard(code);
+    }
   });
+
+  function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    
+    // Avoid scrolling to bottom
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        logLine('Script code copied to clipboard successfully!', 'success');
+        alert('Code copied to clipboard!');
+      } else {
+        alert('Failed to copy code.');
+      }
+    } catch (err) {
+      alert('Unable to copy, please select and copy manually.');
+    }
+
+    document.body.removeChild(textArea);
+  }
+
 
   // 🎯 Goto Line
   document.getElementById('goto-line-dropdown').addEventListener('click', () => {

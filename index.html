@@ -358,42 +358,6 @@ document.addEventListener('focusin', function(e) {
 </div>
 
 
-<div id="errorModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
-  <div class="bg-panel border border-bad/40 rounded-sm max-w-lg w-full p-4 sm:p-5 flex flex-col gap-3 shadow-2xl">
-    <div class="flex items-center justify-between border-b border-hairline pb-2.5">
-      <h2 class="font-display text-xs sm:text-sm text-bad font-semibold">❌ Compilation Error / Command Log</h2>
-      <button onclick="closeErrorModal()" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
-    </div>
-    
-    <div class="flex flex-col gap-2 text-[11.5px]">
-      <div>
-        <label class="block text-gray-400 mb-1">Error Message:</label>
-        <div id="errorModalMsg" class="bg-panel2 text-bad border border-bad/30 rounded-sm p-2.5 font-mono text-xs max-h-32 overflow-y-auto"></div>
-      </div>
-      <div>
-        <label class="block text-gray-400 mb-1">Executed Command String (`cmdStr`):</label>
-        <textarea id="errorModalCmd" readonly class="bg-panel2 text-amber border border-hairline rounded-sm p-2.5 w-full font-mono text-xs h-24 focus:outline-none resize-none"></textarea>
-      </div>
-    </div>
-    
-    <div class="flex justify-end pt-2 border-t border-hairline">
-      <button onclick="closeErrorModal()" class="btn-press text-[11px] px-4 py-1.5 bg-panel2 border border-hairline text-gray-300 hover:text-gray-100 rounded-sm">Close</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  function showErrorModal(errorText, cmdText) {
-    document.getElementById('errorModalMsg').textContent = errorText || 'Unknown compilation error.';
-    document.getElementById('errorModalCmd').value = cmdText || 'No command string available.';
-    document.getElementById('errorModalModal' || 'errorModal').classList.remove('hidden'); // Modal show karega
-  }
-
-  function closeErrorModal() {
-    document.getElementById('errorModal').classList.add('hidden');
-  }
-</script>
-
 
 <script>
   // Agar front-end GitHub Pages par hai aur backend Render par, toh backend ka poora URL use karein:
@@ -1674,26 +1638,18 @@ document.addEventListener('focusin', function(e) {
       const contentType = response.headers.get('content-type') || '';
       const cmdHeader = response.headers.get('x-compiler-cmd');
 
-            if (!response.ok || contentType.includes('application/json')) {
+      if (!response.ok || contentType.includes('application/json')) {
         const data = await response.json().catch(() => ({}));
-        
-        const executedCmd = data.cmd || cmdHeader || 'No command generated';
         if (data.cmd || cmdHeader) {
-          logLine(`Command: <span class="text-amber">${escapeHtml(executedCmd)}</span>`, 'warn');
+          logLine(`Command: <span class="text-amber">${escapeHtml(data.cmd || cmdHeader)}</span>`, 'warn');
         }
-        
         const message = data.error || `Compilation failed (HTTP ${response.status}).`;
         logLine(escapeHtml(message), 'error');
-        
-        // ✨ Yahan error modal trigger ho jayega error message aur command string ke sath!
-        showErrorModal(message, executedCmd);
-
         if (data.line && typeof data.line === 'number') {
           setEditorErrorMarker(data.line, message);
         }
         return;
       }
-
 
       if (cmdHeader) {
         logLine(`Command: <span class="text-amber">${escapeHtml(cmdHeader)}</span>`, 'warn');

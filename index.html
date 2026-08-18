@@ -529,15 +529,22 @@
 
   // Error Modal Control Functions
     // ✨ Updated Modal Function with Dynamic Title & Line Number +1 Offset Fix
-    function showErrorModal(errorText, cmdText, isDecompile = false) {
+      // ✨ Updated Modal Function to Strip Path and Show Only filename:line & error
+  function showErrorModal(errorText, cmdText, isDecompile = false) {
     const titleEl = document.getElementById('errorModalTitle');
     if (titleEl) {
       titleEl.textContent = isDecompile ? '❌ Decompilation Error' : '❌ Compilation Error';
     }
 
-    // ✨ Line number +1 offset fix regex
     let formattedError = errorText || 'Unknown error occurred.';
-    formattedError = formattedError.replace(/(\.txt|\.cs|\.csa|\.csi):(\d+)/gi, (match, filename, lineNum) => {
+
+    // ✨ Regex to strip absolute paths (like Z:\app\temp\...\script.txt -> script.txt) and apply +1 line offset
+    formattedError = formattedError.replace(/[A-Z]:\\[^:\n]+\\([^\\]+\.(txt|cs|csa|csi)):(\d+)/gi, (match, filename, ext, lineNum) => {
+      return `${filename}:${parseInt(lineNum, 10) + 1}`;
+    });
+
+    // Fallback general path cleaner if windows path format varies
+    formattedError = formattedError.replace(/(?:[a-zA-Z]:|\\|\/).*?[\\/]([^\\]+\.(txt|cs|csa|csi)):(\d+)/gi, (match, filename, ext, lineNum) => {
       return `${filename}:${parseInt(lineNum, 10) + 1}`;
     });
 
@@ -548,6 +555,7 @@
   function closeErrorModal() {
     document.getElementById('errorModal').classList.add('hidden');
   }
+
 
 
   // ==========================================

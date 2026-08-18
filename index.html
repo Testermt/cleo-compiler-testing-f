@@ -43,31 +43,38 @@
   .cursor-blink { animation: blink 1.2s step-end infinite; }
   .hex-addr { font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
   
-      #editor-container { 
-    height: 50vh; 
-    min-height: 320px; 
+          
+
+
+
+        
+  
+        html { 
+    background: #0c0f14; 
+    scroll-behavior: smooth;
+    height: auto !important;
+  }
+  
+  body { 
+    background: #0c0f14; 
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto !important;
+    position: static !important;
+    height: auto !important;
+    overflow-x: hidden;
+  }
+
+
+  #editor-container { 
+    height: 50vh !important; 
+    min-height: 200px !important; 
     -webkit-touch-callout: default !important;
     -webkit-user-select: text !important;
     user-select: text !important;
   }
 
-        html, body { 
-    background: #0c0f14; 
-    overflow-x: hidden; 
-    overscroll-behavior-y: none; 
-    height: 100%;
-    position: fixed;
-    width: 100%;
-  }
-  
-  body {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-
-  
-  
   /* Fullscreen IDE Mode */
   .fullscreen-editor { 
     position: fixed !important; 
@@ -76,11 +83,34 @@
     width: 100vw !important; 
     height: 100vh !important; 
     background: #0c0f14 !important; 
-    padding: 6px; 
-    display: flex; 
-    flex-direction: column; 
+    padding: 6px !important; 
+    display: flex !important; 
+    flex-direction: column !important; 
   }
-  .fullscreen-editor #editor-container { height: calc(100vh - 45px) !important; flex: 1; }
+
+  .fullscreen-editor #editor-container { 
+    height: calc(100vh - 50px) !important; 
+    flex: 1 !important; 
+  }
+
+
+
+    #editor-dropdown {
+    max-height: 75vh !important;
+    overflow-y: auto !important;
+    top: 100% !important;
+    right: 0 !important;
+  }
+
+  /* Dropdown ke buttons ki padding thodi kam ki taaki sab ek sath dikhein */
+  #editor-dropdown button {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+  }
+
+
+
+
 
   .btn-press:active { transform: translateY(1px); }
   .error-line-highlight { background-color: rgba(224, 90, 78, 0.20) !important; border-left: 3px solid #e05a4e !important; }
@@ -88,6 +118,7 @@
   @media screen and (max-width: 640px) {
     header .max-w-6xl { padding-left: 8px; padding-right: 8px; }
     main { padding-left: 8px !important; padding-right: 8px !important; }
+    
     #editor-container { height: 46vh; min-height: 280px; }
     .monaco-editor { font-size: 14px !important; }
   }
@@ -496,30 +527,19 @@
     </details>
 
         <div id="editor-wrapper-box" class="rounded-sm border border-hairline overflow-hidden shadow-2xl shadow-black/40 flex flex-col bg-panel">
-      <div class="bg-panel2 border-b border-hairline px-2.5 py-1.5 flex items-center justify-between gap-2 text-[11px] text-gray-400 relative">
+            <div class="bg-panel2 border-b border-hairline px-2.5 py-1.5 flex items-center justify-between gap-2 text-[11px] text-gray-400 relative">
         <div id="file-tabs-container" class="flex items-center gap-1.5 overflow-x-auto flex-1 py-0.5"></div>
         
-        <div class="relative shrink-0">
-   <button id="fullscreen-dropdown" class="btn-press px-2.5 py-1 rounded bg-panel hover:bg-hairline text-amber font-bold text-sm flex items-center justify-center" title="">⛶</button>
-
-          <button id="editor-menu-btn" class="px-2.5 py-1 rounded bg-panel hover:bg-hairline text-amber font-bold text-sm tracking-widest transition-colors" title="Editor Menu">⋮</button>
-          
-                    <div id="editor-dropdown" class="hidden absolute right-0 mt-1.5 w-48 bg-panel border border-hairline rounded-sm shadow-xl z-50 py-1 text-[11.5px]">
-            <button id="new-tab-dropdown" class="w-full text-left px-3 py-2 text-amber hover:bg-panel2 transition-colors flex items-center gap-2"><span>+ New Tab</span></button>
-            <button id="share-tab-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-teal transition-colors flex items-center gap-2"><span>🔗 Copy / Share Code</span></button>
-            <button id="paste-menu-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>📋 Paste Code</span></button>
-            
-            <div class="border-t border-hairline my-1"></div>
-            <button id="goto-line-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>🎯 Goto Line</span></button>
-            <button id="find-replace-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>🔍 Find &amp; Replace</span></button>
-            <div class="border-t border-hairline my-1"></div>
-            <button id="undo-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>↩ Undo</span></button>
-            <button id="redo-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>↪ Redo</span></button>
-          </div>
+        <!-- ✨ Fullscreen icon aur 3-dot menu ko horizontal align kiya -->
+                <div class="flex items-center gap-1 shrink-0">
+          <button id="fullscreen-dropdown" class="btn-press px-2 py-1 rounded bg-panel hover:bg-hairline text-amber font-bold text-xs flex items-center justify-center" title="Fullscreen">⛶</button>
+          <button id="editor-menu-btn" class="px-2 py-1 rounded bg-panel hover:bg-hairline text-amber font-bold text-xs tracking-widest transition-colors" title="Editor Menu">⋮</button>
           
           <div id="editor-dropdown" class="hidden absolute right-0 mt-1.5 w-48 bg-panel border border-hairline rounded-sm shadow-xl z-50 py-1 text-[11.5px]">
             <button id="new-tab-dropdown" class="w-full text-left px-3 py-2 text-amber hover:bg-panel2 transition-colors flex items-center gap-2"><span>+ New Tab</span></button>
-            <button id="share-tab-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-teal transition-colors flex items-center gap-2"><span>🔗 Share Code</span></button>
+            <button id="share-tab-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-teal transition-colors flex items-center gap-2"><span>🔗 Copy / Share Code</span></button>
+            <button id="paste-menu-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>📋 Paste Code</span></button>
+            <div class="border-t border-hairline my-1"></div>
             <button id="goto-line-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>🎯 Goto Line</span></button>
             <button id="find-replace-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>🔍 Find &amp; Replace</span></button>
             <div class="border-t border-hairline my-1"></div>
@@ -528,13 +548,11 @@
             <div class="border-t border-hairline my-1"></div>
             <button id="wordwrap-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center justify-between"><span>Word Wrap</span><span id="wrap-status-text" class="text-[10px] text-teal">OFF</span></button>
             <button id="readonly-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center justify-between"><span>Read Only</span><span id="readonly-status-text" class="text-[10px] text-gray-500">OFF</span></button>
-            <div class="border-t border-hairline my-1"></div>
-            
           </div>
-          
         </div>
-    
+
       </div>
+
       <div id="editor-container"></div>
     </div>
 
@@ -616,6 +634,8 @@
   }
 
 
+
+  
 
   // ==========================================
   // LOCALSTORAGE SETTINGS PERSISTENCE
@@ -1448,8 +1468,8 @@
               const consoleLog = document.getElementById('console-log');
   function logLine(text, type = 'info') {
     // 🛑 Sirf [Compilation Error] aur [Decompilation Error] wale duplicate prefix ko hatao, baaki 'error:' wale logs console par dikhenge!
-    if (text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
-//if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
+ //   if (text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
+if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
 
     const colors = { success: 'text-good', error: 'text-bad', warn: 'text-amber', info: 'text-gray-400' };
     const line = document.createElement('div');
@@ -1952,6 +1972,8 @@
     div.textContent = str;
     return div.innerHTML;
   }
+  
+  
 </script>
 </body>
 </html>

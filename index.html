@@ -69,10 +69,24 @@
     .monaco-editor { font-size: 14px !important; }
   }
  
-   /* ✨ Console Box Hide Rule */
+     /* ✨ Console hidden hone par editor ki height automatically bada do taaki design balance lage */
   #console-wrapper {
     display: none !important;
   }
+
+  /* Mobile aur Desktop dono par editor area ko bada aur spacious banao */
+  #editor-container { 
+    height: 65vh !important; 
+    min-height: 400px !important; 
+  }
+
+  @media screen and (max-width: 640px) {
+    #editor-container { 
+      height: 60vh !important; 
+      min-height: 350px !important; 
+    }
+  }
+
 </style>
 </head>
 <body class="bg-ink text-gray-200 font-mono min-h-screen flex flex-col">

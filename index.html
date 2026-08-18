@@ -220,16 +220,13 @@
               Click the button below to let AI automatically analyze this error and fix the faulty code in your editor.
             </p>
 
-            <!-- ✨ AI Fix Model Selector Dropdown -->
-            <div>
-              <label class="block text-gray-400 mb-1 text-[11px]">Select AI Model for Fix:</label>
-              <select id="aiFixModelSelect" class="bg-ink text-gray-200 border border-hairline rounded-sm px-2 py-1.5 w-full focus:outline-none focus:border-amber font-mono text-xs">
-                <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-              </select>
-            </div>
+            <!-- ✨ AI Fix Custom Model Input Field -->
+<div>
+  <label class="block text-gray-400 mb-1 text-[11px]">AI Model Name for Fix (e.g. gemini-3.6-flash):</label>
+  <input type="text" id="aiFixModelInput" placeholder="gemini-3.6-flash" 
+    class="bg-ink text-gray-200 border border-hairline rounded-sm px-2.5 py-1.5 w-full focus:outline-none focus:border-amber font-mono text-xs" />
+</div>
+
 
             <button id="aiFixErrorBtn" class="btn-press py-2 px-3 bg-teal text-ink font-semibold rounded-sm hover:opacity-90 flex items-center justify-center gap-1.5 text-xs">
               <span>✨ Fix this Error with AI</span>
@@ -465,7 +462,7 @@
   <span>🤖 AI Script Assistant</span>
 </button>
 
-<!-- ✨ AI Assistant Modal with API Key Input & Model Selector -->
+<!-- ✨ AI Assistant Modal with API Key Input & Model Input Box -->
 <div id="aiModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3">
   <div class="bg-panel border border-amber/40 rounded-sm max-w-xl w-full p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xl max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between border-b border-hairline pb-2.5">
@@ -506,15 +503,15 @@
         <span id="apiKeyStatus" class="text-[10px] text-gray-500 mt-0.5 block">Stored securely in your browser's localStorage.</span>
       </div>
 
-      <!-- ✨ AI Model Selector Dropdown -->
+      <!-- ✨ Custom AI Model Input Field -->
       <div>
-        <label class="block text-gray-400 mb-1">Select AI Model:</label>
-        <select id="aiModelSelect" class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-1.5 w-full focus:outline-none focus:border-amber font-mono text-xs">
-          <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
-          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-          <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-          <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-        </select>
+        <label class="block text-gray-400 mb-1">AI Model Name (e.g. gemini-3.6-flash):</label>
+        <div class="flex gap-2">
+          <input type="text" id="aiModelInput" placeholder="gemini-3.6-flash" 
+            class="bg-panel2 text-gray-200 border border-hairline rounded-sm px-2.5 py-1.5 flex-1 focus:outline-none focus:border-amber font-mono text-xs" />
+          <button type="button" id="saveModelBtn" class="btn-press px-3 py-1.5 bg-panel2 border border-hairline text-amber text-[11.5px] rounded-sm hover:border-amber shrink-0">Save Model</button>
+        </div>
+        <span id="modelStatus" class="text-[10px] text-gray-500 mt-0.5 block">Saved locally in browser. Type any model supported by your key.</span>
       </div>
 
       <!-- AI Response Output Box -->
@@ -778,9 +775,20 @@
     }
   }
 
-  window.addEventListener('DOMContentLoaded', async () => {
+      window.addEventListener('DOMContentLoaded', async () => {
     loadCompilerSettings();
     loadDecompilerSettings();
+
+    // ✨ Saved AI Model ko load karne ka code yahan add kar diya
+    const savedModel = localStorage.getItem('user_custom_ai_model');
+    if (savedModel) {
+      const modelInput = document.getElementById('aiModelInput');
+      if (modelInput) modelInput.value = savedModel;
+      const fixModelInput = document.getElementById('aiFixModelInput');
+      if (fixModelInput) fixModelInput.value = savedModel;
+    }
+    
+    
 
     const params = new URLSearchParams(window.location.search);
     const gistId = params.get('load_gist');
@@ -801,6 +809,7 @@
       } catch(e) { logLine('Failed to load community script.', 'error'); }
     }
   });
+
 
   // Modal UI Logic
   const compModal = document.getElementById('compiler-settings-modal');
@@ -2144,48 +2153,51 @@ if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compi
   }
 
   // Generate Script via AI & Game Data Context (with Optional File)
-  if (aiGenerateBtn) {
+    if (aiGenerateBtn) {
     aiGenerateBtn.addEventListener('click', async () => {
-  const prompt = aiPromptInput.value.trim();
-  const selectedGame = document.getElementById('gameSelect') ? document.getElementById('gameSelect').value : 'sa_mobile';
-  const customApiKey = localStorage.getItem('user_custom_ai_key') || '';
-  const selectedAiModel = document.getElementById('aiModelSelect') ? document.getElementById('aiModelSelect').value : 'gemini-2.5-flash';
+      const prompt = aiPromptInput.value.trim();
+      const selectedGame = document.getElementById('gameSelect') ? document.getElementById('gameSelect').value : 'sa_mobile';
+      const customApiKey = localStorage.getItem('user_custom_ai_key') || '';
+      
+      // ✨ Yeh rahi tumhari final model read karne wali line (purana dropdown wala hata diya hai)
+      const selectedAiModel = localStorage.getItem('user_custom_ai_model') || document.getElementById('aiModelInput')?.value.trim() || 'gemini-3.6-flash';
 
-  if (!prompt) {
-    alert('Please enter what you want to create!');
-    return;
-  }
+      if (!prompt) {
+        alert('Please enter what you want to create!');
+        return;
+      }
 
-  aiOutputBox.textContent = "🤖 AI is reading game files and generating your script...";
-  aiInsertBtn.classList.add('hidden');
+      aiOutputBox.textContent = "🤖 AI is reading game files and generating your script...";
+      aiInsertBtn.classList.add('hidden');
 
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/ai-assist`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-User-Api-Key': customApiKey 
-      },
-      body: JSON.stringify({ 
-        prompt, 
-        game: selectedGame, 
-        optionalContext: optionalFileContent,
-        model: selectedAiModel // ✨ Selected model pass kar diya
-      })
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/ai-assist`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-User-Api-Key': customApiKey 
+          },
+          body: JSON.stringify({ 
+            prompt, 
+            game: selectedGame, 
+            optionalContext: optionalFileContent,
+            model: selectedAiModel 
+          })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          aiOutputBox.textContent = data.explanation + "\n\n--- GENERATED SCRIPT ---\n" + data.code;
+          lastGeneratedCode = data.code;
+          aiInsertBtn.classList.remove('hidden');
+        } else {
+          aiOutputBox.textContent = "Error: " + (data.error || "Failed to generate script.");
+        }
+      } catch (err) {
+        aiOutputBox.textContent = "Network Error: Could not connect to backend AI server.";
+      }
     });
-    
-    const data = await response.json();
-    if (data.success) {
-      aiOutputBox.textContent = data.explanation + "\n\n--- GENERATED SCRIPT ---\n" + data.code;
-      lastGeneratedCode = data.code;
-      aiInsertBtn.classList.remove('hidden');
-    } else {
-      aiOutputBox.textContent = "Error: " + (data.error || "Failed to generate script.");
-    }
-  } catch (err) {
-    aiOutputBox.textContent = "Network Error: Could not connect to backend AI server.";
-  }
-});
+ 
 
   }
 
@@ -2255,7 +2267,8 @@ document.getElementById('aiFixErrorBtn').addEventListener('click', async () => {
   const currentCode = editor ? editor.getValue() : '';
   const selectedGame = document.getElementById('gameSelect') ? document.getElementById('gameSelect').value : 'sa_mobile';
   const customApiKey = localStorage.getItem('user_custom_ai_key') || '';
-  const selectedFixModel = document.getElementById('aiFixModelSelect') ? document.getElementById('aiFixModelSelect').value : 'gemini-2.0-flash'; // ✨ Dropdown se model utha liya
+  const selectedFixModel = localStorage.getItem('user_custom_ai_model') || document.getElementById('aiFixModelInput')?.value.trim() || 'gemini-3.6-flash';
+
 
   if (!currentCode.trim()) {
     alert('Editor is empty!');
@@ -2316,7 +2329,21 @@ document.getElementById('aiFixInsertBtn').addEventListener('click', () => {
 });
 
 
-  
+  const saveModelBtn = document.getElementById('saveModelBtn');
+if (saveModelBtn) {
+  saveModelBtn.addEventListener('click', () => {
+    const modelVal = document.getElementById('aiModelInput').value.trim();
+    if (modelVal) {
+      localStorage.setItem('user_custom_ai_model', modelVal);
+      const fixModelInput = document.getElementById('aiFixModelInput');
+      if (fixModelInput) fixModelInput.value = modelVal;
+      alert('AI Model saved successfully!');
+    } else {
+      alert('Please enter a valid model name!');
+    }
+  });
+}
+
 </script>
 </body>
 </html>

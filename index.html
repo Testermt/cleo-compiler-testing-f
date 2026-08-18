@@ -2104,19 +2104,38 @@ if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compi
   }
 
   // Insert Generated Code into Monaco Editor
-  if (aiInsertBtn) {
-    aiInsertBtn.addEventListener('click', () => {
-      if (typeof editor !== 'undefined' && lastGeneratedCode) {
-        editor.setValue(lastGeneratedCode);
-        aiModal.classList.add('hidden');
-        if (typeof logLine === 'function') {
-          logLine('AI generated script inserted into editor successfully!', 'success');
-        }
-      } else {
-        alert('Editor instance not found!');
+  // Insert Generated Code into Monaco Editor as a New Tab
+if (aiInsertBtn) {
+  aiInsertBtn.addEventListener('click', () => {
+    if (typeof editor !== 'undefined' && lastGeneratedCode) {
+      // 1. Purane active tab ka content save kar lo
+      const currentTab = openTabs.find(t => t.id === activeTabId);
+      if (currentTab) currentTab.content = editor.getValue();
+
+      // 2. Ek naya unique tab ID aur name banao (AI generated script ke liye)
+      const newId = 'tab-' + Date.now();
+      const newName = `ai_script_${openTabs.length + 1}.txt`;
+
+      // 3. openTabs array mein naya tab push karo
+      openTabs.push({ 
+        id: newId, 
+        name: newName, 
+        content: lastGeneratedCode 
+      });
+
+      // 4. Naye tab par switch ho jao aur modal close kar do
+      switchTab(newId);
+      aiModal.classList.add('hidden');
+
+      if (typeof logLine === 'function') {
+        logLine(`AI generated script opened in new tab: <span class="text-amber">${newName}</span>`, 'success');
       }
-    });
-  }
+    } else {
+      alert('Editor instance not found or no code generated yet!');
+    }
+  });
+}
+
 
   
 </script>

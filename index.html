@@ -43,7 +43,15 @@
   .cursor-blink { animation: blink 1.2s step-end infinite; }
   .hex-addr { font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
   
-  #editor-container { height: 50vh; min-height: 320px; }
+      #editor-container { 
+    height: 50vh; 
+    min-height: 320px; 
+    -webkit-touch-callout: default !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
+
+
   
   /* Fullscreen IDE Mode */
   .fullscreen-editor { 
@@ -466,24 +474,49 @@
       </div>
     </details>
 
-    <div id="editor-wrapper-box" class="rounded-sm border border-hairline overflow-hidden shadow-2xl shadow-black/40 flex flex-col bg-panel">
+        <div id="editor-wrapper-box" class="rounded-sm border border-hairline overflow-hidden shadow-2xl shadow-black/40 flex flex-col bg-panel">
       <div class="bg-panel2 border-b border-hairline px-2.5 py-1.5 flex items-center justify-between gap-2 text-[11px] text-gray-400 relative">
         <div id="file-tabs-container" class="flex items-center gap-1.5 overflow-x-auto flex-1 py-0.5"></div>
         
         <div class="relative shrink-0">
+   <button id="fullscreen-dropdown" class="btn-press px-2.5 py-1 rounded bg-panel hover:bg-hairline text-amber font-bold text-sm flex items-center justify-center" title="">⛶</button>
+
           <button id="editor-menu-btn" class="px-2.5 py-1 rounded bg-panel hover:bg-hairline text-amber font-bold text-sm tracking-widest transition-colors" title="Editor Menu">⋮</button>
           
-          <div id="editor-dropdown" class="hidden absolute right-0 mt-1.5 w-40 bg-panel border border-hairline rounded-sm shadow-xl z-50 py-1 text-[11.5px]">
+                    <div id="editor-dropdown" class="hidden absolute right-0 mt-1.5 w-48 bg-panel border border-hairline rounded-sm shadow-xl z-50 py-1 text-[11.5px]">
             <button id="new-tab-dropdown" class="w-full text-left px-3 py-2 text-amber hover:bg-panel2 transition-colors flex items-center gap-2"><span>+ New Tab</span></button>
+            <button id="share-tab-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-teal transition-colors flex items-center gap-2"><span>🔗 Copy / Share Code</span></button>
+            <button id="paste-menu-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>📋 Paste Code</span></button>
+            
+            <div class="border-t border-hairline my-1"></div>
+            <button id="goto-line-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>🎯 Goto Line</span></button>
+            <button id="find-replace-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>🔍 Find &amp; Replace</span></button>
+            <div class="border-t border-hairline my-1"></div>
+            <button id="undo-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>↩ Undo</span></button>
+            <button id="redo-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>↪ Redo</span></button>
+          </div>
+          
+          <div id="editor-dropdown" class="hidden absolute right-0 mt-1.5 w-48 bg-panel border border-hairline rounded-sm shadow-xl z-50 py-1 text-[11.5px]">
+            <button id="new-tab-dropdown" class="w-full text-left px-3 py-2 text-amber hover:bg-panel2 transition-colors flex items-center gap-2"><span>+ New Tab</span></button>
+            <button id="share-tab-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-teal transition-colors flex items-center gap-2"><span>🔗 Share Code</span></button>
+            <button id="goto-line-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>🎯 Goto Line</span></button>
+            <button id="find-replace-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>🔍 Find &amp; Replace</span></button>
+            <div class="border-t border-hairline my-1"></div>
             <button id="undo-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>↩ Undo</span></button>
             <button id="redo-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center gap-2"><span>↪ Redo</span></button>
             <div class="border-t border-hairline my-1"></div>
-            <button id="fullscreen-dropdown" class="w-full text-left px-3 py-2 text-amber hover:bg-panel2 transition-colors flex items-center gap-2"><span id="fullscreen-text">⛶ Fullscreen</span></button>
+            <button id="wordwrap-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center justify-between"><span>Word Wrap</span><span id="wrap-status-text" class="text-[10px] text-teal">OFF</span></button>
+            <button id="readonly-dropdown" class="w-full text-left px-3 py-2 text-gray-300 hover:bg-panel2 hover:text-amber transition-colors flex items-center justify-between"><span>Read Only</span><span id="readonly-status-text" class="text-[10px] text-gray-500">OFF</span></button>
+            <div class="border-t border-hairline my-1"></div>
+            
           </div>
+          
         </div>
+    
       </div>
       <div id="editor-container"></div>
     </div>
+
 
     <div id="console-wrapper" class="rounded-sm border border-hairline bg-panel flex flex-col">
   <div class="border-b border-hairline px-3 py-1.5 flex items-center justify-between">
@@ -716,8 +749,13 @@
   window.addEventListener('click', () => {
     editorDropdown.classList.add('hidden');
   });
+  
+  
+  
+  
+  
 
-  document.getElementById('new-tab-dropdown').addEventListener('click', () => {
+    document.getElementById('new-tab-dropdown').addEventListener('click', () => {
     editorDropdown.classList.add('hidden');
     const tabNum = openTabs.length + 1;
     const newId = 'tab-' + Date.now();
@@ -752,6 +790,87 @@
     }
     if (editor) editor.layout();
   });
+
+  // 🔗 Share Code (Copy code to clipboard)
+  document.getElementById('share-tab-dropdown').addEventListener('click', () => {
+    editorDropdown.classList.add('hidden');
+    if (!editor) return;
+    const code = editor.getValue();
+    navigator.clipboard.writeText(code).then(() => {
+      logLine('Script code copied to clipboard successfully!', 'success');
+      alert('Code copied to clipboard!');
+    }).catch(err => {
+      alert('Failed to copy code.');
+    });
+  });
+
+  // 🎯 Goto Line
+  document.getElementById('goto-line-dropdown').addEventListener('click', () => {
+    editorDropdown.classList.add('hidden');
+    if (!editor) return;
+    const line = prompt('Enter line number to jump to:');
+    if (line) {
+      const lineNum = parseInt(line, 10);
+      editor.revealLineInCenter(lineNum);
+      editor.setPosition({ lineNumber: lineNum, column: 1 });
+      editor.focus();
+    }
+  });
+
+  // 🔍 Find & Replace (Monaco built-in find widget)
+  document.getElementById('find-replace-dropdown').addEventListener('click', () => {
+    editorDropdown.classList.add('hidden');
+    if (!editor) return;
+    editor.trigger('', 'actions.find', null);
+  });
+
+  // 📄 Word Wrap Toggle
+  document.getElementById('wordwrap-dropdown').addEventListener('click', () => {
+    editorDropdown.classList.add('hidden');
+    if (!editor) return;
+    const currentWrap = editor.getOption(monaco.editor.EditorOption.wordWrap);
+    const newWrap = currentWrap === 'on' ? 'off' : 'on';
+    editor.updateOptions({ wordWrap: newWrap });
+    document.getElementById('wrap-status-text').textContent = newWrap === 'on' ? 'ON' : 'OFF';
+    document.getElementById('wrap-status-text').className = newWrap === 'on' ? 'text-[10px] text-good font-bold' : 'text-[10px] text-teal';
+    logLine(`Editor word wrap: ${newWrap.toUpperCase()}`, 'info');
+  });
+
+  // 🔒 Read Only Toggle
+  document.getElementById('readonly-dropdown').addEventListener('click', () => {
+    editorDropdown.classList.add('hidden');
+    if (!editor) return;
+    const isReadOnly = editor.getOption(monaco.editor.EditorOption.readOnly);
+    editor.updateOptions({ readOnly: !isReadOnly });
+    document.getElementById('readonly-status-text').textContent = !isReadOnly ? 'ON' : 'OFF';
+    document.getElementById('readonly-status-text').className = !isReadOnly ? 'text-[10px] text-bad font-bold' : 'text-[10px] text-gray-500';
+    logLine(`Editor read-only mode: ${!isReadOnly ? 'ENABLED' : 'DISABLED'}`, 'warn');
+ 
+   // 📋 Paste Code from Clipboard (Mobile Friendly)
+  document.getElementById('paste-menu-dropdown').addEventListener('click', async () => {
+    editorDropdown.classList.add('hidden');
+    if (!editor) return;
+    try {
+      const text = await navigator.clipboard.readText();
+      const selection = editor.getSelection();
+      editor.executeEdits('menu-paste', [{ range: selection, text: text, forceMoveMarkers: true }]);
+      logLine('Text pasted from clipboard successfully!', 'success');
+    } catch (err) {
+      alert('Clipboard permission denied or not supported by browser. Use long-press inside editor or keyboard shortcut.');
+    }
+  });
+
+                  
+
+
+
+  
+ 
+});
+
+    
+    
+
 
   // --- PUBLISH SCRIPT MODAL & EVENT LISTENERS ---
   const publishModal = document.getElementById('publish-modal');
@@ -1596,7 +1715,7 @@
       },
     });
 
-    editor = monaco.editor.create(document.getElementById('editor-container'), {
+            editor = monaco.editor.create(document.getElementById('editor-container'), {
       value: openTabs[0].content,
       language: 'cleo',
       theme: 'cleo-dark',
@@ -1606,8 +1725,12 @@
       automaticLayout: true,
       scrollBeyondLastLine: false,
       renderLineHighlight: 'all',
+      contextmenu: true, // ✨ Context menu enable karne ke liye
+      quickSuggestions: true,
       padding: { top: 12 },
     });
+
+
 
     let lintTimeout;
     editor.onDidChangeModelContent(() => {

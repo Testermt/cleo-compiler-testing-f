@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+
 
 
 <meta charset="UTF-8" />
@@ -1598,8 +1598,8 @@
               const consoleLog = document.getElementById('console-log');
   function logLine(text, type = 'info') {
     // 🛑 Sirf [Compilation Error] aur [Decompilation Error] wale duplicate prefix ko hatao, baaki 'error:' wale logs console par dikhenge!
- //   if (text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
-if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
+ if (text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
+//if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
 
     const colors = { success: 'text-good', error: 'text-bad', warn: 'text-amber', info: 'text-gray-400' };
     const line = document.createElement('div');
@@ -1669,8 +1669,10 @@ if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compi
   const decompileInput = document.getElementById('decompile-upload-input');
 
   decompileBtn.addEventListener('click', () => decompileInput.click());
+  
   decompileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
+  
     if (!file) return;
 
     const selectedGame = document.getElementById('gameSelect').value;
@@ -1950,7 +1952,14 @@ if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compi
   const compileSpinner = document.getElementById('compile-spinner');
 
   compileBtn.addEventListener('click', async () => {
-    if (!editor) return;
+  
+if (typeof gtag === 'function') {
+        gtag('event', 'game selected-click', {
+            'event_category': 'Button',
+            'event_label': document.getElementById('compile-spinner').value
+        });
+    }
+  if (!editor) return;
     const code = editor.getValue();
     const activeTab = openTabs.find(t => t.id === activeTabId);
     const currentFilename = activeTab ? activeTab.name : 'script.txt';

@@ -679,7 +679,7 @@
   const REGISTRY_GIST_ID = "42183afd8d5722544524b1fc6f68ec3a";
 
   let openTabs = [
-    { id: 'tab-1', name: 'script.txt', content: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'MAIN'\n\n:MAIN_START\nwait 0\nif\n  0256:   player $PLAYER_CHAR defined\njf @MAIN_START\n\n0001: wait 0\n0417: create_pickup_marker_at 0.0 0.0 0.0 color 1\n\n:MAIN_LOOP\nwait 250\njump @MAIN_LOOP\n` }
+    { id: 'tab-1', name: 'script.txt', content: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'MAIN'\n\n:MAIN_START\nwait 0\nif\n  0256:   player $PLAYER_CHAR defined\njf @MAIN_START\n\n0001: wait 0\n0417: start_mission 1\n\n:MAIN_LOOP\nwait 250\njump @MAIN_LOOP\n` }
   ];
   let activeTabId = 'tab-1';
   let editor;

@@ -1568,9 +1568,38 @@
   });
 
   const TEMPLATES = {
-    spawner: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'SPAWN'\n\n:MAIN\nwait 250\nif\n  0256: player $PLAYER_CHAR defined\njf @MAIN\n\n0247: load_model 411\n:WAIT_MODEL\nwait 0\nif\n  0248: model 411 available\njf @WAIT_MODEL\n\n04C4: store_coords_to 0@ 1@ 2@ from_actor $PLAYER_ACTOR offset 0.0 4.0 0.0\n00A5: 3@ = create_car 411 at 0@ 1@ 2@\n0249: release_model 411\n0A93: end_custom_thread`,
-    teleport: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'TELE'\n\n:MAIN\nwait 0\nif and\n  0256: player $PLAYER_CHAR defined\n  025D: target_blip_active\njf @MAIN\n\n02E3: locate_target_blip_and_get_coords_to 0@ 1@ 2@\n00A1: put_actor $PLAYER_ACTOR at 0@ 1@ 2@\n01E5: show_text_lowpriority "Teleported!" time 2000 flag 1\nwait 1000\njump @MAIN`,
-    godmode: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'GOD'\n\n:MAIN\nwait 500\nif\n  0256: player $PLAYER_CHAR defined\njf @MAIN\n\n0223: set_actor $PLAYER_ACTOR health_to 1000\n02AB: set_actor $PLAYER_ACTOR immunities BP 1 FP 1 EP 1 CP 1 MP 1\n01E5: show_text_lowpriority "Godmode Activated" time 2000 flag 1\n0A93: end_custom_thread`
+    spawner: `
+// https://gtamods.com/wiki/Spawn_a_vehicle
+{$CLEO .cs}
+
+0000: NOP 
+
+:CARSPAWN_2
+0001: wait 250 ms 
+00D6: if 
+0256:   player $PLAYER_CHAR defined 
+004D: jump_if_false @CARSPAWN_2 
+00D6: if 
+00E1:   player 0 pressed_key 4 
+004D: jump_if_false @CARSPAWN_2 
+0247: load_model #INFERNUS 
+ 
+:CARSPAWN_45
+00D6: if 
+8248:   not model #INFERNUS available 
+004D: jump_if_false @CARSPAWN_68 
+0001: wait 0 ms 
+0002: jump @CARSPAWN_45 
+
+:CARSPAWN_68
+04C4: store_coords_to 0@ 1@ 2@ from_actor $PLAYER_ACTOR with_offset 0.0 4.0 1.4 
+0395: clear_area 1 at 0@ 1@ 2@ radius 3.0 
+00A5: 3@ = create_car #INFERNUS at 0@ 1@ 2@ 
+01C3: remove_references_to_car 3@
+0249: release_model #INFERNUS 
+0001: wait 2000 ms 
+0002: jump @CARSPAWN_2`,
+    
   };
 
   const OPCODES = [
@@ -1598,7 +1627,7 @@
               const consoleLog = document.getElementById('console-log');
   function logLine(text, type = 'info') {
     // 🛑 Sirf [Compilation Error] aur [Decompilation Error] wale duplicate prefix ko hatao, baaki 'error:' wale logs console par dikhenge!
-// if (text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
+if (text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
 //if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
 
     const colors = { success: 'text-good', error: 'text-bad', warn: 'text-amber', info: 'text-gray-400' };

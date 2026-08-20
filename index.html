@@ -2469,14 +2469,14 @@ if (saveModelBtn) {
 
 <!-- Compile Loading & Ad Modal Overlay -->
 <div id="compileModal" class="modal-overlay" style="display: none;">
-  <div class="modal-content">
+  <div class="modal-content" style="max-width: 440px; width: 95%;">
     <div class="spinner"></div>
     <h3>Compiling Your Script...</h3>
     <p id="modalStatusText">Preparing compiler... (<span id="timerCount">0</span>s)</p>
     
-    <!-- Ad Container -->
-    <div class="ad-container" style="margin: 15px 0; padding: 10px; background: #1f1f1f; border-radius: 8px; border: 1px solid #333; text-align: center; max-height: 260px; overflow-y: auto; overflow-x: hidden;">
-      <p style="font-size: 10px; color: #e8a33d; margin-bottom: 5px; font-weight: bold; letter-spacing: 1px;">ADVERTISEMENT</p>
+    <!-- Ad Container (Bada size) -->
+    <div class="ad-container" style="margin: 15px 0; padding: 12px; background: #1f1f1f; border-radius: 8px; border: 1px solid #333; text-align: center; max-height: 400px; overflow-y: auto; overflow-x: hidden;">
+      <p style="font-size: 10px; color: #e8a33d; margin-bottom: 6px; font-weight: bold; letter-spacing: 1px;">ADVERTISEMENT</p>
       
       <div id="adSlot" style="color: #fff;">
         <!-- Adsterra Code -->
@@ -2488,6 +2488,7 @@ if (saveModelBtn) {
     <button id="cancelCompileBtn" onclick="closeCompileModal()" style="display: none; padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px;">Close</button>
   </div>
 </div>
+
 
 
 

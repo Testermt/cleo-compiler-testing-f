@@ -1,8 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8973LHLFH8"></script>
+<script>
+document.addEventListener('focusin', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('.monaco-editor')) {
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
+    }
+  }
+});
 
-<meta name="monetag" content="65e5b4aac69e090820df00cfcb581e25">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8973LHLFH8');
+</script>
+
+
 
  <!-- Smart Redirect for GitHub to Vercel -->
     <script>
@@ -685,11 +702,28 @@
   
   const REGISTRY_GIST_ID = "42183afd8d5722544524b1fc6f68ec3a";
 
-  let openTabs = [
-    { id: 'tab-1', name: 'script.txt', content: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'MAIN'\n\n:MAIN_START\nwait 0\nif\n  0256:   player $PLAYER_CHAR defined\njf @MAIN_START\n\n0001: wait 0\n0417: start_mission 1\n\n:MAIN_LOOP\nwait 250\njump @MAIN_LOOP\n` }
-  ];
-  let activeTabId = 'tab-1';
+  // LocalStorage se save kiye hue tabs load karo, agar na ho toh default rakho
+let savedTabs = localStorage.getItem('cleo_open_tabs');
+let savedActiveId = localStorage.getItem('cleo_active_tab_id');
+
+let openTabs = savedTabs ? JSON.parse(savedTabs) : [
+  { id: 'tab-1', name: 'script.txt', content: `{$CLEO .cs}\n\n0000: NOP\n03A4: name_thread 'MAIN'\n\n:MAIN_START\nwait 0\nif\n  0256:   player $PLAYER_CHAR defined\njf @MAIN_START\n\n0001: wait 0\n0417: start_mission 1\n\n:MAIN_LOOP\nwait 250\njump @MAIN_LOOP\n` }
+];
+let activeTabId = savedActiveId && openTabs.some(t => t.id === savedActiveId) ? savedActiveId : openTabs[0].id;
+
   let editor;
+
+//auto save
+function saveTabsToLocalStorage() {
+  if (editor && activeTabId) {
+    const currentTab = openTabs.find(t => t.id === activeTabId);
+    if (currentTab) currentTab.content = editor.getValue();
+  }
+  localStorage.setItem('cleo_open_tabs', JSON.stringify(openTabs));
+  localStorage.setItem('cleo_active_tab_id', activeTabId);
+}
+
+
 
   // Error Modal Control Functions
     // ✨ Updated Modal Function with Dynamic Title & Line Number +1 Offset Fix
@@ -853,10 +887,12 @@
   }
 
   function switchTab(id) {
+  saveTabsToLocalStorage()
     if (editor && activeTabId) {
       const currentTab = openTabs.find(t => t.id === activeTabId);
       if (currentTab) currentTab.content = editor.getValue();
     }
+    
     activeTabId = id;
     const targetTab = openTabs.find(t => t.id === id);
     if (targetTab && editor) {
@@ -1634,8 +1670,8 @@
               const consoleLog = document.getElementById('console-log');
   function logLine(text, type = 'info') {
     // 🛑 Sirf [Compilation Error] aur [Decompilation Error] wale duplicate prefix ko hatao, baaki 'error:' wale logs console par dikhenge!
-if (text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
-//if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
+//if (text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
+if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
 
     const colors = { success: 'text-good', error: 'text-bad', warn: 'text-amber', info: 'text-gray-400' };
     const line = document.createElement('div');
@@ -1994,7 +2030,15 @@ decompileInput.addEventListener('change', async (e) => {
 
 
     let lintTimeout;
+    let saveTimeout;
     editor.onDidChangeModelContent(() => {
+      // Auto-save logic
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveTabsToLocalStorage();
+      }, 500);
+
+      // Linter logic
       clearTimeout(lintTimeout);
       lintTimeout = setTimeout(() => {
         const useFrontendLinter = document.getElementById('frontend-linter-cb')?.checked;
@@ -2006,6 +2050,7 @@ decompileInput.addEventListener('change', async (e) => {
         }
       }, 300);
     });
+
 
     renderTabs();
   });
@@ -2471,7 +2516,23 @@ if (saveModelBtn) {
   });
 }
 
+document.getElementById('clear-btn').addEventListener('click', () => {
+  if (editor) {
+    clearEditorErrorMarkers();
+    editor.setValue('');
+    const activeTab = openTabs.find(t => t.id === activeTabId);
+    if (activeTab) activeTab.name = 'script.txt';
+    renderTabs();
+    uploadedDbBase64 = null;
+    saveTabsToLocalStorage(); // LocalStorage update kar do
+  }
+  logLine('Editor cleared.', 'info');
+});
+
+
 </script>
+
+
 
 
 <!-- Compile Loading & Ad Modal Overlay -->
@@ -2486,15 +2547,16 @@ if (saveModelBtn) {
       <p style="font-size: 10px; color: #e8a33d; margin-bottom: 6px; font-weight: bold; letter-spacing: 1px;">ADVERTISEMENT</p>
       
       <div id="adSlot" style="color: #fff;">
-        <!-- Adsterra Code -->
-        <script async="async" data-cfasync="false" src="//pl30933873.effectivecpmnetwork.com/4a60b7b116f2985619dd150153791010/invoke.js"></script>
-        <div id="container-4a60b7b116f2985619dd150153791010"></div>
+        <!-- Adsterra Live Site Code -->
+        <script async="async" data-cfasync="false" src="https://pl30936393.effectivecpmnetwork.com/1abe7451347701fb90de9fb0d2a98169/invoke.js"></script>
+        <div id="container-1abe7451347701fb90de9fb0d2a98169"></div>
       </div>
     </div>
     
     <button id="cancelCompileBtn" onclick="closeCompileModal()" style="display: none; padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px;">Close</button>
   </div>
 </div>
+
 
 
 

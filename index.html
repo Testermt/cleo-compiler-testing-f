@@ -2,15 +2,13 @@
 <html lang="en">
 <head>
 
-
-
  <!-- Smart Redirect for GitHub to Vercel -->
     <script>
         if (window.location.hostname.includes("github.io")) {
-            window.location.replace("https://cleo-compiler-testing-f.vercel.app/");
+            window.location.replace("https://cleo-compiler.vercel.app/");
         }
     </script>
-
+    
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>GTA SA Online CLEO Compiler</title>
@@ -699,21 +697,37 @@
         <button id="compiler-settings-btn" class="btn-press text-[11.5px] px-2 py-1.5 rounded-sm border border-hairline text-amber hover:bg-amber/10 transition-colors" title="Compiler Config">⚙️ Comp.Config</button>
         <button id="decompile-settings-btn" class="btn-press text-[11.5px] px-2 py-1.5 rounded-sm border border-hairline text-teal hover:bg-teal/10 transition-colors" title="Decompiler Config">⚙️ Decomp.Config</button>
         <button id="db-upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Custom .db</button>
-        <button id="decompile-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Decompile</button>
         <button id="upload-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-300 hover:text-amber transition-colors">Upload</button>
         <button id="clear-btn" class="btn-press text-[11.5px] px-2.5 py-1.5 rounded-sm border border-hairline text-gray-400 hover:text-gray-100 transition-colors">Clear</button>
       </div>
     </div>
 
-    <div>
-      <button id="compile-btn" class="btn-press text-xs sm:text-sm py-2.5 px-4 rounded-sm bg-amber text-ink font-bold transition-colors flex items-center justify-center gap-2 w-full disabled:opacity-50 shadow-md">
-        <svg id="compile-spinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-        <span id="compile-btn-text">Compile &amp; Download</span>
-      </button>
-    </div>
+    <!-- Professional IDE Action Buttons: Decompile (Left) & Compile Play Button (Right) -->
+<div class="flex items-center gap-2">
+  
+  <!-- Decompile Button (Left Side) -->
+  <button id="decompile-btn" class="btn-press flex-1 py-2.5 px-4 rounded-sm bg-teal text-ink font-bold text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 shadow-md hover:opacity-90">
+    <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+      <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+    </svg>
+    <span>Decompile</span>
+  </button>
+
+  <!-- Compile & Run Play Button (Right Side - Clean Triangle Shape Style) -->
+  <button id="compile-btn" class="btn-press py-2.5 px-6 rounded-sm bg-amber text-ink font-bold text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 shadow-md hover:bg-amber/90 shrink-0">
+    <svg id="compile-spinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+    </svg>
+    <!-- Sharp Play Triangle Icon -->
+    <svg class="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
+      <path d="M6 4l15 8-15 8z"/>
+    </svg>
+    <span id="compile-btn-text">Compile &amp; Run</span>
+  </button>
+
+</div>
+
 
     <details class="bg-panel2/60 border border-hairline rounded-sm px-3.5 py-2.5 text-[11.5px]">
       <summary class="cursor-pointer text-amber font-semibold select-none flex items-center gap-2">⚙️ Advanced Compiler &amp; Decompiler Flags</summary>
@@ -745,6 +759,7 @@
         </div>
       </div>
     </details>
+
 
         <div id="editor-wrapper-box" class="rounded-sm border border-hairline overflow-hidden shadow-2xl shadow-black/40 flex flex-col bg-panel">
             <div class="bg-panel2 border-b border-hairline px-2.5 py-1.5 flex items-center justify-between gap-2 text-[11px] text-gray-400 relative">
@@ -816,7 +831,7 @@
 
 
 
-  const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-testing-ld8o.onrender.com';
+  const API_BASE = window.CLEO_API_BASE || 'https://cleo-compiler-backend.onrender.com';
   
   const REGISTRY_GIST_ID = "42183afd8d5722544524b1fc6f68ec3a";
 
@@ -1932,8 +1947,8 @@ window.addEventListener('beforeunload', () => {
               const consoleLog = document.getElementById('console-log');
   function logLine(text, type = 'info') {
     // 🛑 Sirf [Compilation Error] aur [Decompilation Error] wale duplicate prefix ko hatao, baaki 'error:' wale logs console par dikhenge!
-if (text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
-//if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
+//if (text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
+if (text.includes('Command:') || text.includes('Queue') || text.includes('[Compilation Error]') || text.includes('[Decompilation Error]')) return;
 
     const colors = { success: 'text-good', error: 'text-bad', warn: 'text-amber', info: 'text-gray-400' };
     const line = document.createElement('div');

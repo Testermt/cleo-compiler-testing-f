@@ -2292,35 +2292,36 @@ window.addEventListener('beforeunload', () => {
   // { filename: { content, isCore, isCustom } }
   function sdkMergedFiles() {
     const merged = {};
-    SDK_CORE_FILES.forEach((f) => {
+    // Server / Cache ki saari files ko load karo
+    Object.keys(sdkCacheData).forEach((f) => {
       merged[f] = {
-        content: (f in sdkCustomData) ? sdkCustomData[f] : (sdkCacheData[f] || ''),
+        content: (f in sdkCustomData) ? sdkCustomData[f] : sdkCacheData[f],
         isCore: true,
         isCustom: (f in sdkCustomData),
       };
     });
+    // User ki add ki gayi custom files
     Object.keys(sdkCustomData).forEach((f) => {
       if (!merged[f]) merged[f] = { content: sdkCustomData[f], isCore: false, isCustom: true };
     });
     return merged;
   }
 
-  async function openSdkModal() {
+    async function openSdkModal() {
     sdkActiveGame = document.getElementById('gameSelect').value;
     document.getElementById('sdk-active-game-label').textContent = currentLabel ? currentLabel.textContent : sdkActiveGame;
 
     sdkCacheData = getSdkCache(sdkActiveGame);
     sdkCustomData = getSdkCustom(sdkActiveGame);
 
-    // ✨ Server se saari human-readable files fetch karo aur cache mein dal do
     const listEl = document.getElementById('sdk-file-list');
     if (listEl) listEl.innerHTML = `<div class="px-3 py-3 text-gray-500">Fetching all game SDK files…</div>`;
+    
     try {
       const res = await fetch(`${API_BASE}/api/sdk-files?game=${encodeURIComponent(sdkActiveGame)}`);
       if (res.ok) {
         const data = await res.json();
         const fetchedFiles = (data && data.files) || {};
-        // Server se aane wali har file ko cache mein merge kar do
         Object.keys(fetchedFiles).forEach((f) => {
           if (typeof fetchedFiles[f] === 'string') {
             sdkCacheData[f] = fetchedFiles[f];
@@ -2328,13 +2329,12 @@ window.addEventListener('beforeunload', () => {
         });
       }
     } catch (err) {
-      // Offline fallback
+      console.warn("Could not fetch SDK files from server, using local cache.");
     }
 
-    // Agar cache bilkul khali ho toh default placeholders do
     if (Object.keys(sdkCacheData).length === 0) {
-      sdkCacheData['opcodes.txt'] = '; opcodes.txt — no server definition found.\n';
-      sdkCacheData['SASCM.ini'] = '; SASCM.ini — no server definition found.\n';
+      sdkCacheData['opcodes.txt'] = '; opcodes.txt — fallback definition.\n';
+      sdkCacheData['SASCM.ini'] = '; SASCM.ini — fallback definition.\n';
     }
     setSdkCache(sdkActiveGame, sdkCacheData);
 

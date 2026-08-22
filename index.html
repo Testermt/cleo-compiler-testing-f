@@ -3675,11 +3675,10 @@ document.getElementById('clear-btn').addEventListener('click', () => {
 });
 
 
-  // ✨ Selected/Active Tab File Save to Device Logic
-  document.getElementById('save-file-btn').addEventListener('click', () => {
+    // ✨ Runtime Folder/Location Selector & Save Logic
+  document.getElementById('save-file-btn').addEventListener('click', async () => {
     if (!editor) return;
     
-    // Sabse pehle active tab ka latest content save state mein uthao
     const currentTab = openTabs.find(t => t.id === activeTabId);
     if (!currentTab) return;
     
@@ -3691,19 +3690,41 @@ document.getElementById('clear-btn').addEventListener('click', () => {
       return;
     }
 
-    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
+    // 1. Agar browser/WebView File System Access API support karta hai (Runtime Save Location Picker)
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [{
+            description: 'Text / Script Files',
+            accept: { 'text/plain': ['.txt', '.cs', '.csa', '.csi'] }
+          }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(code);
+        await writable.close();
+        logLine(`File successfully saved to chosen location: <span class="text-amber">${escapeHtml(filename)}</span>`, 'success');
+        return;
+      } catch (err) {
+        // Agar user ne cancel kar diya toh error ignore karo
+        if (err.name === 'AbortError') return;
+        console.warn('Directory picker failed, trying direct download fallback.', err);
+      }
+    }
 
-    logLine(`Active file <span class="text-amber">${escapeHtml(filename)}</span> saved to device successfully.`, 'success');
+    // 2. Fallback agar File Picker supported na ho
+    const encodedUri = 'data:text/plain;charset=utf-8,' + encodeURIComponent(code);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    logLine(`File <span class="text-amber">${escapeHtml(filename)}</span> exported successfully!`, 'success');
   });
-  
+
+
 
 
 

@@ -145,22 +145,24 @@
     #header-icon-btn,
     .header-icon-btn { width: 30px !important; height: 30px !important; }
   }
-
-  /* ✨ SDK Editor Fullscreen mode */
-  #opcode-modal.sdk-fullscreen-active {
-    padding: 0 !important;
+  
+    /* ✨ SDK Editor modal layout fix for mobile fullscreen & keyboard */
+  #sdk-files-tab {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto !important;
+  }
+  #sdk-file-editor {
+    flex: 1;
+    min-height: 180px !important;
   }
   #opcode-modal-box.sdk-modal-fullscreen {
-    max-width: 100vw !important;
-    width: 100vw !important;
-    max-height: 100vh !important;
-    height: 100vh !important;
-    border-radius: 0 !important;
+    display: flex;
+    flex-direction: column;
   }
-  #opcode-modal-box.sdk-modal-fullscreen #sdk-file-editor {
-    min-height: 0 !important;
-  }
-
+  
 </style>
 </head>
 <body class="bg-ink text-gray-200 font-mono min-h-screen flex flex-col">
@@ -843,7 +845,7 @@
   </main>
 
   <div id="opcode-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
-    <div id="opcode-modal-box" class="bg-panel border border-hairline rounded-sm max-w-4xl w-full max-h-[85vh] flex flex-col transition-[max-width,max-height,height] duration-150">
+    <div class="bg-panel border border-hairline rounded-sm max-w-4xl w-full max-h-[85vh] flex flex-col">
       <div class="border-b border-hairline px-4 py-3 flex items-center justify-between">
         <h2 class="font-display text-sm text-gray-200">🛠️ Game SDK &amp; Definitions Manager</h2>
         <button id="opcode-close" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
@@ -871,16 +873,12 @@
   <div class="flex items-center gap-2">
     <!-- ✨ Yeh raha naya Find Button -->
     <button type="button" id="sdk-find-btn" class="btn-press px-2 py-0.5 rounded-sm bg-panel border border-hairline text-amber hover:border-amber text-[10px]">🔍 Find</button>
-    <!-- ✨ SDK Editor Fullscreen Toggle Button -->
-    <button type="button" id="sdk-fullscreen-btn" class="btn-press px-2 py-0.5 rounded-sm bg-panel border border-hairline text-amber hover:border-amber text-[10px]" title="Toggle Fullscreen">⛶ Fullscreen</button>
     <span id="sdk-file-status" class="text-gray-500 shrink-0 text-[10px]"></span>
   </div>
 </div>
 
-          <!-- Lightweight textarea editor (replaces Monaco for mobile performance) -->
-<textarea id="sdk-file-editor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"
-  class="flex-1 w-full bg-panel2 text-gray-200 font-mono text-[12px] leading-relaxed px-3 py-2 resize-none outline-none border-0 min-h-[220px]"
-  placeholder="Select a file to begin editing…"></textarea>
+          <!-- Textarea ki jagah Monaco Editor container -->
+<div id="sdk-editor-container" class="flex-1 w-full bg-panel2 min-h-[220px]"></div>
 
           <div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-t border-hairline shrink-0">
             <p class="text-[10px] text-gray-500 max-w-[220px]">Saved changes are cached in your browser and used automatically during compilation.</p>
@@ -907,13 +905,14 @@
       </div>
     </div>
   </div>
-<!-- 🧩 Game Resource IDs — GTA Modding Reference Hub (MTA Wiki) -->
+
+  <!-- 🧩 Game Resource IDs — GTA Modding Reference Hub (MTA Wiki) -->
   <div id="resourceHubModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3">
     <div class="bg-panel border border-hairline rounded-sm max-w-4xl w-full max-h-[85vh] flex flex-col">
       <div class="border-b border-hairline px-4 py-3 flex items-center justify-between shrink-0">
         <div>
           <h2 class="font-display text-sm text-gray-200">🧩 Game Resource IDs</h2>
-          <p class="text-[10px] text-gray-500 mt-0.5">Official reference lists — Multi Theft Auto Wiki & Touch Widgets</p>
+          <p class="text-[10px] text-gray-500 mt-0.5">Official reference lists — Multi Theft Auto Wiki</p>
         </div>
         <button id="resource-hub-close" class="text-gray-500 hover:text-gray-200 text-lg leading-none">&times;</button>
       </div>
@@ -924,7 +923,6 @@
         <button data-res-tab="vehicles" class="res-tab-btn btn-press text-[11.5px] px-3 py-1.5 rounded-t-sm border border-b-0 border-transparent text-gray-400 hover:text-amber transition-colors whitespace-nowrap">🚗 Vehicles</button>
         <button data-res-tab="weapons" class="res-tab-btn btn-press text-[11.5px] px-3 py-1.5 rounded-t-sm border border-b-0 border-transparent text-gray-400 hover:text-amber transition-colors whitespace-nowrap">🔫 Weapons</button>
         <button data-res-tab="objects" class="res-tab-btn btn-press text-[11.5px] px-3 py-1.5 rounded-t-sm border border-b-0 border-transparent text-gray-400 hover:text-amber transition-colors whitespace-nowrap">📦 Objects</button>
-        <button data-res-tab="widgets" class="res-tab-btn btn-press text-[11.5px] px-3 py-1.5 rounded-t-sm border border-b-0 border-transparent text-gray-400 hover:text-amber transition-colors whitespace-nowrap">📱 Mobile Widgets</button>
       </div>
 
       <!-- Category Panels -->
@@ -1022,28 +1020,14 @@
           </div>
         </div>
 
-        <!-- MOBILE WIDGETS -->
-        <div id="res-panel-widgets" class="res-panel hidden flex-col gap-3">
-          <div class="flex flex-wrap items-center justify-between gap-2 bg-panel2 border border-hairline rounded-sm p-3">
-            <div class="min-w-0">
-              <p class="text-[12px] text-gray-200 font-semibold">GTA SA Mobile Widget IDs</p>
-              <p class="text-[10.5px] text-gray-500">Complete control button and touch widget mapping list</p>
-            </div>
-          </div>
-
-          <p class="text-[10.5px] text-gray-500">Quick reference — Mobile control widgets with copy buttons:</p>
-          <div id="res-quickref-widgets" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11.5px]"></div>
-        </div>
-
       </div>
 
       <div class="border-t border-hairline px-4 py-2.5 flex items-center justify-between shrink-0">
-        <p class="text-[10px] text-gray-500">Source: Multi Theft Auto Wiki & Touch Control Mapping</p>
+        <p class="text-[10px] text-gray-500">Source: Multi Theft Auto Wiki (official)</p>
         <button onclick="document.getElementById('resourceHubModal').classList.add('hidden')" class="btn-press text-[11px] px-4 py-1.5 bg-panel2 border border-hairline text-gray-300 hover:text-gray-100 rounded-sm">Close</button>
       </div>
     </div>
   </div>
-
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.49.0/min/vs/loader.min.js"></script>
 <script>
@@ -1062,67 +1046,6 @@
   ];
   
   
-      const QUICK_REF = {
-      skins: [
-        ['0', 'CJ (Player Default)'],
-        ['1', 'Medic'],
-        ['2', 'Fireman'],
-        ['9', 'SWAT'],
-        ['20', 'Cop (LVPD)'],
-        ['288', 'FBI'],
-      ],
-      vehicles: [
-        ['411', 'Infernus'],
-        ['400', 'Landstalker'],
-        ['420', 'Voodoo'],
-        ['474', 'Hotring Racer'],
-        ['522', 'NRG-500'],
-        ['449', 'Solair'],
-      ],
-      weapons: [
-        ['1', 'Brass Knuckles'],
-        ['4', 'Knife'],
-        ['24', 'Desert Eagle'],
-        ['31', 'M4'],
-        ['34', 'Sniper Rifle'],
-        ['16', 'Grenade'],
-      ],
-      objects: [
-        ['1225', 'Small Gray Box'],
-        ['1330', 'Wooden Crate'],
-        ['3037', 'Traffic Cone'],
-        ['1301', 'Oil Drum'],
-        ['2892', "Pay 'n' Spray Sign"],
-        ['1276', 'Barrier'],
-      ],
-      widgets: [
-        ['0', 'enter/exit car'], ['1', 'punch/weapon fire'], ['2', 'accelerate'], ['3', 'brake'], ['4', 'handbrake'],
-        ['5', 'left arrow'], ['6', 'right arrow'], ['7', 'claxon/horn'], ['8', 'phone'], ['9', 'bowties'],
-        ['10', 'kiss'], ['11', 'fire right'], ['13', 'arrow up'], ['14', 'crane magnet car'], ['15', 'down arrow'],
-        ['16', 'fire left'], ['17', 'fire right'], ['18', 'camera'], ['19', 'target'], ['20', 'target'],
-        ['21', 'fire right'], ['22', 'fire right'], ['23', 'fire right'], ['24', 'rudal left'], ['25', 'remote bomb'],
-        ['26', 'rotate left'], ['27', 'rotate right'], ['28', 'dollar'], ['29', 'pistol replace'], ['30', 'exhaust / nos'],
-        ['31', 'Run'], ['33', 'dive'], ['34', 'swim'], ['37', 'green button'], ['38', 'power button'],
-        ['39', 'reset button'], ['40', 'game analog handle'], ['42', 'arrow right / left screen'], ['43', 'arrow up / left screen'],
-        ['44', 'arrow up / right screen'], ['45', 'arrow down / right screen'], ['46', 'arrow up / right screen'], ['47', 'arrow down / right screen'],
-        ['48', 'arrow left / right down screen'], ['49', 'arrow right / right down screen'], ['50', 'plus / left screen'], ['51', 'minus / leftscreeen'],
-        ['52', 'left arrow small'], ['53', 'right arrow small'], ['54', 'checkmark'], ['55', 'man exit arrow'], ['56', 'rotate left'],
-        ['57', '$ / bottom right'], ['62', 'plus / right bottom screen'], ['63', 'minus / right bottom screen'], ['64', 'select a steering method'],
-        ['65', 'choose a touch layout'], ['66', 'open hand / top left'], ['67', 'magnet'], ['68', 'Spike strip'], ['69', 'checkmark / top left (beating)'],
-        ['70', 'checkmark / top left (beating)'], ['71', 'X sign'], ['72', 'X sign'], ['73', 'checkmark right (beating)'], ['74', 'man exit arrow right'],
-        ['75', 'exit text'], ['76', 'left arrow small'], ['77', 'right arrow small'], ['78', 'start text'], ['79', 'right arrow / bottom right'],
-        ['80', 'unknow black box'], ['81', 'unknow black box'], ['82', 'unknow black box'], ['83', 'unknow black box'], ['87', 'basket net'],
-        ['88', 'basket ball'], ['89', 'X sign / top left'], ['90', 'checkmark / bottom right'], ['91', 'divided card with right left arrow'],
-        ['92', 'X2 Button'], ['93', 'double card with plus symbol'], ['94', 'open hand / bottom right'], ['97', 'up arrow yellow'],
-        ['98', 'down arrow blue'], ['99', 'left arrow red'], ['100', 'right arrow green'], ['102', 'man arrow'], ['103', 'unknow black box'],
-        ['104', 'unknow black box'], ['106', 'grove gang recruit'], ['107', 'grove gang remove member'], ['108', 'grove gang follow instruction'],
-        ['109', 'grove gang stop instruction'], ['110', 'grove gang thumb up'], ['111', 'grove gang middle finger'], ['121', 'plus right arrow'],
-        ['122', 'minus left arrow'], ['123', 'deal button'], ['124', 'hold button'], ['125', 'hold button'], ['126', 'hold button'],
-        ['127', 'hold button'], ['128', 'hold button'], ['134', 'exit button'], ['149', 'exit text center']
-      ]
-    };
-    
-  
   
   const triggerBtn = document.getElementById('game-select-trigger');
 const gameModal = document.getElementById('game-selection-modal');
@@ -1132,84 +1055,32 @@ const currentLabel = document.getElementById('current-selected-game-label');
 const hiddenSelect = document.getElementById('gameSelect');
 
 
-  // ✨ Lightweight <textarea>-based SDK file editor (replaces Monaco for smooth,
-  // lag-free typing/scrolling on mobile). sdkEditorEl.value is the single
-  // source of truth read/written by selectSdkFile / save / reset / delete below.
-  const sdkEditorEl = document.getElementById('sdk-file-editor');
+  let sdkEditor = null;
 
-  // Jab bhi user SDK file editor mein kuch type kare, cache update ho jaye
-  sdkEditorEl.addEventListener('input', () => {
-    if (sdkActiveFile) {
-      sdkCustomData[sdkActiveFile] = sdkEditorEl.value;
-    }
-  });
+  // Jab page load ho ya require.config ke andar SDK Monaco editor ko initialize karo
+  function initSdkMonaco() {
+    if (!sdkEditor && window.monaco) {
+      sdkEditor = monaco.editor.create(document.getElementById('sdk-editor-container'), {
+        value: '',
+        language: 'ini', // Opcodes/Ini ke liye friendly syntax
+        theme: 'cleo-dark',
+        fontFamily: '"JetBrains Mono", monospace',
+        fontSize: 12,
+        minimap: { enabled: false },
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+      });
 
-  // ✨ SDK Editor ke liye lightweight Find (no Monaco find widget needed)
-    let sdkLastFindTerm = '';
-  document.getElementById('sdk-find-btn').addEventListener('click', () => {
-    const term = prompt('Find in file:', sdkLastFindTerm);
-    if (!term) return;
-    sdkLastFindTerm = term;
-
-    const text = sdkEditorEl.value;
-    const lowerText = text.toLowerCase();
-    const lowerTerm = term.toLowerCase();
-    
-    const searchFrom = sdkEditorEl.selectionEnd || 0;
-    let idx = lowerText.indexOf(lowerTerm, searchFrom);
-    if (idx === -1) idx = lowerText.indexOf(lowerTerm); // wrap around to top
-    if (idx === -1) {
-      alert(`"${term}" not found.`);
-      return;
-    }
-
-    // ✨ Text select karo aur focus do
-    sdkEditorEl.focus();
-    sdkEditorEl.setSelectionRange(idx, idx + term.length);
-
-    // ✨ Exact line par scroll karne ke liye reliable trick
-    const lines = text.substring(0, idx).split('\n');
-    const targetLine = lines.length;
-    const totalLines = text.split('\n').length;
-    
-    // Textarea ki height ke hisaab se scroll percentage set karo
-    const scrollRatio = (targetLine - 1) / totalLines;
-    sdkEditorEl.scrollTop = scrollRatio * sdkEditorEl.scrollHeight;
-  });
-
-
-  // ✨ SDK Editor Fullscreen toggle
-  let sdkIsFullscreen = false;
-  const sdkFullscreenBtn = document.getElementById('sdk-fullscreen-btn');
-  const sdkOpcodeModal = document.getElementById('opcode-modal');
-  const sdkOpcodeModalBox = document.getElementById('opcode-modal-box');
-
-  function setSdkFullscreen(enabled) {
-    sdkIsFullscreen = enabled;
-    if (sdkOpcodeModal) sdkOpcodeModal.classList.toggle('sdk-fullscreen-active', enabled);
-    if (sdkOpcodeModalBox) sdkOpcodeModalBox.classList.toggle('sdk-modal-fullscreen', enabled);
-    if (sdkFullscreenBtn) {
-      sdkFullscreenBtn.innerHTML = enabled ? '🗗 Exit Fullscreen' : '⛶ Fullscreen';
-      sdkFullscreenBtn.title = enabled ? 'Exit Fullscreen' : 'Toggle Fullscreen';
-    }
-    if (enabled && sdkEditorEl) {
-      requestAnimationFrame(() => sdkEditorEl.focus());
+      // Jab bhi user SDK file editor mein kuch change kare, cache update ho jaye
+      sdkEditor.onDidChangeModelContent(() => {
+        if (sdkActiveFile) {
+          sdkCustomData[sdkActiveFile] = sdkEditor.getValue();
+        }
+      });
     }
   }
-
-  if (sdkFullscreenBtn) {
-    sdkFullscreenBtn.addEventListener('click', () => {
-      setSdkFullscreen(!sdkIsFullscreen);
-    });
-  }
-
-  const opcodeCloseBtn = document.getElementById('opcode-close');
-  if (opcodeCloseBtn) {
-    opcodeCloseBtn.addEventListener('click', () => {
-      if (sdkIsFullscreen) setSdkFullscreen(false);
-    });
-  }
-
+  
+  
 
 // Trigger button click to open modal
 triggerBtn.addEventListener('click', () => {
@@ -2302,7 +2173,7 @@ window.addEventListener('beforeunload', () => {
     opcodeTable.appendChild(row);
   });
 
-    const opcodeModal = document.getElementById('opcode-modal');
+  const opcodeModal = document.getElementById('opcode-modal');
   document.getElementById('opcode-btn').addEventListener('click', () => { opcodeModal.classList.remove('hidden'); openSdkModal(); });
   document.getElementById('opcode-close').addEventListener('click', () => opcodeModal.classList.add('hidden'));
   opcodeModal.addEventListener('click', (e) => { if (e.target === opcodeModal) opcodeModal.classList.add('hidden'); });
@@ -2347,80 +2218,30 @@ window.addEventListener('beforeunload', () => {
 
     // Quick-reference ID cards with copy buttons (curated common examples —
     // the linked wiki pages above hold the complete, up-to-date lists)
-        const QUICK_REF = {
+    const QUICK_REF = {
       skins: [
-        ['0', 'cj — Carl "CJ" Johnson'],
-        ['1', 'truth — The Truth'],
-        ['2', 'maccer — Maccer'],
-        ['4', 'bbthin — Big Bear (Thin)'],
-        ['5', 'bb — Big Bear (Big)'],
-        ['6', 'emmet — Emmet'],
-        ['7', 'male01 — Normal Ped / Taxi Driver'],
-        ['23', 'wmybmx — BMXer'],
-        ['27', 'wmycon — Construction Worker'],
-        ['50', 'wmymech — Mechanic'],
-        ['61', 'wmyplt — Pilot'],
-        ['65', 'kendl — Kendl Johnson'],
-        ['102', 'ballas1 — Ballas Gang Member'],
-        ['105', 'fam1 — Grove Street Families'],
-        ['108', 'lsv1 — Los Santos Vagos'],
-        ['111', 'maffa — Mafia'],
-        ['117', 'triada — Triad'],
+        ['0', 'CJ (Player Default)'],
+        ['1', 'Medic'],
+        ['2', 'Fireman'],
+        ['9', 'SWAT'],
+        ['20', 'Cop (LVPD)'],
+        ['288', 'FBI'],
       ],
       vehicles: [
-        ['400', 'Landstalker'],
         ['411', 'Infernus'],
-        ['415', 'Cheetah'],
-        ['429', 'Banshee'],
-        ['432', 'Rhino (Tank)'],
-        ['445', 'Admiral'],
-        ['451', 'Turismo'],
-        ['461', 'PCJ-600'],
-        ['468', 'Sanchez'],
-        ['477', 'ZR-350'],
-        ['481', 'BMX'],
-        ['494', 'Hotring Racer'],
-        ['495', 'Sandking'],
+        ['400', 'Landstalker'],
+        ['420', 'Voodoo'],
+        ['474', 'Hotring Racer'],
         ['522', 'NRG-500'],
-        ['541', 'Bullet'],
-        ['559', 'Jester'],
-        ['560', 'Sultan'],
-        ['562', 'Elegy'],
+        ['449', 'Solair'],
       ],
       weapons: [
-        ['0', 'Unarmed / Fist'],
         ['1', 'Brass Knuckles'],
-        ['2', 'Golf Club'],
-        ['3', 'Nightstick'],
         ['4', 'Knife'],
-        ['5', 'Baseball Bat'],
-        ['6', 'Shovel'],
-        ['7', 'Pool Cue'],
-        ['8', 'Katana'],
-        ['9', 'Chainsaw'],
-        ['16', 'Grenades'],
-        ['17', 'Tear Gas'],
-        ['18', 'Molotov Cocktails'],
-        ['22', 'Pistol (Colt 45)'],
-        ['23', 'Silenced Pistol'],
         ['24', 'Desert Eagle'],
-        ['25', 'Shotgun (Chrome)'],
-        ['26', 'Sawn-off Shotgun'],
-        ['27', 'Combat Shotgun'],
-        ['28', 'Micro Uzi (Mac 10)'],
-        ['29', 'MP5'],
-        ['30', 'AK-47'],
         ['31', 'M4'],
-        ['33', 'Rifle (Country Rifle)'],
         ['34', 'Sniper Rifle'],
-        ['35', 'RPG (Rocket Launcher)'],
-        ['36', 'Heat-Seeking Rocket Launcher'],
-        ['37', 'Flamethrower'],
-        ['38', 'Minigun'],
-        ['41', 'Spraycan'],
-        ['42', 'Fire Extinguisher'],
-        ['43', 'Camera'],
-        ['46', 'Parachute'],
+        ['16', 'Grenade'],
       ],
       objects: [
         ['1225', 'Small Gray Box'],
@@ -2429,35 +2250,8 @@ window.addEventListener('beforeunload', () => {
         ['1301', 'Oil Drum'],
         ['2892', "Pay 'n' Spray Sign"],
         ['1276', 'Barrier'],
-        ['1337', 'Target / Marker Object'],
       ],
-      widgets: [
-        ['0', 'enter/exit car'], ['1', 'punch/weapon fire'], ['2', 'accelerate'], ['3', 'brake'], ['4', 'handbrake'],
-        ['5', 'left arrow'], ['6', 'right arrow'], ['7', 'claxon/horn'], ['8', 'phone'], ['9', 'bowties'],
-        ['10', 'kiss'], ['11', 'fire right'], ['13', 'arrow up'], ['14', 'crane magnet car'], ['15', 'down arrow'],
-        ['16', 'fire left'], ['17', 'fire right'], ['18', 'camera'], ['19', 'target'], ['20', 'target'],
-        ['21', 'fire right'], ['22', 'fire right'], ['23', 'fire right'], ['24', 'rudal left'], ['25', 'remote bomb'],
-        ['26', 'rotate left'], ['27', 'rotate right'], ['28', 'dollar'], ['29', 'pistol replace'], ['30', 'exhaust / nos'],
-        ['31', 'Run'], ['33', 'dive'], ['34', 'swim'], ['37', 'green button'], ['38', 'power button'],
-        ['39', 'reset button'], ['40', 'game analog handle'], ['42', 'arrow right / left screen'], ['43', 'arrow up / left screen'],
-        ['44', 'arrow up / right screen'], ['45', 'arrow down / right screen'], ['46', 'arrow up / right screen'], ['47', 'arrow down / right screen'],
-        ['48', 'arrow left / right down screen'], ['49', 'arrow right / right down screen'], ['50', 'plus / left screen'], ['51', 'minus / leftscreeen'],
-        ['52', 'left arrow small'], ['53', 'right arrow small'], ['54', 'checkmark'], ['55', 'man exit arrow'], ['56', 'rotate left'],
-        ['57', '$ / bottom right'], ['62', 'plus / right bottom screen'], ['63', 'minus / right bottom screen'], ['64', 'select a steering method'],
-        ['65', 'choose a touch layout'], ['66', 'open hand / top left'], ['67', 'magnet'], ['68', 'Spike strip'], ['69', 'checkmark / top left (beating)'],
-        ['70', 'checkmark / top left (beating)'], ['71', 'X sign'], ['72', 'X sign'], ['73', 'checkmark right (beating)'], ['74', 'man exit arrow right'],
-        ['75', 'exit text'], ['76', 'left arrow small'], ['77', 'right arrow small'], ['78', 'start text'], ['79', 'right arrow / bottom right'],
-        ['80', 'unknow black box'], ['81', 'unknow black box'], ['82', 'unknow black box'], ['83', 'unknow black box'], ['87', 'basket net'],
-        ['88', 'basket ball'], ['89', 'X sign / top left'], ['90', 'checkmark / bottom right'], ['91', 'divided card with right left arrow'],
-        ['92', 'X2 Button'], ['93', 'double card with plus symbol'], ['94', 'open hand / bottom right'], ['97', 'up arrow yellow'],
-        ['98', 'down arrow blue'], ['99', 'left arrow red'], ['100', 'right arrow green'], ['102', 'man arrow'], ['103', 'unknow black box'],
-        ['104', 'unknow black box'], ['106', 'grove gang recruit'], ['107', 'grove gang remove member'], ['108', 'grove gang follow instruction'],
-        ['109', 'grove gang stop instruction'], ['110', 'grove gang thumb up'], ['111', 'grove gang middle finger'], ['121', 'plus right arrow'],
-        ['122', 'minus left arrow'], ['123', 'deal button'], ['124', 'hold button'], ['125', 'hold button'], ['126', 'hold button'],
-        ['127', 'hold button'], ['128', 'hold button'], ['134', 'exit button'], ['149', 'exit text center']
-      ]
     };
-
 
     function copyToClipboard(text, btnEl) {
       const done = () => {
@@ -2487,7 +2281,6 @@ window.addEventListener('beforeunload', () => {
     Object.keys(QUICK_REF).forEach(category => {
       const container = document.getElementById(`res-quickref-${category}`);
       if (!container) return;
-      container.innerHTML = '';
       QUICK_REF[category].forEach(([id, label]) => {
         const card = document.createElement('div');
         card.className = 'flex items-center justify-between gap-2 bg-panel2 border border-hairline rounded-sm px-2.5 py-1.5';
@@ -2500,7 +2293,6 @@ window.addEventListener('beforeunload', () => {
       });
     });
   })();
-
 
   // ═══════════════════════════════════════════════════════════════════
   // 🛠️ GAME SDK & DEFINITIONS MANAGER — flexible file loading, custom
@@ -2644,11 +2436,11 @@ window.addEventListener('beforeunload', () => {
     const deleteBtn = document.getElementById('sdk-delete-file-btn');
     const saveBtn = document.getElementById('sdk-save-file-btn');
 
-    // SDK textarea editor readymade hai (no async init needed like Monaco)
+    // SDK Monaco initialize kar lo agar pehle nahi hua
+    if (!sdkEditor) initSdkMonaco();
 
     if (!info) {
-      sdkEditorEl.value = '';
-      sdkEditorEl.readOnly = false;
+      if (sdkEditor) sdkEditor.setValue('');
       label.textContent = 'No file selected';
       status.textContent = '';
       resetBtn.disabled = true;
@@ -2657,8 +2449,10 @@ window.addEventListener('beforeunload', () => {
       return;
     }
 
-    sdkEditorEl.value = info.content;
-    sdkEditorEl.readOnly = false;
+    if (sdkEditor) {
+      sdkEditor.setValue(info.content);
+      sdkEditor.updateOptions({ readOnly: false });
+    }
     
     label.textContent = name;
     status.textContent = info.isCustom ? 'Custom — saved in browser storage' : 'Server cached (unmodified)';
@@ -2672,8 +2466,8 @@ window.addEventListener('beforeunload', () => {
 
 
     document.getElementById('sdk-save-file-btn').addEventListener('click', () => {
-    if (!sdkActiveFile) return;
-    const content = sdkEditorEl.value;
+    if (!sdkActiveFile || !sdkEditor) return;
+    const content = sdkEditor.getValue();
     sdkCustomData[sdkActiveFile] = content;
     setSdkCustom(sdkActiveGame, sdkCustomData);
     selectSdkFile(sdkActiveFile);

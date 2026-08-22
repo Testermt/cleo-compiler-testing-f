@@ -851,12 +851,18 @@
             <button id="sdk-add-file-btn" class="btn-press w-full text-[11px] px-2 py-1.5 rounded-sm border border-teal/50 text-teal hover:bg-teal/10 transition-colors">+ Add Custom File</button>
           </div>
         </div>
-        <div class="flex-1 flex flex-col min-w-0">
-          <div class="px-3 py-2 border-b border-hairline flex items-center justify-between gap-2 text-[11px] shrink-0">
-            <span id="sdk-active-file-label" class="text-gray-300 truncate">No file selected</span>
-            <span id="sdk-file-status" class="text-gray-500 shrink-0 text-[10px]"></span>
-          </div>
-          <textarea id="sdk-file-editor" class="flex-1 w-full bg-panel2 text-gray-200 font-mono text-[12px] p-3 resize-none focus:outline-none min-h-[180px]" spellcheck="false" placeholder="Select or add a file to view/edit its contents…" disabled></textarea>
+<div class="px-3 py-2 border-b border-hairline flex items-center justify-between gap-2 text-[11px] shrink-0">
+  <span id="sdk-active-file-label" class="text-gray-300 truncate">No file selected</span>
+  <div class="flex items-center gap-2">
+    <!-- ✨ Yeh raha naya Find Button -->
+    <button type="button" id="sdk-find-btn" class="btn-press px-2 py-0.5 rounded-sm bg-panel border border-hairline text-amber hover:border-amber text-[10px]">🔍 Find</button>
+    <span id="sdk-file-status" class="text-gray-500 shrink-0 text-[10px]"></span>
+  </div>
+</div>
+
+          <!-- Textarea ki jagah Monaco Editor container -->
+<div id="sdk-editor-container" class="flex-1 w-full bg-panel2 min-h-[220px]"></div>
+
           <div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-t border-hairline shrink-0">
             <p class="text-[10px] text-gray-500 max-w-[220px]">Saved changes are cached in your browser and used automatically during compilation.</p>
             <div class="flex items-center gap-1.5 shrink-0">
@@ -1023,12 +1029,48 @@
   ];
   
   
+  
   const triggerBtn = document.getElementById('game-select-trigger');
 const gameModal = document.getElementById('game-selection-modal');
 const modalClose = document.getElementById('game-modal-close');
 const modalSave = document.getElementById('game-modal-save');
 const currentLabel = document.getElementById('current-selected-game-label');
 const hiddenSelect = document.getElementById('gameSelect');
+
+
+  let sdkEditor = null;
+
+  // Jab page load ho ya require.config ke andar SDK Monaco editor ko initialize karo
+  function initSdkMonaco() {
+    if (!sdkEditor && window.monaco) {
+      sdkEditor = monaco.editor.create(document.getElementById('sdk-editor-container'), {
+        value: '',
+        language: 'ini', // Opcodes/Ini ke liye friendly syntax
+        theme: 'cleo-dark',
+        fontFamily: '"JetBrains Mono", monospace',
+        fontSize: 12,
+        minimap: { enabled: false },
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+      });
+
+      // Jab bhi user SDK file editor mein kuch change kare, cache update ho jaye
+      sdkEditor.onDidChangeModelContent(() => {
+        if (sdkActiveFile) {
+          sdkCustomData[sdkActiveFile] = sdkEditor.getValue();
+        }
+      });
+    }
+  }
+  
+    // ✨ SDK Editor ke liye Find button trigger
+  document.getElementById('sdk-find-btn').addEventListener('click', () => {
+    if (sdkEditor) {
+      sdkEditor.focus();
+      sdkEditor.trigger('', 'actions.find', null);
+    }
+  });
+  
 
 // Trigger button click to open modal
 triggerBtn.addEventListener('click', () => {
@@ -2373,21 +2415,22 @@ window.addEventListener('beforeunload', () => {
       </button>`;
   }
 
-    function selectSdkFile(name) {
+      function selectSdkFile(name) {
     const files = sdkMergedFiles();
     const info = files[name];
     sdkActiveFile = name;
 
-    const sdkEditorEl = document.getElementById('sdk-file-editor');
     const label = document.getElementById('sdk-active-file-label');
     const status = document.getElementById('sdk-file-status');
     const resetBtn = document.getElementById('sdk-reset-file-btn');
     const deleteBtn = document.getElementById('sdk-delete-file-btn');
     const saveBtn = document.getElementById('sdk-save-file-btn');
 
+    // SDK Monaco initialize kar lo agar pehle nahi hua
+    if (!sdkEditor) initSdkMonaco();
+
     if (!info) {
-      sdkEditorEl.value = '';
-      sdkEditorEl.disabled = true;
+      if (sdkEditor) sdkEditor.setValue('');
       label.textContent = 'No file selected';
       status.textContent = '';
       resetBtn.disabled = true;
@@ -2396,22 +2439,25 @@ window.addEventListener('beforeunload', () => {
       return;
     }
 
-    sdkEditorEl.value = info.content;
-    sdkEditorEl.disabled = false;
+    if (sdkEditor) {
+      sdkEditor.setValue(info.content);
+      sdkEditor.updateOptions({ readOnly: false });
+    }
+    
     label.textContent = name;
     status.textContent = info.isCustom ? 'Custom — saved in browser storage' : 'Server cached (unmodified)';
     resetBtn.disabled = !info.isCustom;
     saveBtn.disabled = false;
-    // ✨ Server/Cache ki default files par delete button hidden rahega, custom files par dikhega
     deleteBtn.classList.toggle('hidden', name in sdkCacheData);
 
     renderSdkFileList();
   }
 
 
-  document.getElementById('sdk-save-file-btn').addEventListener('click', () => {
-    if (!sdkActiveFile) return;
-    const content = document.getElementById('sdk-file-editor').value;
+
+    document.getElementById('sdk-save-file-btn').addEventListener('click', () => {
+    if (!sdkActiveFile || !sdkEditor) return;
+    const content = sdkEditor.getValue();
     sdkCustomData[sdkActiveFile] = content;
     setSdkCustom(sdkActiveGame, sdkCustomData);
     selectSdkFile(sdkActiveFile);

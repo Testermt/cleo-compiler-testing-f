@@ -2373,7 +2373,7 @@ window.addEventListener('beforeunload', () => {
       </button>`;
   }
 
-  function selectSdkFile(name) {
+    function selectSdkFile(name) {
     const files = sdkMergedFiles();
     const info = files[name];
     sdkActiveFile = name;
@@ -2402,10 +2402,12 @@ window.addEventListener('beforeunload', () => {
     status.textContent = info.isCustom ? 'Custom — saved in browser storage' : 'Server cached (unmodified)';
     resetBtn.disabled = !info.isCustom;
     saveBtn.disabled = false;
-    deleteBtn.classList.toggle('hidden', SDK_CORE_FILES.includes(name));
+    // ✨ Server/Cache ki default files par delete button hidden rahega, custom files par dikhega
+    deleteBtn.classList.toggle('hidden', name in sdkCacheData);
 
     renderSdkFileList();
   }
+
 
   document.getElementById('sdk-save-file-btn').addEventListener('click', () => {
     if (!sdkActiveFile) return;
